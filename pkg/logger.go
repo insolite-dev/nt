@@ -6,23 +6,28 @@ package pkg
 
 import (
 	"fmt"
+
+	"github.com/mattn/go-colorable"
 )
 
-// Color and Icon of "CURRENT" output message.
 var (
-	Color string
-	Icon  string
+	// Color and Icon of "CURRENT" output message.
+	Icon, Color string
+
+	// Colorable std-out and std-err.
+	Stdout = colorable.NewColorableStdout()
+	Stderr = colorable.NewColorableStderr()
 )
 
 // level is a custom type of `string-level`.
-// used define level for [setOutputStyle] function.
+// used define level for [outputLevel] function.S
 type level string
 
 // Define constant app levels.
 const (
-	errorL   level = "error"
-	successL level = "success"
-	infoL    level = "info"
+	ErrorL   level = "error"
+	SuccessL level = "success"
+	InfoL    level = "info"
 )
 
 // Define constant color codes.
@@ -33,6 +38,17 @@ const (
 	NOCOLOR string = "\033[0m"
 )
 
+// Alert, prints message at given [level].
+//
+// l - (level) decides style(level) of log message.
+// msg - (message) is the content of log message.
+func Alert(l level, msg string) {
+	// Configure message
+	message := fmt.Sprintf("\n %s %s \n", outputLevel(l), msg)
+
+	fmt.Fprintln(Stdout, message)
+}
+
 // outputLevel sets [Color] and [Icon] by given `level`,
 // and then, returns final printable level title.
 //
@@ -42,14 +58,13 @@ const (
 // [INFO] - (powered with yellow color)
 func outputLevel(l level) string {
 	switch l {
-	case errorL:
+	case ErrorL:
 		Color = RED
 		Icon = "[ERROR]"
-	case successL:
+	case SuccessL:
 		Color = GREEN
 		Icon = "[OK]"
-		break
-	case infoL:
+	case InfoL:
 		Color = YELLOW
 		Icon = "[INFO]"
 	default:
