@@ -54,7 +54,7 @@ func Alert(l level, msg string) {
 //
 // Result cases:
 // [ERROR] - (powered with red color)
-// [SUCCESS] - (powered with green color)
+// [OK] - (powered with green color)
 // [INFO] - (powered with yellow color)
 func outputLevel(l level) string {
 	switch l {
