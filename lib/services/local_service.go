@@ -11,9 +11,20 @@ import (
 	"github.com/anonistas/notya/pkg"
 )
 
+// LocalService is a class implementation of service repo.
+type LocalService struct{}
+
+// Set [LocalService] as [ServiceRepo].
+var _ ServiceRepo = &LocalService{}
+
+// NewLocalService, creates new local service.
+func NewLocalService() *LocalService {
+	return &LocalService{}
+}
+
 // CreateNote, creates new note at [notya notes path],
 // and fills it's data by given note model.
-func CreateNote(note models.Note) error {
+func (l *LocalService) CreateNote(note models.Note) error {
 	// Generate notya notes working directory path.
 	notesPath, err := pkg.NotyaPWD()
 	if err != nil {
