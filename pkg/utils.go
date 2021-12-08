@@ -15,7 +15,7 @@ func NotyaPWD() (*string, error) {
 	}
 
 	// Add notes path
-	path := uhd + "/" + "notya-notes" + "/"
+	path := uhd + "/" + "notya/"
 
 	return &path, nil
 }
