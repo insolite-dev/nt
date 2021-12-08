@@ -5,6 +5,7 @@
 package pkg_test
 
 import (
+	"errors"
 	"os"
 	"testing"
 
@@ -76,24 +77,33 @@ func TestNewFolder(t *testing.T) {
 	tests := []struct {
 		testName      string
 		foldernameArg string
+		deleteFunc    func(foldername string)
 		expected      error
 	}{
 		{
+			testName:      "should create new folder properly | without deleting it",
+			foldernameArg: "test_folder",
+			deleteFunc:    func(foldername string) {},
+			expected:      nil,
+		},
+		{
 			testName:      "should create new folder properly",
 			foldernameArg: "test_folder",
-			expected:      nil,
+			deleteFunc: func(foldername string) {
+				pkg.Delete(foldername)
+			},
+			expected: errors.New("mkdir test_folder: file exists"),
 		},
 	}
 
 	for _, td := range tests {
 		got := pkg.NewFolder(td.foldernameArg)
 
-		defer pkg.Delete(td.foldernameArg)
+		defer td.deleteFunc(td.foldernameArg)
 
-		if got != td.expected {
+		if got != td.expected && got.Error() != td.expected.Error() {
 			t.Errorf("NewFolder sum was different: Got: %v | Want: %v", got, td.expected)
 		}
-
 	}
 }
 
