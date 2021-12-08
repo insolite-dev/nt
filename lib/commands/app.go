@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/anonistas/notya/lib/services"
+	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -25,10 +26,20 @@ var appCommand = &cobra.Command{
 // initCommands sets all special commands to application command.
 func initCommands() {
 	initCreateCommand()
+	initSetupCommand()
 }
 
 // RunApp sets all special commands, then executes app command.
 func ExecuteApp() {
 	initCommands()
+
+	// Check initialization status of notya,
+	// Setup working directories, if it's not initialized before.
+	err := initializeIfNotExists()
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
 	_ = appCommand.Execute()
 }
