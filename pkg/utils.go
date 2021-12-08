@@ -20,6 +20,15 @@ func NotyaPWD() (*string, error) {
 	return &path, nil
 }
 
+// FileExists, checks if any type of file exists at given path.
+func FileExists(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
 // NewFile, creates new file and writes to its data.
 func NewFile(path string, body []byte) error {
 	err := os.WriteFile(path, body, 0o600)
