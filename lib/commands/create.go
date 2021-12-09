@@ -11,9 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// note is early created and more-than-one-time usable empty note variable.
-var note models.Note
-
 // createCommand, is a command model which used to create new notes or files.
 var createCommand = &cobra.Command{
 	Use:     "create",
@@ -24,22 +21,27 @@ var createCommand = &cobra.Command{
 
 // initCreateCommand sets flags of command, and adds it to main application command.
 func initCreateCommand() {
-	createCommand.Flags().StringVarP(
-		&note.Title,
-		"title", "t",
-		"new_note.md",
-		"name of new note/file",
-	)
-
 	appCommand.AddCommand(createCommand)
 }
 
 // runCreateCommand runs appropriate service commands to create new note.
 func runCreateCommand(cmd *cobra.Command, args []string) {
+	createAnswers := pkg.CreateAnswers{}
+
+	// Start asking create command questions.
+	if err := survey.Ask(
+		pkg.CreateNoteQuestions,
+		&createAnswers,
+		survey.WithIcons(pkg.SurveyIconsConfig),
+	); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
 	// Generate note model from arguments.
 	note := models.Note{
-		Title: note.Title,
-		Path:  NotyaPath + note.Title,
+		Title: createAnswers.Title,
+		Path:  NotyaPath + createAnswers.Title,
 	}
 
 	// Create new note-file by [note].
@@ -48,24 +50,10 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	// TODO: add script to open file with vi/vim
+	if createAnswers.EditNote {
+	}
+
 	// Alert success message.
 	pkg.Alert(pkg.SuccessL, "Successfully created new note: "+note.Title)
-
-	var openNoteToEdit bool
-	// Ask to open note with vi/vim to edit it.
-	if err := survey.Ask(
-		[]*survey.Question{&pkg.OpenNoteToEdit},
-		&openNoteToEdit,
-		survey.WithIcons(pkg.SurveyIconsConfig),
-	); err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
-		return
-	}
-
-	// TODO: add script to open file with vi/vim
-	if openNoteToEdit {
-	}
-
-	// Reset current note.
-	note = models.Note{}
 }
