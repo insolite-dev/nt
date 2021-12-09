@@ -19,13 +19,10 @@ var (
 // service, is the default service of all commands.
 var service services.ServiceRepo
 
-// version is current version of application.
-const version = "v1.0.0"
-
 // AppCommand is the root command of application and genesis of all sub-commands.
 var appCommand = &cobra.Command{
 	Use:     "notya",
-	Version: version,
+	Version: pkg.Version,
 	Short:   "\n 📝 Take notes quickly and expeditiously from terminal.",
 }
 

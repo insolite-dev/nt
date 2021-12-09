@@ -2,6 +2,9 @@ package pkg
 
 import "github.com/AlecAivazis/survey/v2"
 
+// Version is current version of application.
+const Version = "v1.0.0"
+
 var (
 	// Custom configuration for survey icons and colors.
 	// See: https://github.com/mgutz/ansi#style-format
