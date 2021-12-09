@@ -5,6 +5,7 @@
 package commands
 
 import (
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
@@ -49,6 +50,21 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 
 	// Alert success message.
 	pkg.Alert(pkg.SuccessL, "Successfully created new note: "+note.Title)
+
+	var openNoteToEdit bool
+	// Ask to open note with vi/vim to edit it.
+	if err := survey.Ask(
+		[]*survey.Question{&pkg.OpenNoteToEdit},
+		&openNoteToEdit,
+		survey.WithIcons(pkg.SurveyIconsConfig),
+	); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
+	// TODO: add script to open file with vi/vim
+	if openNoteToEdit {
+	}
 
 	// Reset current note.
 	note = models.Note{}

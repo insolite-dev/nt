@@ -40,7 +40,7 @@ func initCommands() {
 func ExecuteApp() {
 	initCommands()
 
-	// Generate notya path only once.
+	// Generate notya path.
 	notyaPath, err := pkg.NotyaPWD()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
@@ -48,16 +48,16 @@ func ExecuteApp() {
 
 	NotyaPath = *notyaPath
 
+	// Initialize new local service.
+	service = services.NewLocalService(NotyaPath)
+
 	// Check initialization status of notya,
 	// Setup working directories, if it's not initialized before.
-	setupErr := initializeIfNotExists(*notyaPath)
+	setupErr := initializeIfNotExists(NotyaPath)
 	if setupErr != nil {
 		pkg.Alert(pkg.ErrorL, setupErr.Error())
 		return
 	}
-
-	// Initialize service
-	service = services.NewLocalService(NotyaPath)
 
 	_ = appCommand.Execute()
 }
