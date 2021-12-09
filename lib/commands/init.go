@@ -36,13 +36,8 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 // initializeIfNotExists is called on each main command execution.
 // Checks if notya initialized or not, if not then initializes it automatically.
 // If notya initialized already, returns nothing.
-func initializeIfNotExists() error {
-	notyaPath, err := pkg.NotyaPWD()
-	if err != nil {
-		return err
-	}
-
-	if !pkg.FileExists(*notyaPath) {
+func initializeIfNotExists(notyaPath string) error {
+	if !pkg.FileExists(notyaPath) {
 		_ = service.Init()
 	}
 

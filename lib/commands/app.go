@@ -10,8 +10,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// service, is the default service of commands.
-var service services.ServiceRepo = &services.LocalService{}
+var (
+	// NotyaPath is the global notya folder path
+	// Which would be filled after executing the application.
+	NotyaPath string
+)
+
+// service, is the default service of all commands.
+var service services.ServiceRepo
 
 // version is current version of application.
 const version = "v1.0.0"
@@ -29,17 +35,29 @@ func initCommands() {
 	initSetupCommand()
 }
 
-// RunApp sets all special commands, then executes app command.
+// RunApp sets all special commands, checks notya initialization status,
+// and then executes main app command.
 func ExecuteApp() {
 	initCommands()
 
-	// Check initialization status of notya,
-	// Setup working directories, if it's not initialized before.
-	err := initializeIfNotExists()
+	// Generate notya path only once.
+	notyaPath, err := pkg.NotyaPWD()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
+	}
+
+	NotyaPath = *notyaPath
+
+	// Check initialization status of notya,
+	// Setup working directories, if it's not initialized before.
+	setupErr := initializeIfNotExists(*notyaPath)
+	if setupErr != nil {
+		pkg.Alert(pkg.ErrorL, setupErr.Error())
 		return
 	}
+
+	// Initialize service
+	service = services.NewLocalService(NotyaPath)
 
 	_ = appCommand.Execute()
 }

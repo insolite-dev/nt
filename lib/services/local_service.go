@@ -13,31 +13,27 @@ import (
 )
 
 // LocalService is a class implementation of service repo.
-type LocalService struct{}
+type LocalService struct {
+	notyaPath string
+}
 
 // Set [LocalService] as [ServiceRepo].
 var _ ServiceRepo = &LocalService{}
 
 // NewLocalService, creates new local service.
-func NewLocalService() *LocalService {
-	return &LocalService{}
+func NewLocalService(notyapath string) *LocalService {
+	return &LocalService{notyaPath: notyapath}
 }
 
 // Init creates notya working directory into running machine.
 func (l *LocalService) Init() error {
-	// Generate notya notes working directory path.
-	notyaPath, err := pkg.NotyaPWD()
-	if err != nil {
-		return err
-	}
-
 	// Check if working directory already exists
-	if pkg.FileExists(*notyaPath) {
+	if pkg.FileExists(l.notyaPath) {
 		return errors.New("Notya already initialized before")
 	}
 
-	// Create notya working directory.
-	creatingErr := pkg.NewFolder(*notyaPath)
+	// Create new notya working directory.
+	creatingErr := pkg.NewFolder(l.notyaPath)
 	if creatingErr != nil {
 		return creatingErr
 	}
@@ -48,13 +44,7 @@ func (l *LocalService) Init() error {
 // CreateNote, creates new note at [notya notes path],
 // and fills it's data by given note model.
 func (l *LocalService) CreateNote(note models.Note) error {
-	// Generate notya notes working directory path.
-	notesPath, err := pkg.NotyaPWD()
-	if err != nil {
-		return err
-	}
-
-	notePath := *notesPath + note.Title
+	notePath := l.notyaPath + note.Title
 
 	// Check if file already exists.
 	if pkg.FileExists(notePath) {

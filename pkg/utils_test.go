@@ -27,7 +27,7 @@ func TestNotyaPWD(t *testing.T) {
 	}{
 		{
 			testName: "should get right notya notes path",
-			exp:      expected{currentHomeDir + "/notya-notes/", nil},
+			exp:      expected{currentHomeDir + "/notya/", nil},
 		},
 	}
 
@@ -38,7 +38,7 @@ func TestNotyaPWD(t *testing.T) {
 		}
 
 		if *gotRes != td.exp.res {
-			t.Errorf("Path res sum was different: Got: %v | Want: %v", gotRes, td.exp.res)
+			t.Errorf("Path res sum was different: Got: %v | Want: %v", *gotRes, td.exp.res)
 		}
 	}
 }

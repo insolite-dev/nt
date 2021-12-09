@@ -36,7 +36,10 @@ func initCreateCommand() {
 // runCreateCommand runs appropriate service commands to create new note.
 func runCreateCommand(cmd *cobra.Command, args []string) {
 	// Generate note model from arguments.
-	note := models.Note{Title: note.Title}
+	note := models.Note{
+		Title: note.Title,
+		Path:  NotyaPath + note.Title,
+	}
 
 	// Create new note-file by [note].
 	if err := service.CreateNote(note); err != nil {
@@ -44,8 +47,7 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// TODO: Implement body inserting/editing functionality
-
+	// Alert success message.
 	pkg.Alert(pkg.SuccessL, "Successfully created new note: "+note.Title)
 
 	// Reset current note.
