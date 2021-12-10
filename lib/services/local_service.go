@@ -74,11 +74,7 @@ func (l *LocalService) ViewNote(note models.Note) (*models.Note, error) {
 	}
 
 	// Re-generate note with path and body.
-	modifiedNote := models.Note{
-		Title: note.Title,
-		Path:  note.Path,
-		Body:  *res,
-	}
+	modifiedNote := models.Note{Title: note.Title, Path: notePath, Body: *res}
 
 	return &modifiedNote, nil
 }

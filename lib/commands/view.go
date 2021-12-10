@@ -28,14 +28,13 @@ func initViewCommand() {
 func runViewCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		note := models.Note{Title: args[0]}
-		_, err := service.ViewNote(note)
+		note, err := service.ViewNote(models.Note{Title: args[0]})
 		if err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
 			return
 		}
 
-		// TODO: Log note.
+		pkg.ShowNote(*note)
 		return
 	}
 
@@ -59,11 +58,11 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 	survey.AskOne(prompt, &selected)
 
 	// Get selected note.
-	_, viewErr := service.ViewNote(models.Note{Title: selected})
+	note, viewErr := service.ViewNote(models.Note{Title: selected})
 	if viewErr != nil {
 		pkg.Alert(pkg.ErrorL, viewErr.Error())
 		return
 	}
 
-	// TODO: Log note.
+	pkg.ShowNote(*note)
 }
