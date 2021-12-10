@@ -27,7 +27,7 @@ func TestNotyaPWD(t *testing.T) {
 	}{
 		{
 			testName: "should get right notya notes path",
-			exp:      expected{currentHomeDir + "/notya-notes/", nil},
+			exp:      expected{currentHomeDir + "/notya/", nil},
 		},
 	}
 
@@ -38,8 +38,49 @@ func TestNotyaPWD(t *testing.T) {
 		}
 
 		if *gotRes != td.exp.res {
-			t.Errorf("Path res sum was different: Got: %v | Want: %v", gotRes, td.exp.res)
+			t.Errorf("Path res sum was different: Got: %v | Want: %v", *gotRes, td.exp.res)
 		}
+	}
+}
+
+func TestFileExists(t *testing.T) {
+	type closures struct {
+		creating func(name string)
+		deleting func(name string)
+	}
+
+	tests := []struct {
+		testName string
+		filename string
+		c        closures
+		expected bool
+	}{
+		{
+			"should check file not exists, properly",
+			"test.txt",
+			closures{creating: func(name string) {}, deleting: func(name string) {}},
+			false,
+		},
+		{
+			"should check file exists, properly",
+			"test.txt",
+			closures{
+				creating: func(name string) { pkg.NewFile(name, []byte{}) },
+				deleting: func(name string) { pkg.Delete(name) },
+			},
+			true,
+		},
+	}
+
+	for _, td := range tests {
+		td.c.creating(td.filename)
+
+		got := pkg.FileExists(td.filename)
+		if got != td.expected {
+			t.Errorf("FileExists sum was different: Got: %v | Want: %v", got, td.expected)
+		}
+
+		td.c.deleting(td.filename)
 	}
 }
 
@@ -87,7 +128,7 @@ func TestNewFolder(t *testing.T) {
 			expected:      nil,
 		},
 		{
-			testName:      "should create new folder properly",
+			testName:      "should alert error on trying to create already created folder",
 			foldernameArg: "test_folder",
 			deleteFunc: func(foldername string) {
 				pkg.Delete(foldername)

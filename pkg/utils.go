@@ -15,9 +15,18 @@ func NotyaPWD() (*string, error) {
 	}
 
 	// Add notes path
-	path := uhd + "/" + "notya-notes" + "/"
+	path := uhd + "/" + "notya/"
 
 	return &path, nil
+}
+
+// FileExists, checks if any type of file exists at given path.
+func FileExists(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
 }
 
 // NewFile, creates new file and writes to its data.
