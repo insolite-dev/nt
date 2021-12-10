@@ -8,5 +8,5 @@ package models
 type Note struct {
 	Title string `json:"title"`
 	Path  string `json:"path"`
-	Body  []byte `json:"body"`
+	Body  string `json:"body"`
 }

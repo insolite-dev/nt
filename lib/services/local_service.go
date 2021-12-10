@@ -61,3 +61,24 @@ func (l *LocalService) CreateNote(note models.Note) error {
 
 	return nil
 }
+
+// ViewNote, opens note-file from given [note.Name], then takes it body,
+// and returns new fully-filled note.
+func (l *LocalService) ViewNote(note models.Note) (*models.Note, error) {
+	notePath := l.notyaPath + note.Title
+
+	// Open and read body of note.
+	res, err := pkg.ReadBody(notePath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Re-generate note with path and body.
+	modifiedNote := models.Note{
+		Title: note.Title,
+		Path:  note.Path,
+		Body:  *res,
+	}
+
+	return &modifiedNote, nil
+}
