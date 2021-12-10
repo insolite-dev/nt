@@ -7,6 +7,7 @@ package pkg
 import (
 	"fmt"
 
+	"github.com/anonistas/notya/lib/models"
 	"github.com/mattn/go-colorable"
 )
 
@@ -14,9 +15,11 @@ var (
 	// Color and Icon of "CURRENT" output message.
 	Icon, Color string
 
-	// Colorable std-out and std-err.
-	Stdout = colorable.NewColorableStdout()
-	Stderr = colorable.NewColorableStderr()
+	// ColorableStd stores colorable std-out and std-err.
+	ColorableStd = models.StdArgs{
+		Stdout: colorable.NewColorableStdout(),
+		Stderr: colorable.NewColorableStderr(),
+	}
 )
 
 // Level is a custom type of `string-level`.
@@ -53,7 +56,7 @@ func Alert(l Level, msg string) {
 	// Configure message
 	message := fmt.Sprintf("\n %s %s \n", OutputLevel(l), msg)
 
-	fmt.Fprintln(Stdout, message)
+	fmt.Fprintln(ColorableStd.Stdout, message)
 }
 
 // OutputLevel sets [Color] and [Icon] by given `Level`,
