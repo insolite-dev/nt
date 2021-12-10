@@ -4,7 +4,10 @@
 
 package pkg
 
-import "os"
+import (
+	"io/ioutil"
+	"os"
+)
 
 // NotyaPWD, generates path of notya's notes directory.
 func NotyaPWD() (*string, error) {
@@ -56,4 +59,32 @@ func Delete(path string) error {
 	}
 
 	return nil
+}
+
+// ReadBody, opens file from given path, and takes its body to return.
+func ReadBody(path string) (*string, error) {
+	resbyte, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	res := string(resbyte)
+	return &res, nil
+}
+
+// ListDir, reads all files from given-path directory.
+func ListDir(path string) ([]string, error) {
+	// Read directory's files.
+	list, err := os.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert list to string list.
+	res := []string{}
+	for _, d := range list {
+		res = append(res, d.Name())
+	}
+
+	return res, nil
 }
