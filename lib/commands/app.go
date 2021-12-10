@@ -34,8 +34,9 @@ var appCommand = &cobra.Command{
 
 // initCommands sets all special commands to application command.
 func initCommands() {
-	initCreateCommand()
 	initSetupCommand()
+	initCreateCommand()
+	initViewCommand()
 }
 
 // RunApp sets all special commands, checks notya initialization status,
