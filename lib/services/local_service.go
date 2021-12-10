@@ -15,14 +15,15 @@ import (
 // LocalService is a class implementation of service repo.
 type LocalService struct {
 	notyaPath string
+	stdargs   models.StdArgs
 }
 
 // Set [LocalService] as [ServiceRepo].
 var _ ServiceRepo = &LocalService{}
 
-// NewLocalService, creates new local service.
-func NewLocalService(notyapath string) *LocalService {
-	return &LocalService{notyaPath: notyapath}
+// NewLocalService, creates new local service by given arguments.
+func NewLocalService(notyapath string, stdargs models.StdArgs) *LocalService {
+	return &LocalService{notyaPath: notyapath, stdargs: stdargs}
 }
 
 // Init creates notya working directory into running machine.

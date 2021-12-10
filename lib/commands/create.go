@@ -50,11 +50,13 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// TODO: add script to open file with vi/vim
 	if createAnswers.EditNote {
-
+		// Open created note-file with vi, to edit it.
+		err := pkg.OpenFileWithVI(note.Path, StdArgs)
+		if err != nil {
+			pkg.Alert(pkg.ErrorL, err.Error())
+		}
 	}
 
-	// Alert success message.
 	pkg.Alert(pkg.SuccessL, "Created new note: "+note.Title)
 }

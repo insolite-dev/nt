@@ -5,6 +5,9 @@
 package commands
 
 import (
+	"os"
+
+	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/lib/services"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
@@ -14,6 +17,9 @@ var (
 	// NotyaPath is the global notya folder path
 	// Which would be filled after executing the application.
 	NotyaPath string
+
+	// StdArgs is the global std state of application.
+	StdArgs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
 )
 
 // service, is the default service of all commands.
@@ -46,7 +52,7 @@ func ExecuteApp() {
 	NotyaPath = *notyaPath
 
 	// Initialize new local service.
-	service = services.NewLocalService(NotyaPath)
+	service = services.NewLocalService(NotyaPath, StdArgs)
 
 	// Check initialization status of notya,
 	// Setup working directories, if it's not initialized before.
