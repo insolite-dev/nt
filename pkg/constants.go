@@ -14,7 +14,7 @@ var (
 		icons.Help.Format = "blue"
 		icons.Help.Text = "Help ->"
 		icons.Error.Format = "yellow"
-		icons.Error.Text = "Note ->"
+		icons.Error.Text = "Warning ->"
 	}
 )
 

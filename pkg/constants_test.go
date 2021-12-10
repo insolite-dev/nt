@@ -26,7 +26,7 @@ func TestSurveyIconsConfig(t *testing.T) {
 				helpFormat:     "blue",
 				helpText:       "Help ->",
 				errorFormat:    "yellow",
-				errorText:      "Note ->",
+				errorText:      "Warning ->",
 			},
 		},
 	}
