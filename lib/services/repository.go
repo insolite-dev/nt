@@ -13,4 +13,5 @@ type ServiceRepo interface {
 	Init() error
 	CreateNote(note models.Note) error
 	ViewNote(note models.Note) (*models.Note, error)
+	EditNote(note models.Note) error
 }

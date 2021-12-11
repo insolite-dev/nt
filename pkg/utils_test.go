@@ -65,7 +65,7 @@ func TestFileExists(t *testing.T) {
 			"should check file exists, properly",
 			"test.txt",
 			closures{
-				creating: func(name string) { pkg.NewFile(name, []byte{}) },
+				creating: func(name string) { pkg.WriteNote(name, []byte{}) },
 				deleting: func(name string) { pkg.Delete(name) },
 			},
 			true,
@@ -84,7 +84,7 @@ func TestFileExists(t *testing.T) {
 	}
 }
 
-func TestNewFile(t *testing.T) {
+func TestWriteNote(t *testing.T) {
 	type args struct {
 		filename string
 		filebody []byte
@@ -103,7 +103,7 @@ func TestNewFile(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		got := pkg.NewFile(td.a.filename, td.a.filebody)
+		got := pkg.WriteNote(td.a.filename, td.a.filebody)
 
 		defer pkg.Delete(td.a.filename)
 
@@ -200,7 +200,7 @@ func TestReadBody(t *testing.T) {
 			testName: "should read file properly",
 			fileName: "test_file.txt",
 			creatingFunc: func(filename string) {
-				pkg.NewFile(filename, []byte{})
+				pkg.WriteNote(filename, []byte{})
 			},
 			deletingFunc: func(filename string) {
 				pkg.Delete(filename)
@@ -241,8 +241,8 @@ func TestListDir(t *testing.T) {
 			folderName: "test_folder",
 			creatingFunc: func(foldername string) {
 				pkg.NewFolder(foldername)
-				pkg.NewFile(foldername+"/test_file.txt", []byte{})
-				pkg.NewFile(foldername+"/test_file_1.txt", []byte{})
+				pkg.WriteNote(foldername+"/test_file.txt", []byte{})
+				pkg.WriteNote(foldername+"/test_file_1.txt", []byte{})
 			},
 			deletingFunc: func(foldername string) {
 				pkg.Delete(foldername + "/test_file.txt")

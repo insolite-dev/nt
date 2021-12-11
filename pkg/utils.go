@@ -32,8 +32,10 @@ func FileExists(path string) bool {
 	return true
 }
 
-// NewFile, creates new file and writes to its data.
-func NewFile(path string, body []byte) error {
+// WriteNote, creates new file and writes to its data.
+// If file already exists at given path with same name, then it updates it's body.
+// Could be used for create and edit.
+func WriteNote(path string, body []byte) error {
 	err := os.WriteFile(path, body, 0o600)
 	if err != nil {
 		return err
