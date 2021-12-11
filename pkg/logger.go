@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/anonistas/notya/lib/models"
+	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
 )
 
@@ -83,4 +84,23 @@ func OutputLevel(l Level) string {
 	}
 
 	return fmt.Sprintf("%s%s%s", Color, Icon, NOCOLOR)
+}
+
+// ShowNote, logs given full note.
+func ShowNote(note models.Note) {
+	// Loggers powered by colors.
+	divider := color.New(color.FgHiYellow)
+	var text, lowText, rainbowText = color.New(color.FgHiWhite), color.New(color.Faint), color.New(color.FgHiMagenta)
+
+	// Modify note fields to make it ready to log.
+	title := fmt.Sprintf("\nTitle: %v", note.Title)
+	path := fmt.Sprintf("Path: %v", note.Path)
+	body := fmt.Sprintf("\n%v", note.Body)
+
+	// Log the final note files.
+	rainbowText.Println(title)
+	lowText.Println(path)
+	divider.Println("----------------------")
+	text.Println(body)
+	divider.Println("----------------------")
 }

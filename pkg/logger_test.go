@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 )
 
@@ -81,5 +82,23 @@ func TestOutputLevel(t *testing.T) {
 				}
 			},
 		)
+	}
+}
+
+func TestShowNote(t *testing.T) {
+	tests := []struct {
+		testName string
+		note     models.Note
+	}{
+		{
+			testName: "should show note properly",
+			note:     models.Note{}, // Empty note
+		},
+	}
+
+	for _, td := range tests {
+		t.Run(td.testName, func(t *testing.T) {
+			pkg.ShowNote(td.note)
+		})
 	}
 }

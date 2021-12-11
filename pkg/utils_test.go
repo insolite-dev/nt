@@ -182,5 +182,101 @@ func TestDelete(t *testing.T) {
 		}
 
 	}
+}
 
+func TestReadBody(t *testing.T) {
+	type expected struct {
+		err error
+	}
+
+	test := []struct {
+		testName     string
+		fileName     string
+		creatingFunc func(filename string)
+		deletingFunc func(filename string)
+		e            expected
+	}{
+		{
+			testName: "should read file properly",
+			fileName: "test_file.txt",
+			creatingFunc: func(filename string) {
+				pkg.NewFile(filename, []byte{})
+			},
+			deletingFunc: func(filename string) {
+				pkg.Delete(filename)
+			},
+			e: expected{err: nil},
+		},
+	}
+
+	for _, td := range test {
+		td.creatingFunc(td.fileName)
+
+		t.Run(td.testName, func(t *testing.T) {
+			_, err := pkg.ReadBody(td.fileName)
+			if err != td.e.err {
+				t.Errorf("ReadBody err sum was different, Got: %v | Want: %v", err, td.e.err)
+			}
+		})
+
+		td.deletingFunc(td.fileName)
+	}
+}
+
+func TestListDir(t *testing.T) {
+	type expected struct {
+		res []string
+		err error
+	}
+
+	tests := []struct {
+		testName     string
+		folderName   string
+		creatingFunc func(foldername string)
+		deletingFunc func(foldername string)
+		e            expected
+	}{
+		{
+			testName:   "should list directory files properly",
+			folderName: "test_folder",
+			creatingFunc: func(foldername string) {
+				pkg.NewFolder(foldername)
+				pkg.NewFile(foldername+"/test_file.txt", []byte{})
+				pkg.NewFile(foldername+"/test_file_1.txt", []byte{})
+			},
+			deletingFunc: func(foldername string) {
+				pkg.Delete(foldername + "/test_file.txt")
+				pkg.Delete(foldername + "/test_file_1.txt")
+				pkg.Delete(foldername)
+			},
+			e: expected{
+				res: []string{"test_file.txt", "test_file_1.txt"},
+				err: nil,
+			},
+		},
+	}
+
+	for _, td := range tests {
+		td.creatingFunc(td.folderName)
+
+		t.Run(td.testName, func(t *testing.T) {
+			got, err := pkg.ListDir(td.folderName)
+			if err != td.e.err {
+				t.Errorf("ListDir's error sum was different, Got: %v | Want: %v", err, td.e.err)
+			}
+
+			if len(got) != len(td.e.res) {
+				t.Errorf("ListDir's res length sum was different, Got: %v | Want: %v", len(got), len(td.e.res))
+			}
+
+			// Check each element of got
+			for i := 0; i < len(got); i++ {
+				if got[i] != td.e.res[i] {
+					t.Errorf("ListDir's res [%v] item sum was different, Got: %v | Want: %v", i, err, td.e.err)
+				}
+			}
+		})
+
+		td.deletingFunc(td.folderName)
+	}
 }
