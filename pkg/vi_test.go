@@ -34,7 +34,7 @@ func TestOpenFileWithVI(t *testing.T) {
 					pkg.Delete(filename)
 				},
 				createFileFunc: func(filename string) {
-					pkg.NewFile(filename, []byte{})
+					pkg.WriteNote(filename, []byte{})
 				},
 			},
 

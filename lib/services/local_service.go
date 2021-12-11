@@ -54,7 +54,7 @@ func (l *LocalService) CreateNote(note models.Note) error {
 	}
 
 	// Create new file inside notes.
-	creatingErr := pkg.NewFile(notePath, []byte(note.Body))
+	creatingErr := pkg.WriteNote(notePath, []byte(note.Body))
 	if creatingErr != nil {
 		return creatingErr
 	}
