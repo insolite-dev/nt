@@ -78,3 +78,21 @@ func (l *LocalService) ViewNote(note models.Note) (*models.Note, error) {
 
 	return &modifiedNote, nil
 }
+
+// EditNote, overwrites exiting file from [notya notes path].
+func (l *LocalService) EditNote(note models.Note) error {
+	notePath := l.notyaPath + note.Title
+
+	// Check if file exists or not.
+	if !pkg.FileExists(notePath) {
+		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
+		return errors.New(notExists)
+	}
+
+	// Edit note's body
+	if writingErr := pkg.WriteNote(notePath, []byte(note.Body)); writingErr != nil {
+		return writingErr
+	}
+
+	return nil
+}
