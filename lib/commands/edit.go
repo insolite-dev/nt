@@ -59,7 +59,7 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 	// Ask for note selection.
 	selected := ""
 	prompt := &survey.Select{
-		Message: "Choose a note to view:",
+		Message: "Choose a note to edit:",
 		Options: notes,
 	}
 	survey.AskOne(prompt, &selected)

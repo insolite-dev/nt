@@ -38,6 +38,7 @@ func initCommands() {
 	initCreateCommand()
 	initViewCommand()
 	initEditCommand()
+	initRenameCommand()
 }
 
 // RunApp sets all special commands, checks notya initialization status,
