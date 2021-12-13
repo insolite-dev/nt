@@ -100,7 +100,19 @@ func (l *LocalService) EditNote(note models.Note) error {
 
 // Rename, changes given note's name.
 func (l *LocalService) Rename(editnote models.EditNote) error {
-	if err := os.Rename(editnote.Current.Title, editnote.New.Title); err != nil {
+	// Check if it's same titles.
+	if editnote.Current.Title == editnote.New.Title {
+		return errors.New("Current and new name are same")
+	}
+
+	// Check if file exists at new note path.
+	if pkg.FileExists(editnote.New.Path) {
+		alreadyExists := fmt.Sprintf("A file exists at: notya/%v, please provide a unique name", editnote.New.Title)
+		return errors.New(alreadyExists)
+	}
+
+	// Rename given note.
+	if err := os.Rename(editnote.Current.Path, editnote.New.Path); err != nil {
 		return err
 	}
 
