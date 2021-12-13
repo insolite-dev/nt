@@ -10,3 +10,10 @@ type Note struct {
 	Path  string `json:"path"`
 	Body  string `json:"body"`
 }
+
+// EditNote is a model that has two note fields inside,
+// which used to edit note or rename it.
+type EditNote struct {
+	Current Note `json:"current"`
+	New     Note `json:"new"`
+}

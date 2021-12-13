@@ -7,6 +7,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
@@ -92,6 +93,15 @@ func (l *LocalService) EditNote(note models.Note) error {
 	// Edit note's body
 	if writingErr := pkg.WriteNote(notePath, []byte(note.Body)); writingErr != nil {
 		return writingErr
+	}
+
+	return nil
+}
+
+// Rename, changes given note's name.
+func (l *LocalService) Rename(editnote models.EditNote) error {
+	if err := os.Rename(editnote.Current.Title, editnote.New.Title); err != nil {
+		return err
 	}
 
 	return nil
