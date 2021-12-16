@@ -9,6 +9,12 @@ import (
 	"os"
 )
 
+// GetBanner, reads banner.txt file from assets, and returns that txt as go-string value.
+func GetBanner() string {
+	bannerBytes, _ := ioutil.ReadFile("assets/banner.txt")
+	return string(bannerBytes)
+}
+
 // NotyaPWD, generates path of notya's notes directory.
 func NotyaPWD() (*string, error) {
 	// Take current user's home directory.

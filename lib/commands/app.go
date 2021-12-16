@@ -30,6 +30,7 @@ var appCommand = &cobra.Command{
 	Use:     "notya",
 	Version: pkg.Version,
 	Short:   "\n 📝 Take notes quickly and expeditiously from terminal.",
+	Long:    pkg.GetBanner(),
 }
 
 // initCommands sets all special commands to application command.

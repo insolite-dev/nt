@@ -4,10 +4,12 @@
 
 package cmd
 
-import "github.com/anonistas/notya/lib/commands"
+import (
+	"github.com/anonistas/notya/lib/commands"
+)
 
 // RunApp executes appCommand, (sets all sub commands and flags of it).
-// It'd be happend only once, on starting program in [main.go].
+// It'd be happen only once, on starting program in [main.go].
 func RunApp() {
 	commands.ExecuteApp()
 }
