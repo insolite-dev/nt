@@ -49,6 +49,14 @@ const (
 	INFO    string = "[INFO]"
 )
 
+// Loggers powered by colors.
+var (
+	divider     = color.New(color.FgHiYellow)
+	text        = color.New(color.FgHiWhite)
+	lowText     = color.New(color.Faint)
+	rainbowText = color.New(color.FgHiMagenta)
+)
+
 // Alert, prints message at given [Level].
 //
 // l - (Level) decides style(Level) of log message.
@@ -88,10 +96,6 @@ func OutputLevel(l Level) string {
 
 // ShowNote, logs given full note.
 func ShowNote(note models.Note) {
-	// Loggers powered by colors.
-	divider := color.New(color.FgHiYellow)
-	var text, lowText, rainbowText = color.New(color.FgHiWhite), color.New(color.Faint), color.New(color.FgHiMagenta)
-
 	// Modify note fields to make it ready to log.
 	title := fmt.Sprintf("\nTitle: %v", note.Title)
 	path := fmt.Sprintf("Path: %v", note.Path)
@@ -103,4 +107,26 @@ func ShowNote(note models.Note) {
 	divider.Println("----------------------")
 	text.Println(body)
 	divider.Println("----------------------")
+}
+
+// ShowListOfNotes, logs given list as limited-element-per-row.
+func ShowListOfNotes(list []string, limit int) {
+	var l string
+
+	nl := limit
+	for i, e := range list {
+		// Limit row by three element.
+		if i >= nl {
+			l += "\n"
+			nl += limit
+		}
+
+		l += fmt.Sprintf(" %v ", e)
+	}
+
+	div := "----------------------"
+
+	divider.Println(div + div)
+	text.Println(l)
+	divider.Println(div + div)
 }

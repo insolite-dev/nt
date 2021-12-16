@@ -102,3 +102,29 @@ func TestShowNote(t *testing.T) {
 		})
 	}
 }
+
+func TestShowListOfNotes(t *testing.T) {
+	type args struct {
+		list  []string
+		limit int
+	}
+
+	tests := []struct {
+		testName string
+		arg      args
+	}{
+		{
+			testName: "should show note properly",
+			arg: args{
+				list:  []string{"1", "2", "3", "4"},
+				limit: 2,
+			},
+		},
+	}
+
+	for _, td := range tests {
+		t.Run(td.testName, func(t *testing.T) {
+			pkg.ShowListOfNotes(td.arg.list, td.arg.limit)
+		})
+	}
+}
