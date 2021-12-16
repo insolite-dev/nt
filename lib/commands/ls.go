@@ -5,6 +5,9 @@
 package commands
 
 import (
+	"fmt"
+
+	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -25,5 +28,13 @@ func initLsCommand() {
 // runLsCommand runs appropriate service functionalities
 // to list all notes from the notya folder.
 func runLsCommand(cmd *cobra.Command, args []string) {
-	// TODO: Add functionality.
+	// Generate a list of notes.
+	list, err := pkg.ListDir(NotyaPath)
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
+	fmt.Println(list)
+	// TODO: Log list
 }
