@@ -5,8 +5,6 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
 )
@@ -35,6 +33,5 @@ func runLsCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	fmt.Println(list)
-	// TODO: Log list
+	pkg.ShowListOfNotes(list, 3)
 }
