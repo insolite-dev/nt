@@ -5,18 +5,8 @@
 package main
 
 import (
-	"io/ioutil"
-	"os"
-	"strings"
-
 	"github.com/anonistas/notya/cmd"
-	"github.com/dimiro1/banner"
 )
-
-func init() {
-	bannerBytes, _ := ioutil.ReadFile("assets/banner.txt")
-	banner.Init(os.Stdout, true, false, strings.NewReader(string(bannerBytes)))
-}
 
 func main() {
 	cmd.RunApp()
