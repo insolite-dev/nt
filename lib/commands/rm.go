@@ -53,7 +53,7 @@ func runRmCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	var selected string
-	prompt := &survey.Select{Message: "Choose a note to rename:", Options: notes}
+	prompt := &survey.Select{Message: "Choose a note to remove:", Options: notes}
 	survey.AskOne(prompt, &selected)
 
 	// TODO: Remove note, at [note]'s path.
