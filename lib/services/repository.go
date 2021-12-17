@@ -15,4 +15,5 @@ type ServiceRepo interface {
 	ViewNote(note models.Note) (*models.Note, error)
 	EditNote(note models.Note) error
 	Rename(editnote models.EditNote) error
+	Remove(note models.Note) error
 }

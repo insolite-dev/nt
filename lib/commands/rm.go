@@ -39,8 +39,7 @@ func runRmCommand(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		// TODO: Remove note, at [note]'s path.
-
+		removeAndFinish(note)
 		return
 	}
 
@@ -53,8 +52,18 @@ func runRmCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	var selected string
-	prompt := &survey.Select{Message: "Choose a note to rename:", Options: notes}
+	prompt := &survey.Select{Message: "Choose a note to remove:", Options: notes}
 	survey.AskOne(prompt, &selected)
 
-	// TODO: Remove note, at [note]'s path.
+	removeAndFinish(models.Note{Title: selected})
+}
+
+// removeAndFinish removes given note and alerts success message if everything is OK.
+func removeAndFinish(note models.Note) {
+	if err := service.Remove(note); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
+	pkg.Alert(pkg.SuccessL, "Note removed successfully: "+note.Title)
 }

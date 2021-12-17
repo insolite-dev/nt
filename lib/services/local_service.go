@@ -118,3 +118,15 @@ func (l *LocalService) Rename(editnote models.EditNote) error {
 
 	return nil
 }
+
+// Remove, deletes given note file.
+func (l *LocalService) Remove(note models.Note) error {
+	notePath := l.notyaPath + note.Title
+
+	// Delete provided file.
+	if err := pkg.Delete(notePath); err != nil {
+		return err
+	}
+
+	return nil
+}

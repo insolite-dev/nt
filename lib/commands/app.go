@@ -37,6 +37,7 @@ var appCommand = &cobra.Command{
 func initCommands() {
 	initSetupCommand()
 	initCreateCommand()
+	initRmCommand()
 	initViewCommand()
 	initEditCommand()
 	initRenameCommand()
