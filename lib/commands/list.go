@@ -9,23 +9,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// lsCommand, is a application command, which used to list all
+// listCommand, is a application command, which used to list all
 // notes/files from the notya folder.
-var lsCommand = &cobra.Command{
-	Use:     "ls",
-	Aliases: []string{"list", "all"},
+var listCommand = &cobra.Command{
+	Use:     "list",
+	Aliases: []string{"ls"},
 	Short:   "List all notya notes",
-	Run:     runLsCommand,
+	Run:     runListCommand,
 }
 
-// initLsCommand adds lsCommand to main application command.
-func initLsCommand() {
-	appCommand.AddCommand(lsCommand)
+// initListCommand adds listCommand to main application command.
+func initListCommand() {
+	appCommand.AddCommand(listCommand)
 }
 
-// runLsCommand runs appropriate service functionalities
+// runListCommand runs appropriate service functionalities
 // to list all notes from the notya folder.
-func runLsCommand(cmd *cobra.Command, args []string) {
+func runListCommand(cmd *cobra.Command, args []string) {
 	// Generate a list of notes.
 	list, err := pkg.ListDir(NotyaPath)
 	if err != nil {

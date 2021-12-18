@@ -13,21 +13,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rmCommand, is a command model which used to remove a note or file.
-var rmCommand = &cobra.Command{
-	Use:     "rm",
-	Aliases: []string{"remove", "delete"},
+// removeCommand, is a command model which used to remove a note or file.
+var removeCommand = &cobra.Command{
+	Use:     "remove",
+	Aliases: []string{"rm", "delete"},
 	Short:   "Remove/Delete a notya file",
-	Run:     runRmCommand,
+	Run:     runRemoveCommand,
 }
 
-// initRmCommand adds rmCommand to main application command.
-func initRmCommand() {
-	appCommand.AddCommand(rmCommand)
+// initRemoveCommand adds removeCommand to main application command.
+func initRemoveCommand() {
+	appCommand.AddCommand(removeCommand)
 }
 
-// runRmCommand runs appropriate service commands to remove note.
-func runRmCommand(cmd *cobra.Command, args []string) {
+// runRemoveCommand runs appropriate service commands to remove note.
+func runRemoveCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
 		note := models.Note{Title: args[0], Path: NotyaPath + args[0]}
