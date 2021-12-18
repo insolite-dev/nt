@@ -35,8 +35,7 @@ func (l *LocalService) Init() error {
 	}
 
 	// Create new notya working directory.
-	creatingErr := pkg.NewFolder(l.notyaPath)
-	if creatingErr != nil {
+	if creatingErr := pkg.NewFolder(l.notyaPath); creatingErr != nil {
 		return creatingErr
 	}
 
@@ -55,8 +54,7 @@ func (l *LocalService) CreateNote(note models.Note) error {
 	}
 
 	// Create new file inside notes.
-	creatingErr := pkg.WriteNote(notePath, []byte(note.Body))
-	if creatingErr != nil {
+	if creatingErr := pkg.WriteNote(notePath, []byte(note.Body)); creatingErr != nil {
 		return creatingErr
 	}
 
@@ -68,13 +66,19 @@ func (l *LocalService) CreateNote(note models.Note) error {
 func (l *LocalService) ViewNote(note models.Note) (*models.Note, error) {
 	notePath := l.notyaPath + note.Title
 
+	// Check if file exists or not.
+	if !pkg.FileExists(notePath) {
+		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
+		return nil, errors.New(notExists)
+	}
+
 	// Open and read body of note.
 	res, err := pkg.ReadBody(notePath)
 	if err != nil {
 		return nil, err
 	}
 
-	// Re-generate note with path and body.
+	// Re-generate note with full body.
 	modifiedNote := models.Note{Title: note.Title, Path: notePath, Body: *res}
 
 	return &modifiedNote, nil
@@ -100,6 +104,10 @@ func (l *LocalService) EditNote(note models.Note) error {
 
 // Rename, changes given note's name.
 func (l *LocalService) Rename(editnote models.EditNote) error {
+	// Initialize file paths.
+	editnote.Current.Path = l.notyaPath + editnote.Current.Title
+	editnote.New.Path = l.notyaPath + editnote.New.Title
+
 	// Check if it's same titles.
 	if editnote.Current.Title == editnote.New.Title {
 		return errors.New("Current and new name are same")
