@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	// StdArgs is the global std state of application.
-	StdArgs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
+	// stdargs is the global std state of application.
+	stdargs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
 )
 
 // service, is the default service of all commands.
@@ -46,7 +46,7 @@ func ExecuteApp() {
 	initCommands()
 
 	// Initialize new local service.
-	service = services.NewLocalService(StdArgs)
+	service = services.NewLocalService(stdargs)
 
 	// Initialize application.
 	if err := service.Init(); err != nil {
