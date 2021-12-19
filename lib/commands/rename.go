@@ -5,8 +5,6 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
@@ -32,13 +30,6 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	if len(args) > 0 {
 		note := models.Note{Title: args[0]}
 
-		// Check if file exists or not.
-		if !pkg.FileExists(note.Path) { // TODO: Pass full path here
-			notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
-			pkg.Alert(pkg.ErrorL, notExists)
-			return
-		}
-
 		askAndRename(note.Title)
 		return
 	}
@@ -58,8 +49,8 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	askAndRename(selected)
 }
 
-// askAndRename is a private function to ask
-// new name for selected note, and change directly its name.
+// askAndRename is a private function to ask for new name,
+// for selected note, and change directly its name.
 func askAndRename(selected string) {
 	var newname string
 	survey.AskOne(&survey.Input{Message: "Enter new name for: ", Default: selected}, &newname)

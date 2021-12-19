@@ -5,8 +5,6 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
@@ -31,13 +29,6 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
 		note := models.Note{Title: args[0]}
-
-		// Check if file exists or not.
-		if !pkg.FileExists(note.Path) { // TODO: Pass full path
-			notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
-			pkg.Alert(pkg.ErrorL, notExists)
-			return
-		}
 
 		removeAndFinish(note)
 		return
