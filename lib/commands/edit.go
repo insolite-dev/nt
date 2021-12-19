@@ -30,7 +30,7 @@ func initEditCommand() {
 func runEditCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		note := models.Note{Title: args[0], Path: NotyaPath + args[0]}
+		note := models.Note{Title: args[0]}
 
 		// Check if file exists or not.
 		if !pkg.FileExists(note.Path) {
@@ -40,7 +40,7 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 		}
 
 		// Open note-file with vi, to edit it.
-		openingErr := pkg.OpenFileWithVI(note.Path, StdArgs)
+		openingErr := pkg.OpenFileWithVI(note.Path, StdArgs) // TODO: Pass full path
 		if openingErr != nil {
 			pkg.Alert(pkg.ErrorL, openingErr.Error())
 		}
@@ -49,8 +49,8 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(NotyaPath)
+	// Generate all note names.
+	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -65,7 +65,7 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 	survey.AskOne(prompt, &selected)
 
 	// Open created note-file with vi, to edit it.
-	openingErr := pkg.OpenFileWithVI(NotyaPath+selected, StdArgs)
+	openingErr := pkg.OpenFileWithVI(selected, StdArgs) // TODO: Pass full path
 	if openingErr != nil {
 		pkg.Alert(pkg.ErrorL, openingErr.Error())
 	}

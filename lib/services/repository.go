@@ -11,9 +11,12 @@ import "github.com/anonistas/notya/lib/models"
 // So, local service is just a ServiceRepo implementation which is connected to local device storage.
 type ServiceRepo interface {
 	Init() error
-	CreateNote(note models.Note) error
+
+	CreateNote(note models.Note) (*models.Note, error)
 	ViewNote(note models.Note) (*models.Note, error)
-	EditNote(note models.Note) error
-	Rename(editnote models.EditNote) error
+	EditNote(note models.Note) (*models.Note, error)
+	Rename(editnote models.EditNote) (*models.Note, error)
 	Remove(note models.Note) error
+
+	GetAll() ([]string, error)
 }

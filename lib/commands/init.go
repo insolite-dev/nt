@@ -24,22 +24,10 @@ func initSetupCommand() {
 
 // runInitCommand runs appropriate functionalities to setup notya and make it ready-to-use.
 func runInitCommand(cmd *cobra.Command, args []string) {
-	err := service.Init()
-	if err != nil {
+	if err := service.Init(); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	pkg.Alert(pkg.SuccessL, "Notya initializing completed successfully, It's ready to use now!")
-}
-
-// initializeIfNotExists is called on each main command execution.
-// Checks if notya initialized or not, if not then initializes it automatically.
-// If notya initialized already, returns nothing.
-func initializeIfNotExists(notyaPath string) error {
-	if !pkg.FileExists(notyaPath) {
-		_ = service.Init()
-	}
-
-	return nil
+	pkg.Alert(pkg.SuccessL, `Notya initializing completed successfully, It's ready to use now!`)
 }

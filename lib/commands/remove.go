@@ -30,10 +30,10 @@ func initRemoveCommand() {
 func runRemoveCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		note := models.Note{Title: args[0], Path: NotyaPath + args[0]}
+		note := models.Note{Title: args[0]}
 
 		// Check if file exists or not.
-		if !pkg.FileExists(note.Path) {
+		if !pkg.FileExists(note.Path) { // TODO: Pass full path
 			notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
 			pkg.Alert(pkg.ErrorL, notExists)
 			return
@@ -44,7 +44,7 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(NotyaPath)
+	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return

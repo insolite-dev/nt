@@ -27,11 +27,11 @@ func initListCommand() {
 // to list all notes from the notya folder.
 func runListCommand(cmd *cobra.Command, args []string) {
 	// Generate a list of notes.
-	list, err := pkg.ListDir(NotyaPath)
+	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	pkg.ShowListOfNotes(list, 3)
+	pkg.ShowListOfNotes(notes, 3)
 }

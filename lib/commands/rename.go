@@ -30,10 +30,10 @@ func initRenameCommand() {
 func runRenameCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		note := models.Note{Title: args[0], Path: NotyaPath + args[0]}
+		note := models.Note{Title: args[0]}
 
 		// Check if file exists or not.
-		if !pkg.FileExists(note.Path) {
+		if !pkg.FileExists(note.Path) { // TODO: Pass full path here
 			notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
 			pkg.Alert(pkg.ErrorL, notExists)
 			return
@@ -44,7 +44,7 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(NotyaPath)
+	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -66,11 +66,11 @@ func askAndRename(selected string) {
 
 	// Generate editable note by current note and updated note.
 	editableNote := models.EditNote{
-		Current: models.Note{Title: selected, Path: NotyaPath + selected},
-		New:     models.Note{Title: newname, Path: NotyaPath + newname},
+		Current: models.Note{Title: selected},
+		New:     models.Note{Title: newname},
 	}
 
-	if err := service.Rename(editableNote); err != nil {
+	if _, err := service.Rename(editableNote); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}

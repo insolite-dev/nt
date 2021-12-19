@@ -43,7 +43,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 	// See: https://github.com/AlecAivazis/survey#select
 
 	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(NotyaPath)
+	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return

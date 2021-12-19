@@ -14,10 +14,6 @@ import (
 )
 
 var (
-	// NotyaPath is the global notya folder path
-	// Which would be filled after executing the application.
-	NotyaPath string
-
 	// StdArgs is the global std state of application.
 	StdArgs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
 )
@@ -49,22 +45,12 @@ func initCommands() {
 func ExecuteApp() {
 	initCommands()
 
-	// Generate notya path.
-	notyaPath, err := pkg.NotyaPWD()
-	if err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
-	}
-
-	NotyaPath = *notyaPath
-
 	// Initialize new local service.
-	service = services.NewLocalService(NotyaPath, StdArgs)
+	service = services.NewLocalService(StdArgs)
 
-	// Check initialization status of notya,
-	// Setup working directories, if it's not initialized before.
-	setupErr := initializeIfNotExists(NotyaPath)
-	if setupErr != nil {
-		pkg.Alert(pkg.ErrorL, setupErr.Error())
+	// Initialize application.
+	if err := service.Init(); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 

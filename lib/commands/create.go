@@ -38,14 +38,9 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Generate note model from arguments.
-	note := models.Note{
-		Title: createAnswers.Title,
-		Path:  NotyaPath + createAnswers.Title,
-	}
-
 	// Create new note-file by [note].
-	if err := service.CreateNote(note); err != nil {
+	note, err := service.CreateNote(models.Note{Title: createAnswers.Title})
+	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
