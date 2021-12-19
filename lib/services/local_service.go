@@ -35,6 +35,8 @@ func (l *LocalService) Init() error {
 		pkg.Alert(pkg.ErrorL, err.Error())
 	}
 
+	l.notyaPath = *notyaPath
+
 	// Check if working directory already exists
 	if pkg.FileExists(*notyaPath) {
 		return nil
@@ -44,8 +46,6 @@ func (l *LocalService) Init() error {
 	if creatingErr := pkg.NewFolder(*notyaPath); creatingErr != nil {
 		return creatingErr
 	}
-
-	l.notyaPath = *notyaPath
 
 	return nil
 }
