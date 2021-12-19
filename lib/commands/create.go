@@ -46,10 +46,10 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 	}
 
 	if createAnswers.EditNote {
-		// Open created note-file with vi, to edit it.
-		err := pkg.OpenFileWithVI(note.Path, StdArgs)
-		if err != nil {
+		// Open created note-file to edit it.
+		if err := service.Open(*note); err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
+			return
 		}
 	}
 
