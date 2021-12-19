@@ -28,7 +28,7 @@ func initViewCommand() {
 func runViewCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		note, err := service.ViewNote(models.Note{Title: args[0]})
+		note, err := service.View(models.Note{Title: args[0]})
 		if err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
 			return
@@ -37,10 +37,6 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 		pkg.ShowNote(*note)
 		return
 	}
-
-	// If note name wasn't provided by arguments,
-	// Shows select list by all notes list.
-	// See: https://github.com/AlecAivazis/survey#select
 
 	// Generate array of all notes' names.
 	notes, err := service.GetAll()
@@ -58,7 +54,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 	survey.AskOne(prompt, &selected)
 
 	// Get selected note.
-	note, viewErr := service.ViewNote(models.Note{Title: selected})
+	note, viewErr := service.View(models.Note{Title: selected})
 	if viewErr != nil {
 		pkg.Alert(pkg.ErrorL, viewErr.Error())
 		return

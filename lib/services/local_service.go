@@ -50,9 +50,46 @@ func (l *LocalService) Init() error {
 	return nil
 }
 
-// CreateNote, creates new note at [notya notes path],
+// Open, opens given note with VI.
+func (l *LocalService) Open(note models.Note) error {
+	notePath := l.notyaPath + note.Title
+
+	// Check if file exists or not.
+	if !pkg.FileExists(notePath) {
+		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
+		return errors.New(notExists)
+	}
+
+	// Open note-file with vi.
+	openingErr := pkg.OpenFileWithVI(notePath, l.stdargs)
+	if openingErr != nil {
+		return openingErr
+	}
+
+	return nil
+}
+
+// Remove, deletes given note file.
+func (l *LocalService) Remove(note models.Note) error {
+	notePath := l.notyaPath + note.Title
+
+	// Check if file exists or not.
+	if !pkg.FileExists(notePath) {
+		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
+		return errors.New(notExists)
+	}
+
+	// Delete provided file.
+	if err := pkg.Delete(notePath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Create, creates new note at [notya notes path],
 // and fills it's data by given note model.
-func (l *LocalService) CreateNote(note models.Note) (*models.Note, error) {
+func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 	notePath := l.notyaPath + note.Title
 
 	// Check if file already exists.
@@ -69,9 +106,9 @@ func (l *LocalService) CreateNote(note models.Note) (*models.Note, error) {
 	return &models.Note{Title: note.Title, Path: notePath}, nil
 }
 
-// ViewNote, opens note-file from given [note.Name], then takes it body,
+// View, opens note-file from given [note.Name], then takes it body,
 // and returns new fully-filled note.
-func (l *LocalService) ViewNote(note models.Note) (*models.Note, error) {
+func (l *LocalService) View(note models.Note) (*models.Note, error) {
 	notePath := l.notyaPath + note.Title
 
 	// Check if file exists or not.
@@ -92,8 +129,8 @@ func (l *LocalService) ViewNote(note models.Note) (*models.Note, error) {
 	return &modifiedNote, nil
 }
 
-// EditNote, overwrites exiting file's content-body from.
-func (l *LocalService) EditNote(note models.Note) (*models.Note, error) {
+// Edit, overwrites exiting file's content-body from.
+func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 	notePath := l.notyaPath + note.Title
 
 	// Check if file exists or not.
@@ -138,43 +175,6 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 	}
 
 	return &editnote.New, nil
-}
-
-// Remove, deletes given note file.
-func (l *LocalService) Remove(note models.Note) error {
-	notePath := l.notyaPath + note.Title
-
-	// Check if file exists or not.
-	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
-		return errors.New(notExists)
-	}
-
-	// Delete provided file.
-	if err := pkg.Delete(notePath); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Open, opens given note with VI.
-func (l *LocalService) Open(note models.Note) error {
-	notePath := l.notyaPath + note.Title
-
-	// Check if file exists or not.
-	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
-		return errors.New(notExists)
-	}
-
-	// Open note-file with vi.
-	openingErr := pkg.OpenFileWithVI(notePath, l.stdargs)
-	if openingErr != nil {
-		return openingErr
-	}
-
-	return nil
 }
 
 // GetAll gets all note [names], and returns it as array list.

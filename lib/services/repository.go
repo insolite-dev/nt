@@ -12,12 +12,11 @@ import "github.com/anonistas/notya/lib/models"
 type ServiceRepo interface {
 	Init() error
 
-	CreateNote(note models.Note) (*models.Note, error)
-	ViewNote(note models.Note) (*models.Note, error)
-	EditNote(note models.Note) (*models.Note, error)
-	Rename(editnote models.EditNote) (*models.Note, error)
-	Remove(note models.Note) error
 	Open(note models.Note) error
-
+	Remove(note models.Note) error
+	Create(note models.Note) (*models.Note, error)
+	View(note models.Note) (*models.Note, error)
+	Edit(note models.Note) (*models.Note, error)
+	Rename(editnote models.EditNote) (*models.Note, error)
 	GetAll() ([]string, error)
 }
