@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// renameCommand, is a command model which used to change name of notes or files.
+// renameCommand is a command model which used to change name of notes or files.
 var renameCommand = &cobra.Command{
 	Use:     "rename",
 	Aliases: []string{"rn", "r"},
@@ -34,7 +34,7 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Generate array of all notes' names.
+	// Generate array of all note names.
 	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
@@ -49,8 +49,8 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	askAndRename(selected)
 }
 
-// askAndRename is a private function to ask for new name,
-// for selected note, and change directly its name.
+// askAndRename asks user for new name,
+// (for selected note), and changes its name.
 func askAndRename(selected string) {
 	var newname string
 	survey.AskOne(&survey.Input{Message: "Enter new name for: ", Default: selected}, &newname)

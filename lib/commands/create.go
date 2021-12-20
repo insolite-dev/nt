@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createCommand, is a command model which used to create new notes or files.
+// createCommand is a command model that used to create new notes or files.
 var createCommand = &cobra.Command{
 	Use:     "create",
 	Aliases: []string{"new", "make"},
@@ -19,7 +19,7 @@ var createCommand = &cobra.Command{
 	Run:     runCreateCommand,
 }
 
-// initCreateCommand sets flags of command, and adds it to main application command.
+// initCreateCommand adds it to the main application command.
 func initCreateCommand() {
 	appCommand.AddCommand(createCommand)
 }

@@ -13,28 +13,28 @@ import (
 )
 
 var (
-	// Color and Icon of "CURRENT" output message.
+	// Color and Icon of logger's "CURRENT" output message.
 	Icon, Color string
 
-	// ColorableStd stores colorable std-out and std-err.
+	// ColorableStd is main stdargs of logger. [colorable stdargs].
 	ColorableStd = models.StdArgs{
 		Stdout: colorable.NewColorableStdout(),
 		Stderr: colorable.NewColorableStderr(),
 	}
 )
 
-// Level is a custom type of `string-level`.
-// used define level for [OutputLevel] function.
+// Level is a custom type of [string-level].
+// used to define level for [OutputLevel] function.
 type Level string
 
-// Define constant app Levels.
+// Defined constant app Levels.
 const (
 	ErrorL   Level = "error"
 	SuccessL Level = "success"
 	InfoL    Level = "info"
 )
 
-// Define constant color codes.
+// Defined constant color codes, for [OutputLevel].
 const (
 	RED     string = "\033[0;31m"
 	GREEN   string = "\033[0;32m"
@@ -42,7 +42,7 @@ const (
 	NOCOLOR string = "\033[0m"
 )
 
-// Define constant icon/title codes.
+// Defined constant icon/title codes.
 const (
 	ERROR   string = "[ERROR]"
 	SUCCESS string = "[OK]"
@@ -57,18 +57,18 @@ var (
 	rainbowText = color.New(color.FgHiMagenta)
 )
 
-// Alert, prints message at given [Level].
+// Alert, logs message at given [Level].
 //
 // l - (Level) decides style(Level) of log message.
 // msg - (message) is the content of log message.
 func Alert(l Level, msg string) {
-	// Configure message
+	// Configure message.
 	message := fmt.Sprintf("\n %s %s \n", OutputLevel(l), msg)
 
 	fmt.Fprintln(ColorableStd.Stdout, message)
 }
 
-// OutputLevel sets [Color] and [Icon] by given `Level`,
+// OutputLevel sets [Color] and [Icon] by given [Level],
 // and then, returns final printable Level title.
 //
 // Result cases:
@@ -109,13 +109,13 @@ func ShowNote(note models.Note) {
 	divider.Println("----------------------")
 }
 
-// ShowListOfNotes, logs given list as limited-element-per-row.
+// ShowListOfNotes, logs given list as limited-element-per-row array.
 func ShowListOfNotes(list []string, limit int) {
 	var l string
 
 	nl := limit
 	for i, e := range list {
-		// Limit row by three element.
+		// Limit row by [nl] element.
 		if i >= nl {
 			l += "\n"
 			nl += limit

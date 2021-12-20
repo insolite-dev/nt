@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// viewCommand, is a command model which used to view body of notes or files.
+// viewCommand is a command model which used to view metadata of note.
 var viewCommand = &cobra.Command{
 	Use:     "view",
 	Aliases: []string{"show", "read"},
@@ -38,7 +38,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Generate array of all notes' names.
+	// Generate array of all note names.
 	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())

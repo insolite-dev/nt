@@ -22,12 +22,12 @@ type LocalService struct {
 // Set [LocalService] as [ServiceRepo].
 var _ ServiceRepo = &LocalService{}
 
-// NewLocalService, creates new local service by given arguments.
+// NewLocalService creates new local service by given arguments.
 func NewLocalService(stdargs models.StdArgs) *LocalService {
 	return &LocalService{stdargs: stdargs}
 }
 
-// Init creates notya working directory into running machine.
+// Init creates notya working directory into current machine.
 func (l *LocalService) Init() error {
 	// Generate notya path.
 	notyaPath, err := pkg.NotyaPWD()
@@ -37,7 +37,7 @@ func (l *LocalService) Init() error {
 
 	l.notyaPath = *notyaPath
 
-	// Check if working directory already exists
+	// Check if working directory already exists.
 	if pkg.FileExists(*notyaPath) {
 		return nil
 	}
@@ -69,7 +69,7 @@ func (l *LocalService) Open(note models.Note) error {
 	return nil
 }
 
-// Remove, deletes given note file.
+// Remove, deletes given note file, from [notya/note.title]
 func (l *LocalService) Remove(note models.Note) error {
 	notePath := l.notyaPath + note.Title
 
@@ -79,7 +79,7 @@ func (l *LocalService) Remove(note models.Note) error {
 		return errors.New(notExists)
 	}
 
-	// Delete provided file.
+	// Delete the note from [notePath].
 	if err := pkg.Delete(notePath); err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (l *LocalService) Remove(note models.Note) error {
 	return nil
 }
 
-// Create, creates new note at [notya notes path],
+// Create, creates new note file at [notya notes path],
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 	notePath := l.notyaPath + note.Title
@@ -98,7 +98,7 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 		return nil, errors.New(alreadyExists)
 	}
 
-	// Create new file inside notes.
+	// Create new file.
 	if creatingErr := pkg.WriteNote(notePath, []byte(note.Body)); creatingErr != nil {
 		return nil, creatingErr
 	}
@@ -129,7 +129,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 	return &modifiedNote, nil
 }
 
-// Edit, overwrites exiting file's content-body from.
+// Edit, overwrites exiting file's content-body.
 func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 	notePath := l.notyaPath + note.Title
 
@@ -139,7 +139,7 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 		return nil, errors.New(notExists)
 	}
 
-	// Edit note's body
+	// Overwrite note's body.
 	if writingErr := pkg.WriteNote(notePath, []byte(note.Body)); writingErr != nil {
 		return nil, writingErr
 	}
@@ -177,7 +177,7 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 	return &editnote.New, nil
 }
 
-// GetAll gets all note [names], and returns it as array list.
+// GetAll, gets all note [names], and returns it as array list.
 func (l *LocalService) GetAll() ([]string, error) {
 	// Generate array of all notes' names.
 	notes, err := pkg.ListDir(l.notyaPath)

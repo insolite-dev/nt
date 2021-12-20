@@ -9,13 +9,14 @@ import (
 	"os"
 )
 
-// GetBanner, reads banner.txt file from assets, and returns that txt as go-string value.
+// GetBanner, reads [banner.txt] file from assets, and returns that txt as go-string value.
 func GetBanner() string {
 	bannerBytes, _ := ioutil.ReadFile("assets/banner.txt")
 	return string(bannerBytes)
 }
 
 // NotyaPWD, generates path of notya's notes directory.
+// Basically, it's related with local-service.
 func NotyaPWD() (*string, error) {
 	// Take current user's home directory.
 	uhd, err := os.UserHomeDir()
@@ -23,8 +24,7 @@ func NotyaPWD() (*string, error) {
 		return nil, err
 	}
 
-	// Add notes path
-	path := uhd + "/" + "notya/"
+	path := uhd + "/" + "notya" + "/"
 
 	return &path, nil
 }
@@ -40,6 +40,7 @@ func FileExists(path string) bool {
 
 // WriteNote, creates new file and writes to its data.
 // If file already exists at given path with same name, then it updates it's body.
+//
 // Could be used for create and edit.
 func WriteNote(path string, body []byte) error {
 	err := os.WriteFile(path, body, 0o600)
@@ -50,7 +51,7 @@ func WriteNote(path string, body []byte) error {
 	return nil
 }
 
-// NewFolder, creates new empty working directory.
+// NewFolder, creates new empty working directory at given path(name).
 func NewFolder(name string) error {
 	if err := os.Mkdir(name, 0o750); err != nil {
 		return err

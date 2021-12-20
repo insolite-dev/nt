@@ -14,14 +14,14 @@ import (
 )
 
 var (
-	// stdargs is the global std state of application.
+	// stdargs is the global std arguments-state of application.
 	stdargs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
 )
 
 // service, is the default service of all commands.
 var service services.ServiceRepo
 
-// AppCommand is the root command of application and genesis of all sub-commands.
+// appCommand is the root command of application and genesis of all sub-commands.
 var appCommand = &cobra.Command{
 	Use:     "notya",
 	Version: pkg.Version,
@@ -29,7 +29,7 @@ var appCommand = &cobra.Command{
 	Long:    pkg.GetBanner(),
 }
 
-// initCommands sets all special commands to application command.
+// initCommands initializes all sub-commands of application.
 func initCommands() {
 	initSetupCommand()
 	initCreateCommand()
@@ -40,8 +40,10 @@ func initCommands() {
 	initListCommand()
 }
 
-// RunApp sets all special commands, checks notya initialization status,
-// and then executes main app command.
+// ExecuteApp is a main function that app starts executing and working.
+// Initializes all sub-commands and service for them.
+//
+// Usually used in [cmd/app.go].
 func ExecuteApp() {
 	initCommands()
 

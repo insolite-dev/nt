@@ -9,8 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// listCommand, is a application command, which used to list all
-// notes/files from the notya folder.
+// listCommand is a command that used to list all exiting notes.
 var listCommand = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
@@ -23,8 +22,7 @@ func initListCommand() {
 	appCommand.AddCommand(listCommand)
 }
 
-// runListCommand runs appropriate service functionalities
-// to list all notes from the notya folder.
+// runListCommand runs appropriate service functionalities to log all notes.
 func runListCommand(cmd *cobra.Command, args []string) {
 	// Generate a list of notes.
 	notes, err := service.GetAll()

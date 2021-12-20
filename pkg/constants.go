@@ -7,11 +7,11 @@ package pkg
 import "github.com/AlecAivazis/survey/v2"
 
 // Version is current version of application.
-const Version = "v1.0.0"
+const Version = "v0.1.0"
 
 var (
 	// Custom configuration for survey icons and colors.
-	// See: https://github.com/mgutz/ansi#style-format
+	// See [https://github.com/mgutz/ansi#style-format] for details.
 	SurveyIconsConfig = func(icons *survey.IconSet) {
 		icons.Question.Format = "cyan"
 		icons.Question.Text = "[?]"
@@ -22,7 +22,7 @@ var (
 	}
 )
 
-// CreateAnswers for the survey's answers for `create` command.
+// CreateAnswers is a model structure of the [CreateNoteQuestions].
 type CreateAnswers struct {
 	Title    string
 	EditNote bool `survey:"edit-note"`

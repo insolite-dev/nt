@@ -9,6 +9,7 @@ import "github.com/anonistas/notya/lib/models"
 // ServiceRepo is a repository template for all services.
 //
 // So, local service is just a ServiceRepo implementation which is connected to local device storage.
+// Or we could have remote service, which would be also a ServiceRepo implementation which that is connected to remote DB.
 type ServiceRepo interface {
 	Init() error
 

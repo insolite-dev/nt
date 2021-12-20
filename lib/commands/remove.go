@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// removeCommand, is a command model which used to remove a note or file.
+// removeCommand is a command model that used to remove a note or file.
 var removeCommand = &cobra.Command{
 	Use:     "remove",
 	Aliases: []string{"rm", "delete"},
@@ -34,7 +34,7 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Generate array of all notes' names.
+	// Generate array of all note names.
 	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
