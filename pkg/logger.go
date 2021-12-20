@@ -105,12 +105,25 @@ func ShowNote(note models.Note) {
 	rainbowText.Println(title)
 	lowText.Println(path)
 	divider.Println("----------------------")
-	text.Println(body)
+
+	// Printout no content if body is empty.
+	if len(note.Body) == 0 {
+		text.Println("No content ...")
+	} else {
+		text.Println(body)
+	}
+
 	divider.Println("----------------------")
 }
 
 // ShowListOfNotes, logs given list as limited-element-per-row array.
 func ShowListOfNotes(list []string, limit int) {
+	// Alert if list is empty.
+	if len(list) == 0 {
+		Alert(InfoL, "Empty Directory: not created any note yet")
+		return
+	}
+
 	var l string
 
 	nl := limit
