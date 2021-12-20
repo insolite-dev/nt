@@ -5,15 +5,13 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
 )
 
-// renameCommand, is a command model which used to change name of notes or files.
+// renameCommand is a command model which used to change name of notes or files.
 var renameCommand = &cobra.Command{
 	Use:     "rename",
 	Aliases: []string{"rn", "r"},
@@ -30,21 +28,14 @@ func initRenameCommand() {
 func runRenameCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		note := models.Note{Title: args[0], Path: NotyaPath + args[0]}
-
-		// Check if file exists or not.
-		if !pkg.FileExists(note.Path) {
-			notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
-			pkg.Alert(pkg.ErrorL, notExists)
-			return
-		}
+		note := models.Note{Title: args[0]}
 
 		askAndRename(note.Title)
 		return
 	}
 
-	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(NotyaPath)
+	// Generate array of all note names.
+	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -58,19 +49,19 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	askAndRename(selected)
 }
 
-// askAndRename is a private function to ask
-// new name for selected note, and change directly its name.
+// askAndRename asks user for new name,
+// (for selected note), and changes its name.
 func askAndRename(selected string) {
 	var newname string
 	survey.AskOne(&survey.Input{Message: "Enter new name for: ", Default: selected}, &newname)
 
 	// Generate editable note by current note and updated note.
 	editableNote := models.EditNote{
-		Current: models.Note{Title: selected, Path: NotyaPath + selected},
-		New:     models.Note{Title: newname, Path: NotyaPath + newname},
+		Current: models.Note{Title: selected},
+		New:     models.Note{Title: newname},
 	}
 
-	if err := service.Rename(editableNote); err != nil {
+	if _, err := service.Rename(editableNote); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}

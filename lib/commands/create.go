@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createCommand, is a command model which used to create new notes or files.
+// createCommand is a command model that used to create new notes or files.
 var createCommand = &cobra.Command{
 	Use:     "create",
 	Aliases: []string{"new", "make"},
@@ -19,7 +19,7 @@ var createCommand = &cobra.Command{
 	Run:     runCreateCommand,
 }
 
-// initCreateCommand sets flags of command, and adds it to main application command.
+// initCreateCommand adds it to the main application command.
 func initCreateCommand() {
 	appCommand.AddCommand(createCommand)
 }
@@ -38,23 +38,18 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Generate note model from arguments.
-	note := models.Note{
-		Title: createAnswers.Title,
-		Path:  NotyaPath + createAnswers.Title,
-	}
-
 	// Create new note-file by [note].
-	if err := service.CreateNote(note); err != nil {
+	note, err := service.Create(models.Note{Title: createAnswers.Title})
+	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
 	if createAnswers.EditNote {
-		// Open created note-file with vi, to edit it.
-		err := pkg.OpenFileWithVI(note.Path, StdArgs)
-		if err != nil {
+		// Open created note-file to edit it.
+		if err := service.Open(*note); err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
+			return
 		}
 	}
 

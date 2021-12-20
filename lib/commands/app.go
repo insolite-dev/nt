@@ -14,18 +14,14 @@ import (
 )
 
 var (
-	// NotyaPath is the global notya folder path
-	// Which would be filled after executing the application.
-	NotyaPath string
-
-	// StdArgs is the global std state of application.
-	StdArgs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
+	// stdargs is the global std arguments-state of application.
+	stdargs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
 )
 
 // service, is the default service of all commands.
 var service services.ServiceRepo
 
-// AppCommand is the root command of application and genesis of all sub-commands.
+// appCommand is the root command of application and genesis of all sub-commands.
 var appCommand = &cobra.Command{
 	Use:     "notya",
 	Version: pkg.Version,
@@ -33,38 +29,30 @@ var appCommand = &cobra.Command{
 	Long:    pkg.GetBanner(),
 }
 
-// initCommands sets all special commands to application command.
+// initCommands initializes all sub-commands of application.
 func initCommands() {
 	initSetupCommand()
 	initCreateCommand()
-	initRmCommand()
+	initRemoveCommand()
 	initViewCommand()
 	initEditCommand()
 	initRenameCommand()
-	initLsCommand()
+	initListCommand()
 }
 
-// RunApp sets all special commands, checks notya initialization status,
-// and then executes main app command.
+// ExecuteApp is a main function that app starts executing and working.
+// Initializes all sub-commands and service for them.
+//
+// Usually used in [cmd/app.go].
 func ExecuteApp() {
 	initCommands()
 
-	// Generate notya path.
-	notyaPath, err := pkg.NotyaPWD()
-	if err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
-	}
-
-	NotyaPath = *notyaPath
-
 	// Initialize new local service.
-	service = services.NewLocalService(NotyaPath, StdArgs)
+	service = services.NewLocalService(stdargs)
 
-	// Check initialization status of notya,
-	// Setup working directories, if it's not initialized before.
-	setupErr := initializeIfNotExists(NotyaPath)
-	if setupErr != nil {
-		pkg.Alert(pkg.ErrorL, setupErr.Error())
+	// Initialize application.
+	if err := service.Init(); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 

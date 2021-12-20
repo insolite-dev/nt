@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// viewCommand, is a command model which used to view body of notes or files.
+// viewCommand is a command model which used to view metadata of note.
 var viewCommand = &cobra.Command{
 	Use:     "view",
 	Aliases: []string{"show", "read"},
@@ -28,7 +28,7 @@ func initViewCommand() {
 func runViewCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		note, err := service.ViewNote(models.Note{Title: args[0]})
+		note, err := service.View(models.Note{Title: args[0]})
 		if err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
 			return
@@ -38,12 +38,8 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// If note name wasn't provided by arguments,
-	// Shows select list by all notes list.
-	// See: https://github.com/AlecAivazis/survey#select
-
-	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(NotyaPath)
+	// Generate array of all note names.
+	notes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -58,7 +54,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 	survey.AskOne(prompt, &selected)
 
 	// Get selected note.
-	note, viewErr := service.ViewNote(models.Note{Title: selected})
+	note, viewErr := service.View(models.Note{Title: selected})
 	if viewErr != nil {
 		pkg.Alert(pkg.ErrorL, viewErr.Error())
 		return

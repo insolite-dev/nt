@@ -10,7 +10,7 @@ import (
 	"github.com/anonistas/notya/lib/models"
 )
 
-// OpenWithVI opens file from given path with vi/vim.
+// OpenFileWithVI opens file in vi/vim from given path.
 func OpenFileWithVI(filepath string, stdargs models.StdArgs) error {
 	// Look VI execution path from current running machine.
 	vi, pathErr := exec.LookPath("vi")
