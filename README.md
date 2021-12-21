@@ -8,14 +8,14 @@
 See last available release where you can find notya executable files to download.
 
 ## Usage 
-**Note**: notya only available in local service (local machine database) for now.
+**Note**: _notya only available in local service (local machine database) for now._
 
-#### Help:
-Use `notya help` or `notya -h` to see default [help.txt](https://github.com/anonistas/notya/wiki/help.txt). <br>
+### Help:
+Run `notya help` or `notya -h` to see default [help.txt](https://github.com/anonistas/notya/wiki/help.txt). <br>
 Use `notya [command] --help` for more information about a command.
 
 
-#### Init: 
+### Init: 
 Use `notya init` to initialize application. <br/>
 *(It isn't must actually, whenever you call any command of notya, it checks initialization status and if it isn't initialized, initializes app automatically).*
 
@@ -26,5 +26,8 @@ Use `notya init` to initialize application. <br/>
 - **[Rename note](https://github.com/anonistas/notya/wiki/Rename)** - `notya rename` or `notya rename [name]`
 - **[Edit note](https://github.com/anonistas/notya/wiki/Edit)** - `notya edit` or `notya edit [name]`
 - **[Remove note](https://github.com/anonistas/notya/wiki/Remove)** - `notya remove` or `notya rm [name]`
+
+## Contributing
+For information regarding contributions, please refer to [CONTRIBUTING.md](https://github.com/anonistas/notya/blob/develop/CONTRIBUTING.md) file.
 
 
