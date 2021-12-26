@@ -4,14 +4,28 @@
 
 ---
 
-## Installation
-See last available release where you can find notya executable files to download.
+ <a href="https://github.com/anonistas/notya/blob/main/LICENSE">
+  <img src="https://img.shields.io/badge/License-Apache-red.svg" alt="License: MIT"/>
+ </a>
+ <a href="https://discord.gg/CtStkzrHV3">
+   <img src="https://img.shields.io/discord/914899238415130714?color=blue&label=Anon Community&logo=discord" alt="Anoncord" />
+ </a>   
 
-## Usage 
-**Note**: _notya only available in local service (local machine database) for now._
+
+# Installation
+See the [last release](https://github.com/anonistas/notya/releases/latest), where you can find binary files for your ecosystem
+
+### Curl:
+```
+curl -sfL https://raw.githubusercontent.com/anonistas/notya/main/install.sh | sh
+```
+
+# Usage 
+**Note**: _notya only available for local service (local machine database) for now._
 
 ### Help:
 Run `notya help` or `notya -h` to see default [help.txt](https://github.com/anonistas/notya/wiki/help.txt). <br>
+ 
 Use `notya [command] --help` for more information about a command.
 
 
@@ -19,7 +33,7 @@ Use `notya [command] --help` for more information about a command.
 Use `notya init` to initialize application. <br/>
 *(It isn't must actually, whenever you call any command of notya, it checks initialization status and if it isn't initialized, initializes app automatically).*
 
-#### Available commands:
+### Available commands:
 - **[See all notes](https://github.com/anonistas/notya/wiki/List)** - `notya list`
 - **[View note](https://github.com/anonistas/notya/wiki/View)** - `notya view` or `notya view [name]`
 - **[Create note](https://github.com/anonistas/notya/wiki/Create)** - `notya create`
@@ -27,7 +41,5 @@ Use `notya init` to initialize application. <br/>
 - **[Edit note](https://github.com/anonistas/notya/wiki/Edit)** - `notya edit` or `notya edit [name]`
 - **[Remove note](https://github.com/anonistas/notya/wiki/Remove)** - `notya remove` or `notya rm [name]`
 
-## Contributing
+# Contributing
 For information regarding contributions, please refer to [CONTRIBUTING.md](https://github.com/anonistas/notya/blob/develop/CONTRIBUTING.md) file.
-
-
