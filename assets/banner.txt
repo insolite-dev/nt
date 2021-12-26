@@ -4,4 +4,4 @@
  | |\  || |_| | | |    | | / ___ \ 
  |_| \_| \___/  |_|    |_|/_/   \_\
 
-
+ 📝 Take notes quickly and expeditiously from terminal.
