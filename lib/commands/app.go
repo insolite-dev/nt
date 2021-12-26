@@ -25,8 +25,7 @@ var service services.ServiceRepo
 var appCommand = &cobra.Command{
 	Use:     "notya",
 	Version: pkg.Version,
-	Short:   "\n 📝 Take notes quickly and expeditiously from terminal.",
-	Long:    pkg.GetBanner(),
+	Short:   pkg.GetBanner(),
 }
 
 // initCommands initializes all sub-commands of application.
