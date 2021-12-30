@@ -7,6 +7,7 @@ package commands
 import (
 	"os"
 
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/lib/services"
 	"github.com/anonistas/notya/pkg"
@@ -25,7 +26,10 @@ var service services.ServiceRepo
 var appCommand = &cobra.Command{
 	Use:     "notya",
 	Version: pkg.Version,
-	Short:   pkg.GetBanner(),
+	Long: assets.GenerateBanner(
+		assets.MinimalisticBanner,
+		assets.ShortSlog,
+	),
 }
 
 // initCommands initializes all sub-commands of application.
