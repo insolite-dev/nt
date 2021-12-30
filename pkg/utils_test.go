@@ -12,27 +12,6 @@ import (
 	"github.com/anonistas/notya/pkg"
 )
 
-func TestGetBanner(t *testing.T) {
-	tests := []struct {
-		testName string
-		expected string
-	}{
-		{
-			testName: "should get banner properly",
-			expected: pkg.GetBanner(),
-		},
-	}
-
-	for _, td := range tests {
-		t.Run(td.testName, func(t *testing.T) {
-			got := pkg.GetBanner()
-			if got != td.expected {
-				t.Errorf("GetBanner sum was different: Want: %v | Got: %v", td.expected, got)
-			}
-		})
-	}
-}
-
 func TestNotyaPWD(t *testing.T) {
 	// Take current working directory first.
 	currentHomeDir, _ := os.UserHomeDir()
