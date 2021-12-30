@@ -41,6 +41,7 @@ func initCommands() {
 	initEditCommand()
 	initRenameCommand()
 	initListCommand()
+	initCopyCommand()
 }
 
 // ExecuteApp is a main function that app starts executing and working.
