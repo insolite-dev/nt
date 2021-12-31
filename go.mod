@@ -7,4 +7,5 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/mattn/go-colorable v0.1.12
 	github.com/spf13/cobra v1.2.1
+	golang.design/x/clipboard v0.5.3
 )
