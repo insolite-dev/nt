@@ -16,21 +16,21 @@ var copyCommand = &cobra.Command{
 	Use:     "copy",
 	Aliases: []string{"c"},
 	Short:   "Copy the full note",
-	Run:     runRenameCommand,
+	Run:     runCopyCommand,
 }
 
 // initCopyCommand initializes copyCommand to the main application command.
 func initCopyCommand() {
-	appCommand.AddCommand(renameCommand)
+	appCommand.AddCommand(copyCommand)
 }
 
 // rrunCopyCommand runs appropriate service commands copy note data.
 func runCopyCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		_ = models.Note{Title: args[0]}
+		note := models.Note{Title: args[0]}
 
-		// TODO: copy note
+		copyAndFinish(note)
 		return
 	}
 
@@ -46,5 +46,14 @@ func runCopyCommand(cmd *cobra.Command, args []string) {
 	prompt := &survey.Select{Message: "Choose a note to copy:", Options: notes}
 	survey.AskOne(prompt, &selected)
 
-	// TODO: copy note
+	copyAndFinish(models.Note{Title: selected})
+}
+
+func copyAndFinish(note models.Note) {
+	if _, err := service.Copy(note); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
+	pkg.Alert(pkg.SuccessL, "Note copied to clipboard")
 }
