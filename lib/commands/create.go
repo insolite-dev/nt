@@ -26,26 +26,47 @@ func initCreateCommand() {
 
 // runCreateCommand runs appropriate service commands to create new note.
 func runCreateCommand(cmd *cobra.Command, args []string) {
-	createAnswers := pkg.CreateAnswers{}
-
-	// Start asking create command questions.
-	if err := survey.Ask(
-		pkg.CreateNoteQuestions,
-		&createAnswers,
-		survey.WithIcons(pkg.SurveyIconsConfig),
-	); err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
+	// Take new note's title from arguments, if it's provided.
+	if len(args) > 0 {
+		title := args[0]
+		createAndFinish(title)
 		return
 	}
 
-	// Create new note-file by [note].
-	note, err := service.Create(models.Note{Title: createAnswers.Title})
+	// Ask for title of new note.
+	var title string
+	question := []*survey.Question{
+		{
+			Prompt: &survey.Input{
+				Message: "Enter name of new note: ",
+				Help:    "Append to your note any name you want and then, complete file name with special file name type | e.g: new_note.md",
+			},
+			Validate: survey.MinLength(1),
+		},
+	}
+	survey.Ask(question, &title)
+
+	createAndFinish(title)
+}
+
+// createAndFinish asks to edit note and finishes creating loop.
+func createAndFinish(title string) {
+	// Create new note-file by given title.
+	note, err := service.Create(models.Note{Title: title})
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	if createAnswers.EditNote {
+	// Ask for, open or not created note with editor.
+	var openNote bool
+	prompt := &survey.Confirm{
+		Message: "Do you wanna open note with your editor?",
+		Default: false,
+	}
+	survey.AskOne(prompt, &openNote)
+
+	if openNote {
 		// Open created note-file to edit it.
 		if err := service.Open(*note); err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
