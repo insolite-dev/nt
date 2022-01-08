@@ -35,6 +35,7 @@ var appCommand = &cobra.Command{
 // initCommands initializes all sub-commands of application.
 func initCommands() {
 	initSetupCommand()
+	initSettingsCommand()
 	initCreateCommand()
 	initRemoveCommand()
 	initViewCommand()
