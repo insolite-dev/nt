@@ -41,6 +41,7 @@ func (l *LocalService) Init() error {
 	settingsPath := l.notyaPath + "/" + models.SettingsName
 
 	settingsSetted := pkg.FileExists(settingsPath)
+	notyaDirSetted := pkg.FileExists(*notyaPath)
 
 	// If settings exists, set it to state.
 	if settingsSetted {
@@ -55,13 +56,15 @@ func (l *LocalService) Init() error {
 	}
 
 	// Check if working directories already exists or not.
-	if pkg.FileExists(*notyaPath) && settingsSetted {
+	if notyaDirSetted && settingsSetted {
 		return nil
 	}
 
-	// Create new notya working directory.
-	if creatingErr := pkg.NewFolder(*notyaPath); creatingErr != nil {
-		return creatingErr
+	// Create new notya working directory, if it not exists.
+	if !notyaDirSetted {
+		if creatingErr := pkg.NewFolder(*notyaPath); creatingErr != nil {
+			return creatingErr
+		}
 	}
 
 	// Initialize settings file.
