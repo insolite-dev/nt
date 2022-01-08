@@ -18,6 +18,7 @@ import (
 type LocalService struct {
 	notyaPath string
 	stdargs   models.StdArgs
+	settings  models.Settings
 }
 
 // Set [LocalService] as [ServiceRepo].
@@ -37,9 +38,24 @@ func (l *LocalService) Init() error {
 	}
 
 	l.notyaPath = *notyaPath
+	settingsPath := l.notyaPath + "/.settings.json"
 
-	// Check if working directory already exists.
-	if pkg.FileExists(*notyaPath) {
+	settingsSetted := pkg.FileExists(settingsPath)
+
+	// If settings exists, set it to state.
+	if settingsSetted {
+		// Get settings data.
+		settingsData, readingSettingsErr := pkg.ReadBody(settingsPath)
+		if readingSettingsErr != nil {
+			return readingSettingsErr
+		}
+
+		// Initialize state's settings value.
+		l.settings = models.FromJSON(*settingsData)
+	}
+
+	// Check if working directories already exists or not.
+	if pkg.FileExists(*notyaPath) && settingsSetted {
 		return nil
 	}
 
@@ -47,6 +63,15 @@ func (l *LocalService) Init() error {
 	if creatingErr := pkg.NewFolder(*notyaPath); creatingErr != nil {
 		return creatingErr
 	}
+
+	// Initialize settings file.
+	newSettings := models.InitSettings()
+	stCreatingErr := pkg.WriteNote(settingsPath, newSettings.ToByte())
+	if stCreatingErr != nil {
+		return stCreatingErr
+	}
+
+	l.settings = newSettings
 
 	return nil
 }
