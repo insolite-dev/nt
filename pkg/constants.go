@@ -21,30 +21,3 @@ var (
 		icons.Error.Text = "Warning ->"
 	}
 )
-
-// CreateAnswers is a model structure of the [CreateNoteQuestions].
-type CreateAnswers struct {
-	Title    string
-	EditNote bool `survey:"edit-note"`
-}
-
-var (
-	// CreateNoteQuestions is a list of questions for create command.
-	CreateNoteQuestions = []*survey.Question{
-		{
-			Name: "title",
-			Prompt: &survey.Input{
-				Message: "Enter name of new note: ",
-				Help:    "Append to your note any name you want  and then, complete file name with special file name type | e.g: new_note.md",
-			},
-			Validate: survey.MinLength(1),
-		},
-		{
-			Name: "edit-note",
-			Prompt: &survey.Confirm{
-				Message: "Do you wanna open note with Vi/Vim, to edit file?",
-				Default: true,
-			},
-		},
-	}
-)

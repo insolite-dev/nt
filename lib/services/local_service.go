@@ -11,12 +11,14 @@ import (
 
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
+	"golang.design/x/clipboard"
 )
 
 // LocalService is a class implementation of service repo.
 type LocalService struct {
 	notyaPath string
 	stdargs   models.StdArgs
+	settings  models.Settings
 }
 
 // Set [LocalService] as [ServiceRepo].
@@ -36,16 +38,43 @@ func (l *LocalService) Init() error {
 	}
 
 	l.notyaPath = *notyaPath
+	settingsPath := l.notyaPath + "/" + models.SettingsName
 
-	// Check if working directory already exists.
-	if pkg.FileExists(*notyaPath) {
+	settingsSetted := pkg.FileExists(settingsPath)
+	notyaDirSetted := pkg.FileExists(*notyaPath)
+
+	// If settings exists, set it to state.
+	if settingsSetted {
+		// Get settings data.
+		settingsData, readingSettingsErr := pkg.ReadBody(settingsPath)
+		if readingSettingsErr != nil {
+			return readingSettingsErr
+		}
+
+		// Initialize state's settings value.
+		l.settings = models.FromJSON(*settingsData)
+	}
+
+	// Check if working directories already exists or not.
+	if notyaDirSetted && settingsSetted {
 		return nil
 	}
 
-	// Create new notya working directory.
-	if creatingErr := pkg.NewFolder(*notyaPath); creatingErr != nil {
-		return creatingErr
+	// Create new notya working directory, if it not exists.
+	if !notyaDirSetted {
+		if creatingErr := pkg.NewFolder(*notyaPath); creatingErr != nil {
+			return creatingErr
+		}
 	}
+
+	// Initialize settings file.
+	newSettings := models.InitSettings()
+	stCreatingErr := pkg.WriteNote(settingsPath, newSettings.ToByte())
+	if stCreatingErr != nil {
+		return stCreatingErr
+	}
+
+	l.settings = newSettings
 
 	return nil
 }
@@ -61,7 +90,7 @@ func (l *LocalService) Open(note models.Note) error {
 	}
 
 	// Open note-file with vi.
-	openingErr := pkg.OpenFileWithVI(notePath, l.stdargs)
+	openingErr := pkg.OpenViaEditor(notePath, l.stdargs, l.settings)
 	if openingErr != nil {
 		return openingErr
 	}
@@ -177,10 +206,22 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 	return &editnote.New, nil
 }
 
+// Copy, copies given note's body to client machine's clipboard.
+func (l *LocalService) Copy(note models.Note) (*string, error) {
+	res, err := l.View(note)
+	if err != nil {
+		return nil, err
+	}
+
+	clipboard.Write(clipboard.FmtText, []byte(res.Body))
+
+	return &res.Body, nil
+}
+
 // GetAll, gets all note [names], and returns it as array list.
 func (l *LocalService) GetAll() ([]string, error) {
 	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(l.notyaPath)
+	notes, err := pkg.ListDir(l.notyaPath, models.SettingsName)
 	if err != nil {
 		return nil, err
 	}

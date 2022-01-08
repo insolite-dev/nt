@@ -19,5 +19,7 @@ type ServiceRepo interface {
 	View(note models.Note) (*models.Note, error)
 	Edit(note models.Note) (*models.Note, error)
 	Rename(editnote models.EditNote) (*models.Note, error)
+	Copy(note models.Note) (*string, error)
+
 	GetAll() ([]string, error)
 }

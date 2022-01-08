@@ -7,13 +7,10 @@ package pkg
 import (
 	"io/ioutil"
 	"os"
-)
+	"os/exec"
 
-// GetBanner, reads [banner.txt] file from assets, and returns that txt as go-string value.
-func GetBanner() string {
-	bannerBytes, _ := ioutil.ReadFile("assets/banner.txt")
-	return string(bannerBytes)
-}
+	"github.com/anonistas/notya/lib/models"
+)
 
 // NotyaPWD, generates path of notya's notes directory.
 // Basically, it's related with local-service.
@@ -82,7 +79,7 @@ func ReadBody(path string) (*string, error) {
 }
 
 // ListDir, reads all files from given-path directory.
-func ListDir(path string) ([]string, error) {
+func ListDir(path string, expect string) ([]string, error) {
 	// Read directory's files.
 	list, err := os.ReadDir(path)
 	if err != nil {
@@ -92,8 +89,36 @@ func ListDir(path string) ([]string, error) {
 	// Convert list to string list.
 	res := []string{}
 	for _, d := range list {
+		if expect == d.Name() {
+			continue
+		}
+
 		res = append(res, d.Name())
 	}
 
 	return res, nil
+}
+
+// OpenViaEditor opens file in custom(appropriate from settings) from given path.
+func OpenViaEditor(filepath string, stdargs models.StdArgs, settings models.Settings) error {
+	// Look editor's execution path from current running machine.
+	editor, pathErr := exec.LookPath(settings.Editor)
+	if pathErr != nil {
+		return pathErr
+	}
+
+	// Generate vi command to open file.
+	editorCmd := &exec.Cmd{
+		Path:   editor,
+		Args:   []string{editor, filepath},
+		Stdin:  stdargs.Stdin,
+		Stdout: stdargs.Stdout,
+		Stderr: stdargs.Stderr,
+	}
+
+	if err := editorCmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
 }

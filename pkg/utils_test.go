@@ -9,29 +9,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 )
-
-func TestGetBanner(t *testing.T) {
-	tests := []struct {
-		testName string
-		expected string
-	}{
-		{
-			testName: "should get banner properly",
-			expected: pkg.GetBanner(),
-		},
-	}
-
-	for _, td := range tests {
-		t.Run(td.testName, func(t *testing.T) {
-			got := pkg.GetBanner()
-			if got != td.expected {
-				t.Errorf("GetBanner sum was different: Want: %v | Got: %v", td.expected, got)
-			}
-		})
-	}
-}
 
 func TestNotyaPWD(t *testing.T) {
 	// Take current working directory first.
@@ -281,7 +261,7 @@ func TestListDir(t *testing.T) {
 		td.creatingFunc(td.folderName)
 
 		t.Run(td.testName, func(t *testing.T) {
-			got, err := pkg.ListDir(td.folderName)
+			got, err := pkg.ListDir(td.folderName, "")
 			if err != td.e.err {
 				t.Errorf("ListDir's error sum was different, Got: %v | Want: %v", err, td.e.err)
 			}
@@ -299,5 +279,51 @@ func TestListDir(t *testing.T) {
 		})
 
 		td.deletingFunc(td.folderName)
+	}
+}
+
+func TestOpenViaEditor(t *testing.T) {
+	type utilArgs struct {
+		filename       string
+		stdargs        models.StdArgs
+		settings       models.Settings
+		deleteFileFunc func(filename string)
+		createFileFunc func(filename string)
+	}
+
+	tests := []struct {
+		testName string
+		ua       utilArgs
+		expected error
+	}{
+		{
+			testName: "should open created exiting file properly",
+			ua: utilArgs{
+				filename: "test_file.txt",
+				stdargs:  models.StdArgs{},
+				settings: models.InitSettings(),
+				deleteFileFunc: func(filename string) {
+					pkg.Delete(filename)
+				},
+				createFileFunc: func(filename string) {
+					pkg.WriteNote(filename, []byte{})
+				},
+			},
+
+			expected: errors.New("exit status 1"),
+		},
+	}
+
+	for _, td := range tests {
+		t.Run(td.testName, func(t *testing.T) {
+			td.ua.createFileFunc(td.ua.filename)
+
+			got := pkg.OpenViaEditor(td.ua.filename, td.ua.stdargs, td.ua.settings)
+			if got != td.expected && got.Error() != td.expected.Error() {
+				t.Errorf("Sum was different, Got: %v | Want: %v", got, td.expected)
+			}
+
+			td.ua.deleteFileFunc(td.ua.filename)
+		})
 	}
 }
