@@ -7,6 +7,9 @@ package pkg
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
+
+	"github.com/anonistas/notya/lib/models"
 )
 
 // NotyaPWD, generates path of notya's notes directory.
@@ -90,4 +93,28 @@ func ListDir(path string) ([]string, error) {
 	}
 
 	return res, nil
+}
+
+// OpenViaEditor opens file in custom(appropriate from settings) from given path.
+func OpenViaEditor(filepath string, stdargs models.StdArgs, settings models.Settings) error {
+	// Look editor's execution path from current running machine.
+	editor, pathErr := exec.LookPath(settings.Editor)
+	if pathErr != nil {
+		return pathErr
+	}
+
+	// Generate vi command to open file.
+	editorCmd := &exec.Cmd{
+		Path:   editor,
+		Args:   []string{editor, filepath},
+		Stdin:  stdargs.Stdin,
+		Stdout: stdargs.Stdout,
+		Stderr: stdargs.Stderr,
+	}
+
+	if err := editorCmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
 }
