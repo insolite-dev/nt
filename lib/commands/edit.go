@@ -32,10 +32,8 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 
 		if err := service.Open(note); err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
-			return
 		}
 
-		pkg.Alert(pkg.SuccessL, "Note updated successfully: "+note.Title)
 		return
 	}
 
@@ -59,6 +57,4 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
-
-	pkg.Alert(pkg.SuccessL, "Note updated successfully: "+selected)
 }

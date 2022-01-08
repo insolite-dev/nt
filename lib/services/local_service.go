@@ -38,7 +38,7 @@ func (l *LocalService) Init() error {
 	}
 
 	l.notyaPath = *notyaPath
-	settingsPath := l.notyaPath + "/.settings.json"
+	settingsPath := l.notyaPath + "/" + models.SettingsName
 
 	settingsSetted := pkg.FileExists(settingsPath)
 
@@ -218,7 +218,7 @@ func (l *LocalService) Copy(note models.Note) (*string, error) {
 // GetAll, gets all note [names], and returns it as array list.
 func (l *LocalService) GetAll() ([]string, error) {
 	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(l.notyaPath)
+	notes, err := pkg.ListDir(l.notyaPath, models.SettingsName)
 	if err != nil {
 		return nil, err
 	}

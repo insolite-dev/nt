@@ -20,6 +20,11 @@ var (
 	VSCodeInsiders string = "code-insiders"
 )
 
+// Constant values of settings.
+const (
+	SettingsName = ".settings.json"
+)
+
 // Settings is a main structure model of application settings.
 type Settings struct {
 	Editor string `json:"editor" default:"vi"`

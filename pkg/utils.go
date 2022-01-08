@@ -79,7 +79,7 @@ func ReadBody(path string) (*string, error) {
 }
 
 // ListDir, reads all files from given-path directory.
-func ListDir(path string) ([]string, error) {
+func ListDir(path string, expect string) ([]string, error) {
 	// Read directory's files.
 	list, err := os.ReadDir(path)
 	if err != nil {
@@ -89,6 +89,10 @@ func ListDir(path string) ([]string, error) {
 	// Convert list to string list.
 	res := []string{}
 	for _, d := range list {
+		if expect == d.Name() {
+			continue
+		}
+
 		res = append(res, d.Name())
 	}
 
