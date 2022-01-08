@@ -87,7 +87,7 @@ func (l *LocalService) Open(note models.Note) error {
 	}
 
 	// Open note-file with vi.
-	openingErr := pkg.OpenFileWithVI(notePath, l.stdargs)
+	openingErr := pkg.OpenViaEditor(notePath, l.stdargs, l.settings)
 	if openingErr != nil {
 		return openingErr
 	}
