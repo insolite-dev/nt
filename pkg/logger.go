@@ -118,9 +118,7 @@ func ShowNote(note models.Note) {
 
 // ShowListOfNotes, logs given list as limited-element-per-row array.
 func ShowListOfNotes(list []string, limit int) {
-	// Alert if list is empty.
 	if len(list) == 0 {
-		Alert(InfoL, "Empty Directory: not created any note yet")
 		return
 	}
 

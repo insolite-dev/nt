@@ -226,5 +226,10 @@ func (l *LocalService) GetAll() ([]string, error) {
 		return nil, err
 	}
 
+	// Check if notes is empty or not.
+	if notes == nil || len(notes) == 0 {
+		return nil, errors.New("Empty Directory: not created any note yet")
+	}
+
 	return notes, nil
 }

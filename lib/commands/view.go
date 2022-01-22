@@ -45,12 +45,6 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Check if notes is empty or not.
-	if notes == nil || len(notes) == 0 {
-		pkg.Alert(pkg.InfoL, "Empty Directory: not created any note yet")
-		return
-	}
-
 	// Ask for note selection.
 	selected := ""
 	prompt := &survey.Select{
