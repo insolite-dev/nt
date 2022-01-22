@@ -17,7 +17,7 @@ func TestInitSettings(t *testing.T) {
 	}{
 		{
 			testname: "should return initial settings properly",
-			expected: models.Settings{models.VI},
+			expected: models.Settings{Editor: models.DefaultEditor, LocalPath: models.DefaultLocalPath},
 		},
 	}
 
@@ -25,7 +25,7 @@ func TestInitSettings(t *testing.T) {
 		t.Run(td.testname, func(t *testing.T) {
 			got := models.InitSettings()
 
-			if got.Editor != td.expected.Editor {
+			if got.Editor != td.expected.Editor || got.LocalPath != td.expected.LocalPath {
 				t.Errorf("InitSettings's sum was different: Want: %v | Got: %v", got, td.expected)
 			}
 		})
@@ -40,8 +40,8 @@ func TestToByte(t *testing.T) {
 	}{
 		{
 			testname:       "should return initial settings properly",
-			model:          models.Settings{Editor: models.MacVim},
-			expectedLength: 17,
+			model:          models.Settings{Editor: "mvim"},
+			expectedLength: 33,
 		},
 	}
 
@@ -65,7 +65,7 @@ func TestFromJSON(t *testing.T) {
 		{
 			testname:      "should return initial settings properly",
 			argumentValue: `{"editor": "vi"}`,
-			expected:      models.Settings{Editor: models.VI},
+			expected:      models.Settings{Editor: models.DefaultEditor},
 		},
 	}
 
