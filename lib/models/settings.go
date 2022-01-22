@@ -24,10 +24,10 @@ type Settings struct {
 }
 
 // InitSettings returns default variant of settings structure model.
-func InitSettings() Settings {
+func InitSettings(localPath string) Settings {
 	return Settings{
 		Editor:    DefaultEditor,
-		LocalPath: DefaultLocalPath,
+		LocalPath: localPath,
 	}
 }
 

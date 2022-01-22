@@ -28,12 +28,12 @@ func TestNotyaPWD(t *testing.T) {
 	}{
 		{
 			testName: "should get right notya notes path",
-			exp:      expected{currentHomeDir + "/notya/", nil},
+			exp:      expected{currentHomeDir + "/notya", nil},
 		},
 	}
 
 	for _, td := range tests {
-		gotRes, gotErr := pkg.NotyaPWD()
+		gotRes, gotErr := pkg.NotyaPWD(models.Settings{LocalPath: "notya"})
 		if gotErr != td.exp.err {
 			t.Errorf("Path err sum was different: Got: %v | Want: %v", gotErr, td.exp.err)
 		}
@@ -301,7 +301,7 @@ func TestOpenViaEditor(t *testing.T) {
 			ua: utilArgs{
 				filename: "test_file.txt",
 				stdargs:  models.StdArgs{},
-				settings: models.InitSettings(),
+				settings: models.InitSettings("notya"),
 				deleteFileFunc: func(filename string) {
 					pkg.Delete(filename)
 				},

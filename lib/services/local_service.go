@@ -31,17 +31,17 @@ func NewLocalService(stdargs models.StdArgs) *LocalService {
 
 // Init creates notya working directory into current machine.
 func (l *LocalService) Init() error {
-	// Generate notya path.
-	notyaPath, err := pkg.NotyaPWD()
+	// Generate the notya path.
+	notyaPath, err := pkg.NotyaPWD(l.settings)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 	}
 
-	l.notyaPath = *notyaPath
+	l.notyaPath = *notyaPath + "/"
 	settingsPath := l.notyaPath + "/" + models.SettingsName
 
-	settingsSetted := pkg.FileExists(settingsPath)
 	notyaDirSetted := pkg.FileExists(*notyaPath)
+	settingsSetted := pkg.FileExists(settingsPath)
 
 	// If settings exists, set it to state.
 	if settingsSetted {
@@ -68,7 +68,7 @@ func (l *LocalService) Init() error {
 	}
 
 	// Initialize settings file.
-	newSettings := models.InitSettings()
+	newSettings := models.InitSettings(l.notyaPath)
 	stCreatingErr := pkg.WriteNote(settingsPath, newSettings.ToByte())
 	if stCreatingErr != nil {
 		return stCreatingErr
@@ -85,7 +85,7 @@ func (l *LocalService) Open(note models.Note) error {
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
+		notExists := fmt.Sprintf("Note not exists at: %v", note.Title)
 		return errors.New(notExists)
 	}
 
@@ -104,7 +104,7 @@ func (l *LocalService) Remove(note models.Note) error {
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
+		notExists := fmt.Sprintf("Note not exists at: %v", note.Title)
 		return errors.New(notExists)
 	}
 
@@ -123,7 +123,7 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 
 	// Check if file already exists.
 	if pkg.FileExists(notePath) {
-		alreadyExists := "A file with the name " + fmt.Sprintf("`%v`", note.Title) + " already exists"
+		alreadyExists := "A note with the name " + fmt.Sprintf("`%v`", note.Title) + " already exists"
 		return nil, errors.New(alreadyExists)
 	}
 
@@ -142,7 +142,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
+		notExists := fmt.Sprintf("Note not exists at: %v", note.Title)
 		return nil, errors.New(notExists)
 	}
 
@@ -164,7 +164,7 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("File not exists at: notya/%v", note.Title)
+		notExists := fmt.Sprintf("Note not exists at: %v", note.Title)
 		return nil, errors.New(notExists)
 	}
 
@@ -183,7 +183,7 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 
 	// Check if requested current file exists or not.
 	if !pkg.FileExists(editnote.Current.Path) {
-		notExists := fmt.Sprintf("File not exists at: notya/%v", editnote.Current.Title)
+		notExists := fmt.Sprintf("Note not exists at: %v", editnote.Current.Title)
 		return nil, errors.New(notExists)
 	}
 
@@ -194,7 +194,7 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 
 	// Check if file exists at new note path.
 	if pkg.FileExists(editnote.New.Path) {
-		alreadyExists := fmt.Sprintf("A file exists at: notya/%v, please provide a unique name", editnote.New.Title)
+		alreadyExists := fmt.Sprintf("A note exists at: %v, please provide a unique name", editnote.New.Title)
 		return nil, errors.New(alreadyExists)
 	}
 

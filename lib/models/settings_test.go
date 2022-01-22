@@ -23,7 +23,7 @@ func TestInitSettings(t *testing.T) {
 
 	for _, td := range tests {
 		t.Run(td.testname, func(t *testing.T) {
-			got := models.InitSettings()
+			got := models.InitSettings("notya")
 
 			if got.Editor != td.expected.Editor || got.LocalPath != td.expected.LocalPath {
 				t.Errorf("InitSettings's sum was different: Want: %v | Got: %v", got, td.expected)
