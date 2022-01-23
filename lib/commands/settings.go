@@ -18,17 +18,32 @@ var settingsCommand = &cobra.Command{
 	Run:     runSettingsCommand,
 }
 
+// viewSettingsCommand is a sub-command of settingsCommand.
+// Which that used to open settings file via editor.
+var viewSettingsCommand = &cobra.Command{
+	Use:     "view",
+	Aliases: []string{"-v"},
+	Short:   "View settings file of notya",
+	Run:     runViewSettingsCommand,
+}
+
 // initSettingsCommand adds settingsCommand to main application command.
 func initSettingsCommand() {
+	settingsCommand.AddCommand(viewSettingsCommand)
 	appCommand.AddCommand(settingsCommand)
 }
 
 // runSettingsCommand runs appropriate service functionalities to manage settings.
 func runSettingsCommand(cmd *cobra.Command, args []string) {
-	// Open settings file via editor.
+}
+
+// runViewSettingsCommand runs appropriate service functionalities
+// to open settings file(json) with CURRENT editor.
+func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 	settingsFile := models.Note{Title: models.SettingsName}
 	if err := service.Open(settingsFile); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
-		return
 	}
+
+	// TODO: Run apply command's running function.
 }
