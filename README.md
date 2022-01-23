@@ -17,7 +17,7 @@ See the [last release](https://github.com/anonistas/notya/releases/latest), wher
 
 ### Curl:
 ```
-curl -sfL https://raw.githubusercontent.com/anonistas/notya/main/install.sh | sudo sh
+curl -sfL https://raw.githubusercontent.com/anonistas/notya/main/install.sh | sh
 ```
 
 # Usage 
