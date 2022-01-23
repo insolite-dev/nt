@@ -34,7 +34,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		pkg.ShowNote(*note)
+		pkg.PrintNote(*note)
 		return
 	}
 
@@ -60,5 +60,5 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	pkg.ShowNote(*note)
+	pkg.PrintNote(*note)
 }

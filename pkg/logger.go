@@ -94,8 +94,13 @@ func OutputLevel(l Level) string {
 	return fmt.Sprintf("%s%s%s", Color, Icon, NOCOLOR)
 }
 
+// Print, prints given data by combining it with given color attribute.
+func Print(data string, c color.Attribute) {
+	color.New(c).Println(data)
+}
+
 // ShowNote, logs given full note.
-func ShowNote(note models.Note) {
+func PrintNote(note models.Note) {
 	// Modify note fields to make it ready to log.
 	title := fmt.Sprintf("\nTitle: %v", note.Title)
 	path := fmt.Sprintf("Path: %v", note.Path)
@@ -104,40 +109,35 @@ func ShowNote(note models.Note) {
 	// Log the final note files.
 	rainbowText.Println(title)
 	lowText.Println(path)
-	divider.Println("----------------------")
 
 	// Printout no content if body is empty.
 	if len(note.Body) == 0 {
-		text.Println("No content ...")
+		text.Add(color.FgHiYellow).Println("\n No content ... \n ")
 	} else {
 		text.Println(body)
 	}
-
-	divider.Println("----------------------")
 }
 
-// ShowListOfNotes, logs given list as limited-element-per-row array.
-func ShowListOfNotes(list []string, limit int) {
+// PrintNotes, logs given notes list.
+func PrintNotes(list []string) {
 	if len(list) == 0 {
 		return
 	}
 
-	var l string
+	for _, value := range list {
+		note := fmt.Sprintf(" • %v", value)
+		text.Add(color.FgYellow).Println(note)
+	}
+}
 
-	nl := limit
-	for i, e := range list {
-		// Limit row by [nl] element.
-		if i >= nl {
-			l += "\n"
-			nl += limit
-		}
-
-		l += fmt.Sprintf(" %v ", e)
+// PrintSettings, logs given settings model.
+func PrintSettings(settings models.Settings) {
+	values := map[string]interface{}{
+		"Editor":     settings.Editor,
+		"Local Path": settings.LocalPath,
 	}
 
-	div := "----------------------"
-
-	divider.Println(div + div)
-	text.Println(l)
-	divider.Println(div + div)
+	for key, value := range values {
+		text.Add(color.FgHiBlue).Println(fmt.Sprintf(" • %v: %v ", key, value))
+	}
 }

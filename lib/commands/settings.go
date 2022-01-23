@@ -8,6 +8,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -57,13 +58,15 @@ func initSettingsCommand() {
 
 // runSettingsCommand runs appropriate service functionalities to manage settings.
 func runSettingsCommand(cmd *cobra.Command, args []string) {
-	_, err := service.Settings()
+	settings, err := service.Settings()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	// TODO: log current settings
+	// Print settings' current values.
+	pkg.PrintSettings(*settings)
+	pkg.Print("\n > [notya settings -h/help] for more", color.FgGreen)
 }
 
 // runEditSettingsCommand runs appropriate service functionalities
