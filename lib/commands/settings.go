@@ -27,9 +27,19 @@ var viewSettingsCommand = &cobra.Command{
 	Run:     runViewSettingsCommand,
 }
 
+// applyCommand is sub-command of settingsCommand.
+// Which that used to apply HAND-MADE changes on settings file.
+var applyCommand = &cobra.Command{
+	Use:     "apply",
+	Aliases: []string{"-a"},
+	Short:   "Apply HAND-MADE changes",
+}
+
 // initSettingsCommand adds settingsCommand to main application command.
 func initSettingsCommand() {
+	settingsCommand.AddCommand(applyCommand)
 	settingsCommand.AddCommand(viewSettingsCommand)
+
 	appCommand.AddCommand(settingsCommand)
 }
 
@@ -45,5 +55,11 @@ func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 		pkg.Alert(pkg.ErrorL, err.Error())
 	}
 
-	// TODO: Run apply command's running function.
+	runApplySettingsCommand(cmd, args)
+}
+
+// runApplySettingsCommand runs appropriate service functionalities
+// to apply HAND-MADE changes on settings(configuration) file.
+func runApplySettingsCommand(cmd *cobra.Command, args []string) {
+	// TODO: implement apply functionality.
 }
