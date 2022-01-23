@@ -67,9 +67,8 @@ func (l *LocalService) Init() error {
 
 	// Initialize settings file.
 	newSettings := models.InitSettings(l.notyaPath)
-	stCreatingErr := pkg.WriteNote(settingsPath, newSettings.ToByte())
-	if stCreatingErr != nil {
-		return stCreatingErr
+	if settingsError := l.WriteSettings(newSettings); err != nil {
+		return settingsError
 	}
 
 	l.settings = newSettings
@@ -90,6 +89,16 @@ func (l *LocalService) Settings() (*models.Settings, error) {
 	settings := models.FromJSON(*data)
 
 	return &settings, nil
+}
+
+// WriteSettings, overwrites settings data by given settings model.
+func (l *LocalService) WriteSettings(settings models.Settings) error {
+	settingsPath := l.notyaPath + models.SettingsName
+	if err := pkg.WriteNote(settingsPath, settings.ToByte()); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Open, opens given note by editor.

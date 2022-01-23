@@ -38,20 +38,10 @@ var viewSettingsCommand = &cobra.Command{
 	Run:     runViewSettingsCommand,
 }
 
-// applyCommand is sub-command of settingsCommand.
-// Which that used to apply HAND-MADE changes on settings file.
-var applyCommand = &cobra.Command{
-	Use:     "apply",
-	Aliases: []string{"-a"},
-	Short:   "Apply HAND-MADE changes",
-	Run:     runApplySettingsCommand,
-}
-
 // initSettingsCommand adds settingsCommand to main application command.
 func initSettingsCommand() {
 	settingsCommand.AddCommand(editSettingsCommand)
 	settingsCommand.AddCommand(viewSettingsCommand)
-	settingsCommand.AddCommand(applyCommand)
 
 	appCommand.AddCommand(settingsCommand)
 }
@@ -101,7 +91,18 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 		&editedSettings,
 	)
 
-	// TODO: apply changes, via --> runApplySettingsCommand(cmd, args)
+	// Breakdown function, if have no changes.
+	if !models.IsUpdated(*settings, editedSettings) {
+		pkg.Alert(pkg.InfoL, "No changes")
+		return
+	}
+
+	// Update settings data.
+	if err := service.WriteSettings(editedSettings); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+	}
+
+	// TODO: apply changes, via --> service.moveNotes()
 }
 
 // runViewSettingsCommand runs appropriate service functionalities
@@ -112,11 +113,5 @@ func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 		pkg.Alert(pkg.ErrorL, err.Error())
 	}
 
-	runApplySettingsCommand(cmd, args)
-}
-
-// runApplySettingsCommand runs appropriate service functionalities
-// to apply HAND-MADE changes on settings(configuration) file.
-func runApplySettingsCommand(cmd *cobra.Command, args []string) {
-	// TODO: implement apply functionality.
+	// TODO: apply changes, via --> service.moveNotes()
 }
