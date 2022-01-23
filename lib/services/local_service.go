@@ -38,21 +38,19 @@ func (l *LocalService) Init() error {
 	}
 
 	l.notyaPath = *notyaPath + "/"
-	settingsPath := l.notyaPath + "/" + models.SettingsName
+	settingsPath := l.notyaPath + models.SettingsName
 
 	notyaDirSetted := pkg.FileExists(*notyaPath)
 	settingsSetted := pkg.FileExists(settingsPath)
 
 	// If settings exists, set it to state.
 	if settingsSetted {
-		// Get settings data.
-		settingsData, readingSettingsErr := pkg.ReadBody(settingsPath)
-		if readingSettingsErr != nil {
-			return readingSettingsErr
+		settings, settingsErr := l.Settings()
+		if settingsErr != nil {
+			return settingsErr
 		}
 
-		// Initialize state's settings value.
-		l.settings = models.FromJSON(*settingsData)
+		l.settings = *settings
 	}
 
 	// Check if working directories already exists or not.
@@ -79,7 +77,22 @@ func (l *LocalService) Init() error {
 	return nil
 }
 
-// Open, opens given note with VI.
+// Settings gets and returns current settings state data.
+func (l *LocalService) Settings() (*models.Settings, error) {
+	settingsPath := l.notyaPath + models.SettingsName
+
+	// Get settings data.
+	data, err := pkg.ReadBody(settingsPath)
+	if err != nil {
+		return nil, err
+	}
+
+	settings := models.FromJSON(*data)
+
+	return &settings, nil
+}
+
+// Open, opens given note by editor.
 func (l *LocalService) Open(note models.Note) error {
 	notePath := l.notyaPath + note.Title
 

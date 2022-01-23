@@ -20,7 +20,7 @@ const (
 // Settings is a main structure model of application settings.
 type Settings struct {
 	Editor    string `json:"editor" default:"vi"`
-	LocalPath string `json:"local_path" default:"notya"`
+	LocalPath string `json:"local_path" mapstructure:"local_path" survey:"local_path" default:"notya"`
 }
 
 // InitSettings returns default variant of settings structure model.

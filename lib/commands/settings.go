@@ -5,6 +5,7 @@
 package commands
 
 import (
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
@@ -16,6 +17,15 @@ var settingsCommand = &cobra.Command{
 	Aliases: []string{"config"},
 	Short:   "Manage settings of notya",
 	Run:     runSettingsCommand,
+}
+
+// editSettingsCommand is a sub-command of settingsCommand.
+// That used as main way for editing notya settings.
+var editSettingsCommand = &cobra.Command{
+	Use:     "edit",
+	Aliases: []string{"-e"},
+	Short:   "Edit settings of notya",
+	Run:     runEditSettingsCommand,
 }
 
 // viewSettingsCommand is a sub-command of settingsCommand.
@@ -33,18 +43,62 @@ var applyCommand = &cobra.Command{
 	Use:     "apply",
 	Aliases: []string{"-a"},
 	Short:   "Apply HAND-MADE changes",
+	Run:     runApplySettingsCommand,
 }
 
 // initSettingsCommand adds settingsCommand to main application command.
 func initSettingsCommand() {
-	settingsCommand.AddCommand(applyCommand)
+	settingsCommand.AddCommand(editSettingsCommand)
 	settingsCommand.AddCommand(viewSettingsCommand)
+	settingsCommand.AddCommand(applyCommand)
 
 	appCommand.AddCommand(settingsCommand)
 }
 
 // runSettingsCommand runs appropriate service functionalities to manage settings.
 func runSettingsCommand(cmd *cobra.Command, args []string) {
+	_, err := service.Settings()
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
+	// TODO: log current settings
+}
+
+// runEditSettingsCommand runs appropriate service functionalities
+// to edit the configuration file by best way.
+func runEditSettingsCommand(cmd *cobra.Command, args []string) {
+	settings, err := service.Settings()
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
+	editedSettings := models.Settings{}
+	survey.Ask([]*survey.Question{
+		{
+			Name: "editor",
+			Prompt: &survey.Input{
+				Default: settings.Editor,
+				Message: "Editor",
+				Help:    "Editor for notya. --> vi/vim/nvim/code/code-insiders ...",
+			},
+			Validate: survey.MinLength(1),
+		},
+		{
+			Name: "local_path",
+			Prompt: &survey.Input{
+				Default: settings.LocalPath,
+				Message: "Local Path",
+				Help:    "Local path of notya base working directory",
+			},
+		},
+	},
+		&editedSettings,
+	)
+
+	// TODO: apply changes, via --> runApplySettingsCommand(cmd, args)
 }
 
 // runViewSettingsCommand runs appropriate service functionalities

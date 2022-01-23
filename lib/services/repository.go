@@ -12,6 +12,7 @@ import "github.com/anonistas/notya/lib/models"
 // Or we could have remote service, which would be also a ServiceRepo implementation which that is connected to remote DB.
 type ServiceRepo interface {
 	Init() error
+	Settings() (*models.Settings, error)
 
 	Open(note models.Note) error
 	Remove(note models.Note) error
