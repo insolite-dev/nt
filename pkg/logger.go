@@ -119,13 +119,13 @@ func PrintNote(note models.Note) {
 }
 
 // PrintNotes, logs given notes list.
-func PrintNotes(list []string) {
+func PrintNotes(list []models.Note) {
 	if len(list) == 0 {
 		return
 	}
 
 	for _, value := range list {
-		note := fmt.Sprintf(" • %v", value)
+		note := fmt.Sprintf(" • %v", value.Title)
 		text.Add(color.FgYellow).Println(note)
 	}
 }

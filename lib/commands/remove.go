@@ -43,7 +43,10 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	var selected string
-	prompt := &survey.Select{Message: "Choose a note to remove:", Options: notes}
+	prompt := &survey.Select{
+		Message: "Choose a note to remove:",
+		Options: pkg.MapNotesList(notes),
+	}
 	survey.AskOne(prompt, &selected)
 
 	removeAndFinish(models.Note{Title: selected})

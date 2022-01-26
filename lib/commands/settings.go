@@ -75,7 +75,7 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 			Prompt: &survey.Input{
 				Default: settings.Editor,
 				Message: "Editor",
-				Help:    "Editor for notya. --> vi/vim/nvim/code/code-insiders ...",
+				Help:    "Editor for notya. --> vim/nvim/code/code-insiders ...",
 			},
 			Validate: survey.MinLength(1),
 		},
@@ -102,16 +102,58 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 		pkg.Alert(pkg.ErrorL, err.Error())
 	}
 
-	// TODO: apply changes, via --> service.moveNotes()
+	// Ask to move notes if they were updated.
+	if settings.LocalPath != editedSettings.LocalPath {
+		var moveNotes bool
+		survey.AskOne(&survey.Confirm{
+			Message: "Move notes?",
+			Help:    "Do you wanna move old notes to new path?",
+		}, &moveNotes)
+
+		if moveNotes {
+			err := service.MoveNotes(editedSettings)
+			if err != nil {
+				pkg.Alert(pkg.ErrorL, err.Error())
+			}
+		}
+
+	}
 }
 
 // runViewSettingsCommand runs appropriate service functionalities
 // to open settings file(json) with CURRENT editor.
 func runViewSettingsCommand(cmd *cobra.Command, args []string) {
+	beforeSettings, err := service.Settings()
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
+	// Open settings file
 	settingsFile := models.Note{Title: models.SettingsName}
 	if err := service.Open(settingsFile); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 	}
 
-	// TODO: apply changes, via --> service.moveNotes()
+	afterSettings, err := service.Settings()
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
+	// Ask to move notes if path were updated.
+	if models.IsPathUpdated(*beforeSettings, *afterSettings) {
+		var moveNotes bool
+		survey.AskOne(&survey.Confirm{
+			Message: "Move notes?",
+			Help:    "Do you wanna move old notes to new path?",
+		}, &moveNotes)
+
+		if moveNotes {
+			err := service.MoveNotes(*afterSettings)
+			if err != nil {
+				pkg.Alert(pkg.ErrorL, err.Error())
+			}
+		}
+	}
 }

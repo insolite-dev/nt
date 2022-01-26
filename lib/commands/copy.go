@@ -43,7 +43,10 @@ func runCopyCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	var selected string
-	prompt := &survey.Select{Message: "Choose a note to copy:", Options: notes}
+	prompt := &survey.Select{
+		Message: "Choose a note to copy:",
+		Options: pkg.MapNotesList(notes),
+	}
 	survey.AskOne(prompt, &selected)
 
 	copyAndFinish(models.Note{Title: selected})

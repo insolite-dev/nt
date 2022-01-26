@@ -327,3 +327,35 @@ func TestOpenViaEditor(t *testing.T) {
 		})
 	}
 }
+
+func TestMapNotesList(t *testing.T) {
+	tests := []struct {
+		testName string
+		notes    []models.Note
+		expected []string
+	}{
+		{
+			"should map to string names properly",
+			[]models.Note{{Title: "new_note.txt"}, {Title: "my_new_note.md"}},
+			[]string{"new_note.txt", "my_new_note.md"},
+		},
+	}
+
+	for _, td := range tests {
+		got := pkg.MapNotesList(td.notes)
+
+		if len(got) != len(td.expected) {
+			t.Errorf("MapNotesList (length) sum was different: Got: %v | Want: %v", len(got), len(td.expected))
+			return
+		}
+
+		for index, gotElement := range got {
+			expectedElement := td.expected[index]
+			if gotElement != expectedElement {
+				t.Errorf("MapNotesList sum was different: Got: %v | Want: %v", len(got), len(td.expected))
+				return
+			}
+		}
+
+	}
+}

@@ -58,3 +58,7 @@ func FromJSON(value string) Settings {
 func IsUpdated(old, current Settings) bool {
 	return old.Editor != current.Editor || old.LocalPath != current.LocalPath
 }
+
+func IsPathUpdated(old, current Settings) bool {
+	return old.LocalPath != current.LocalPath
+}

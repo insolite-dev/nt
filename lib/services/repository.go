@@ -24,5 +24,6 @@ type ServiceRepo interface {
 	Rename(editnote models.EditNote) (*models.Note, error)
 	Copy(note models.Note) (*string, error)
 
-	GetAll() ([]string, error)
+	GetAll() ([]models.Note, error)
+	MoveNotes(settings models.Settings) error
 }

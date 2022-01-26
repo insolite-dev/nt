@@ -43,7 +43,10 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	var selected string
-	prompt := &survey.Select{Message: "Choose a note to rename:", Options: notes}
+	prompt := &survey.Select{
+		Message: "Choose a note to rename:",
+		Options: pkg.MapNotesList(notes),
+	}
 	survey.AskOne(prompt, &selected)
 
 	askAndRename(selected)

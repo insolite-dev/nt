@@ -49,7 +49,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 	selected := ""
 	prompt := &survey.Select{
 		Message: "Choose a note to view:",
-		Options: notes,
+		Options: pkg.MapNotesList(notes),
 	}
 	survey.AskOne(prompt, &selected)
 

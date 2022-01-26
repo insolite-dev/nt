@@ -127,11 +127,13 @@ func TestPrintNote(t *testing.T) {
 func TestPrintNotes(t *testing.T) {
 	tests := []struct {
 		testName string
-		list     []string
+		list     []models.Note
 	}{
 		{
 			testName: "should show note properly",
-			list:     []string{"1", "2", "3", "4"},
+			list: []models.Note{
+				{Title: "Test TITLE"},
+			},
 		},
 	}
 

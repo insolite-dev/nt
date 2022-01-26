@@ -230,11 +230,6 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 
 // Copy, copies given note's body to client machine's clipboard.
 func (l *LocalService) Copy(note models.Note) (*string, error) {
-	notePath := l.settings.LocalPath + note.Title
-
-	// Update note path.
-	note.Path = notePath
-
 	res, err := l.View(note)
 	if err != nil {
 		return nil, err
@@ -246,17 +241,56 @@ func (l *LocalService) Copy(note models.Note) (*string, error) {
 }
 
 // GetAll, gets all note [names], and returns it as array list.
-func (l *LocalService) GetAll() ([]string, error) {
-	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(l.settings.LocalPath, models.SettingsName)
+func (l *LocalService) GetAll() ([]models.Note, error) {
+	// Generate array of all file names on LocalPath.
+	files, err := pkg.ListDir(l.settings.LocalPath, models.SettingsName)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if notes is empty or not.
-	if notes == nil || len(notes) == 0 {
+	if files == nil || len(files) == 0 {
 		return nil, errors.New("Empty Directory: not created any note yet")
 	}
 
+	// Fetch notes by files.
+	notes := []models.Note{}
+	for _, name := range files {
+		note, err := l.View(models.Note{Title: name})
+		if err != nil {
+			continue
+		}
+
+		notes = append(notes, *note)
+	}
+
 	return notes, nil
+}
+
+// MoveNote, moves all notes from "CURRENT" path to new path(given by settings parameter).
+func (l *LocalService) MoveNotes(settings models.Settings) error {
+	notes, err := l.GetAll()
+	if err != nil {
+		return err
+	}
+
+	// Remove notes at default settings' local path.
+	for _, note := range notes {
+		err := l.Remove(note)
+		if err != nil {
+			continue
+		}
+	}
+
+	// Initialize new settings as default.
+	l.settings = settings
+
+	// Insert notes at param-settings' local path.
+	for _, note := range notes {
+		_, err := l.Create(note)
+		if err != nil {
+			continue
+		}
+	}
+
+	return nil
 }
