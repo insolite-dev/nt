@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/fatih/color"
@@ -69,27 +70,7 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	editedSettings := models.Settings{}
-	survey.Ask([]*survey.Question{
-		{
-			Name: "editor",
-			Prompt: &survey.Input{
-				Default: settings.Editor,
-				Message: "Editor",
-				Help:    "Editor for notya. --> vim/nvim/code/code-insiders ...",
-			},
-			Validate: survey.MinLength(1),
-		},
-		{
-			Name: "local_path",
-			Prompt: &survey.Input{
-				Default: settings.LocalPath,
-				Message: "Local Path",
-				Help:    "Local path of notya base working directory",
-			},
-		},
-	},
-		&editedSettings,
-	)
+	survey.Ask(assets.SettingsEditPromptQuestions(*settings), &editedSettings)
 
 	// Breakdown function, if have no changes.
 	if !models.IsUpdated(*settings, editedSettings) {
@@ -105,10 +86,7 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	// Ask to move notes if they were updated.
 	if settings.LocalPath != editedSettings.LocalPath {
 		var moveNotes bool
-		survey.AskOne(&survey.Confirm{
-			Message: "Move notes?",
-			Help:    "Do you wanna move old notes to new path?",
-		}, &moveNotes)
+		survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
 
 		if moveNotes {
 			err := service.MoveNotes(editedSettings)
@@ -144,10 +122,7 @@ func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 	// Ask to move notes if path were updated.
 	if models.IsPathUpdated(*beforeSettings, *afterSettings) {
 		var moveNotes bool
-		survey.AskOne(&survey.Confirm{
-			Message: "Move notes?",
-			Help:    "Do you wanna move old notes to new path?",
-		}, &moveNotes)
+		survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
 
 		if moveNotes {
 			err := service.MoveNotes(*afterSettings)

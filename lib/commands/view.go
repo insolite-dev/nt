@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
@@ -47,11 +48,10 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	selected := ""
-	prompt := &survey.Select{
-		Message: "Choose a note to view:",
-		Options: pkg.MapNotesList(notes),
-	}
-	survey.AskOne(prompt, &selected)
+	survey.AskOne(
+		assets.ChooseNotePrompt("Choose a note to view:", pkg.MapNotesList(notes)),
+		&selected,
+	)
 
 	// Get selected note.
 	note, viewErr := service.View(models.Note{Title: selected})

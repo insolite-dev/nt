@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
@@ -46,11 +47,10 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	selected := ""
-	prompt := &survey.Select{
-		Message: "Choose a note to edit:",
-		Options: pkg.MapNotesList(notes),
-	}
-	survey.AskOne(prompt, &selected)
+	survey.AskOne(
+		assets.ChooseNotePrompt("Choose a note to edit:", pkg.MapNotesList(notes)),
+		&selected,
+	)
 
 	// Open selected note-file.
 	if err := service.Open(models.Note{Title: selected}); err != nil {

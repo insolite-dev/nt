@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
@@ -43,11 +44,10 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	var selected string
-	prompt := &survey.Select{
-		Message: "Choose a note to remove:",
-		Options: pkg.MapNotesList(notes),
-	}
-	survey.AskOne(prompt, &selected)
+	survey.AskOne(
+		assets.ChooseNotePrompt("Choose a note to remove:", pkg.MapNotesList(notes)),
+		&selected,
+	)
 
 	removeAndFinish(models.Note{Title: selected})
 }
