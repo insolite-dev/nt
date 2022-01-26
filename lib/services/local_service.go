@@ -103,7 +103,7 @@ func (l *LocalService) WriteSettings(settings models.Settings) error {
 
 // Open, opens given note by editor.
 func (l *LocalService) Open(note models.Note) error {
-	notePath := l.notyaPath + note.Title
+	notePath := l.settings.LocalPath + note.Title
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
@@ -122,7 +122,7 @@ func (l *LocalService) Open(note models.Note) error {
 
 // Remove, deletes given note file, from [notya/note.title]
 func (l *LocalService) Remove(note models.Note) error {
-	notePath := l.notyaPath + note.Title
+	notePath := l.settings.LocalPath + note.Title
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
@@ -141,7 +141,7 @@ func (l *LocalService) Remove(note models.Note) error {
 // Create, creates new note file at [notya notes path],
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {
-	notePath := l.notyaPath + note.Title
+	notePath := l.settings.LocalPath + note.Title
 
 	// Check if file already exists.
 	if pkg.FileExists(notePath) {
@@ -160,7 +160,7 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 // View, opens note-file from given [note.Name], then takes it body,
 // and returns new fully-filled note.
 func (l *LocalService) View(note models.Note) (*models.Note, error) {
-	notePath := l.notyaPath + note.Title
+	notePath := l.settings.LocalPath + note.Title
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
@@ -182,7 +182,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 // Edit, overwrites exiting file's content-body.
 func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
-	notePath := l.notyaPath + note.Title
+	notePath := l.settings.LocalPath + note.Title
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
@@ -200,8 +200,8 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 
 // Rename, changes given note's name.
 func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
-	editnote.Current.Path = l.notyaPath + editnote.Current.Title
-	editnote.New.Path = l.notyaPath + editnote.New.Title
+	editnote.Current.Path = l.settings.LocalPath + editnote.Current.Title
+	editnote.New.Path = l.settings.LocalPath + editnote.New.Title
 
 	// Check if requested current file exists or not.
 	if !pkg.FileExists(editnote.Current.Path) {
@@ -230,6 +230,11 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 
 // Copy, copies given note's body to client machine's clipboard.
 func (l *LocalService) Copy(note models.Note) (*string, error) {
+	notePath := l.settings.LocalPath + note.Title
+
+	// Update note path.
+	note.Path = notePath
+
 	res, err := l.View(note)
 	if err != nil {
 		return nil, err
@@ -243,7 +248,7 @@ func (l *LocalService) Copy(note models.Note) (*string, error) {
 // GetAll, gets all note [names], and returns it as array list.
 func (l *LocalService) GetAll() ([]string, error) {
 	// Generate array of all notes' names.
-	notes, err := pkg.ListDir(l.notyaPath, models.SettingsName)
+	notes, err := pkg.ListDir(l.settings.LocalPath, models.SettingsName)
 	if err != nil {
 		return nil, err
 	}
