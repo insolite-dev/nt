@@ -1,4 +1,4 @@
-// Copyright 2021-present Anon. All rights reserved.
+	// Copyright 2021-present Anon. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
 
@@ -84,7 +84,7 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Ask to move notes if they were updated.
-	if settings.LocalPath != editedSettings.LocalPath {
+	if models.IsPathUpdated(*settings, editedSettings) {
 		var moveNotes bool
 		survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
 
