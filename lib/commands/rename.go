@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
@@ -43,8 +44,10 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	var selected string
-	prompt := &survey.Select{Message: "Choose a note to rename:", Options: notes}
-	survey.AskOne(prompt, &selected)
+	survey.AskOne(
+		assets.ChooseNotePrompt("Choose a note to rename:", pkg.MapNotesList(notes)),
+		&selected,
+	)
 
 	askAndRename(selected)
 }
@@ -53,7 +56,7 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 // (for selected note), and changes its name.
 func askAndRename(selected string) {
 	var newname string
-	survey.AskOne(&survey.Input{Message: "Enter new name for: ", Default: selected}, &newname)
+	survey.AskOne(assets.NewNamePrompt(selected), &newname)
 
 	// Generate editable note by current note and updated note.
 	editableNote := models.EditNote{

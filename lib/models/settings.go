@@ -10,33 +10,25 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-// All editors listed.
-var (
-	// VI related.
-	VI     string = "vi"
-	Vim    string = "vim"
-	NeoVim string = "nvim"
-	MacVim string = "mvim"
-	GUIVim string = "gvim"
-
-	// VS-Code related.
-	VSCode         string = "code"
-	VSCodeInsiders string = "code-insiders"
-)
-
 // Constant values of settings.
 const (
-	SettingsName = ".settings.json"
+	SettingsName     = ".settings.json"
+	DefaultEditor    = "vi"
+	DefaultLocalPath = "notya"
 )
 
 // Settings is a main structure model of application settings.
 type Settings struct {
-	Editor string `json:"editor" default:"vi"`
+	Editor    string `json:"editor" default:"vi"`
+	LocalPath string `json:"local_path" mapstructure:"local_path" survey:"local_path" default:"notya"`
 }
 
 // InitSettings returns default variant of settings structure model.
-func InitSettings() Settings {
-	return Settings{Editor: VI}
+func InitSettings(localPath string) Settings {
+	return Settings{
+		Editor:    DefaultEditor,
+		LocalPath: localPath,
+	}
 }
 
 // ToByte converts settings model to JSON map,
@@ -61,4 +53,12 @@ func FromJSON(value string) Settings {
 	mapstructure.Decode(m, &s)
 
 	return s
+}
+
+func IsUpdated(old, current Settings) bool {
+	return old.Editor != current.Editor || old.LocalPath != current.LocalPath
+}
+
+func IsPathUpdated(old, current Settings) bool {
+	return old.LocalPath != current.LocalPath
 }

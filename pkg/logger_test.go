@@ -10,6 +10,7 @@ import (
 
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
+	"github.com/fatih/color"
 )
 
 func TestAlert(t *testing.T) {
@@ -85,7 +86,27 @@ func TestOutputLevel(t *testing.T) {
 	}
 }
 
-func TestShowNote(t *testing.T) {
+func TestPrint(t *testing.T) {
+	tests := []struct {
+		testName  string
+		data      string
+		attribute color.Attribute
+	}{
+		{
+			testName:  "should show note properly",
+			data:      "test data",
+			attribute: color.FgBlack,
+		},
+	}
+
+	for _, td := range tests {
+		t.Run(td.testName, func(t *testing.T) {
+			pkg.Print(td.data, td.attribute)
+		})
+	}
+}
+
+func TestPrintNote(t *testing.T) {
 	tests := []struct {
 		testName string
 		note     models.Note
@@ -98,33 +119,45 @@ func TestShowNote(t *testing.T) {
 
 	for _, td := range tests {
 		t.Run(td.testName, func(t *testing.T) {
-			pkg.ShowNote(td.note)
+			pkg.PrintNote(td.note)
 		})
 	}
 }
 
-func TestShowListOfNotes(t *testing.T) {
-	type args struct {
-		list  []string
-		limit int
-	}
-
+func TestPrintNotes(t *testing.T) {
 	tests := []struct {
 		testName string
-		arg      args
+		list     []models.Note
 	}{
 		{
 			testName: "should show note properly",
-			arg: args{
-				list:  []string{"1", "2", "3", "4"},
-				limit: 2,
+			list: []models.Note{
+				{Title: "Test TITLE"},
 			},
 		},
 	}
 
 	for _, td := range tests {
 		t.Run(td.testName, func(t *testing.T) {
-			pkg.ShowListOfNotes(td.arg.list, td.arg.limit)
+			pkg.PrintNotes(td.list)
+		})
+	}
+}
+
+func TestPrintSettings(t *testing.T) {
+	tests := []struct {
+		testName string
+		settings models.Settings
+	}{
+		{
+			testName: "should show note properly",
+			settings: models.Settings{},
+		},
+	}
+
+	for _, td := range tests {
+		t.Run(td.testName, func(t *testing.T) {
+			pkg.PrintSettings(td.settings)
 		})
 	}
 }

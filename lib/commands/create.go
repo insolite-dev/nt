@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
@@ -35,16 +36,7 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for title of new note.
 	var title string
-	question := []*survey.Question{
-		{
-			Prompt: &survey.Input{
-				Message: "Enter name of new note: ",
-				Help:    "Append to your note any name you want and then, complete file name with special file name type | e.g: new_note.md",
-			},
-			Validate: survey.MinLength(1),
-		},
-	}
-	survey.Ask(question, &title)
+	survey.Ask(assets.CreatePromptQuestion, &title)
 
 	createAndFinish(title)
 }
@@ -60,11 +52,7 @@ func createAndFinish(title string) {
 
 	// Ask for, open or not created note with editor.
 	var openNote bool
-	prompt := &survey.Confirm{
-		Message: "Do you wanna open note with your editor?",
-		Default: false,
-	}
-	survey.AskOne(prompt, &openNote)
+	survey.AskOne(assets.OpenViaEditorPromt, &openNote)
 
 	if openNote {
 		// Open created note-file to edit it.
