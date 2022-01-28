@@ -27,7 +27,7 @@ func TestGenerateBanner(t *testing.T) {
 				assets.ShortSlog,
 				assets.MinimalisticBanner,
 			},
-			expectedLen: 236,
+			expectedLen: 261,
 		},
 	}
 
