@@ -13,6 +13,9 @@ import "github.com/anonistas/notya/lib/models"
 type ServiceRepo interface {
 	Init() error
 
+	Settings() (*models.Settings, error)
+	WriteSettings(settings models.Settings) error
+
 	Open(note models.Note) error
 	Remove(note models.Note) error
 	Create(note models.Note) (*models.Note, error)
@@ -21,5 +24,6 @@ type ServiceRepo interface {
 	Rename(editnote models.EditNote) (*models.Note, error)
 	Copy(note models.Note) (*string, error)
 
-	GetAll() ([]string, error)
+	GetAll() ([]models.Note, error)
+	MoveNotes(settings models.Settings) error
 }

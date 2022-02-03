@@ -28,12 +28,12 @@ func TestNotyaPWD(t *testing.T) {
 	}{
 		{
 			testName: "should get right notya notes path",
-			exp:      expected{currentHomeDir + "/notya/", nil},
+			exp:      expected{currentHomeDir + "/notya", nil},
 		},
 	}
 
 	for _, td := range tests {
-		gotRes, gotErr := pkg.NotyaPWD()
+		gotRes, gotErr := pkg.NotyaPWD(models.Settings{LocalPath: "notya"})
 		if gotErr != td.exp.err {
 			t.Errorf("Path err sum was different: Got: %v | Want: %v", gotErr, td.exp.err)
 		}
@@ -301,7 +301,7 @@ func TestOpenViaEditor(t *testing.T) {
 			ua: utilArgs{
 				filename: "test_file.txt",
 				stdargs:  models.StdArgs{},
-				settings: models.InitSettings(),
+				settings: models.InitSettings("notya"),
 				deleteFileFunc: func(filename string) {
 					pkg.Delete(filename)
 				},
@@ -325,5 +325,37 @@ func TestOpenViaEditor(t *testing.T) {
 
 			td.ua.deleteFileFunc(td.ua.filename)
 		})
+	}
+}
+
+func TestMapNotesList(t *testing.T) {
+	tests := []struct {
+		testName string
+		notes    []models.Note
+		expected []string
+	}{
+		{
+			"should map to string names properly",
+			[]models.Note{{Title: "new_note.txt"}, {Title: "my_new_note.md"}},
+			[]string{"new_note.txt", "my_new_note.md"},
+		},
+	}
+
+	for _, td := range tests {
+		got := pkg.MapNotesList(td.notes)
+
+		if len(got) != len(td.expected) {
+			t.Errorf("MapNotesList (length) sum was different: Got: %v | Want: %v", len(got), len(td.expected))
+			return
+		}
+
+		for index, gotElement := range got {
+			expectedElement := td.expected[index]
+			if gotElement != expectedElement {
+				t.Errorf("MapNotesList sum was different: Got: %v | Want: %v", len(got), len(td.expected))
+				return
+			}
+		}
+
 	}
 }

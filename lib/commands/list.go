@@ -31,5 +31,5 @@ func runListCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	pkg.ShowListOfNotes(notes, 3)
+	pkg.PrintNotes(notes)
 }

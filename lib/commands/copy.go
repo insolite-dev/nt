@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
@@ -43,8 +44,10 @@ func runCopyCommand(cmd *cobra.Command, args []string) {
 
 	// Ask for note selection.
 	var selected string
-	prompt := &survey.Select{Message: "Choose a note to copy:", Options: notes}
-	survey.AskOne(prompt, &selected)
+	survey.AskOne(
+		assets.ChooseNotePrompt("Choose a note to copy:", pkg.MapNotesList(notes)),
+		&selected,
+	)
 
 	copyAndFinish(models.Note{Title: selected})
 }

@@ -14,14 +14,18 @@ import (
 
 // NotyaPWD, generates path of notya's notes directory.
 // Basically, it's related with local-service.
-func NotyaPWD() (*string, error) {
-	// Take current user's home directory.
-	uhd, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
+func NotyaPWD(settings models.Settings) (*string, error) {
+	path := settings.LocalPath
 
-	path := uhd + "/" + "notya" + "/"
+	// Initialize default notya path.
+	if len(path) == 0 || path == models.DefaultLocalPath {
+		uhd, err := os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+
+		path = uhd + "/" + models.DefaultLocalPath
+	}
 
 	return &path, nil
 }
@@ -121,4 +125,14 @@ func OpenViaEditor(filepath string, stdargs models.StdArgs, settings models.Sett
 	}
 
 	return nil
+}
+
+// MapNotesList converts note-models list to a string list.
+func MapNotesList(notes []models.Note) []string {
+	res := []string{}
+	for _, note := range notes {
+		res = append(res, note.Title)
+	}
+
+	return res
 }
