@@ -11,7 +11,6 @@ import (
 
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
-	"golang.design/x/clipboard"
 )
 
 // LocalService is a class implementation of service repo.
@@ -226,18 +225,6 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 	}
 
 	return &editnote.New, nil
-}
-
-// Copy, copies given note's body to client machine's clipboard.
-func (l *LocalService) Copy(note models.Note) (*string, error) {
-	res, err := l.View(note)
-	if err != nil {
-		return nil, err
-	}
-
-	clipboard.Write(clipboard.FmtText, []byte(res.Body))
-
-	return &res.Body, nil
 }
 
 // GetAll, gets all note [names], and returns it as array list.
