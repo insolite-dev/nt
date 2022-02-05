@@ -41,8 +41,7 @@ To see or edit configuration file, run [`notya settings`](https://github.com/ano
 ### Available commands:
 - **[See all notes](https://github.com/anonistas/notya/wiki/List)** - `notya list`
 - **[View note](https://github.com/anonistas/notya/wiki/View)** - `notya view` or `notya view [name]`
-- **[Copy note](https://github.com/anonistas/notya/wiki/Copy)** - `notya copy` or `notya copy [name]`
-- **[Create note](https://github.com/anonistas/notya/wiki/Create)** - `notya create`
+- **[Create note](https://github.com/anonistas/notya/wiki/Create)** - `notya create` or `notya create [title]`
 - **[Rename note](https://github.com/anonistas/notya/wiki/Rename)** - `notya rename` or `notya rename [name]`
 - **[Edit note](https://github.com/anonistas/notya/wiki/Edit)** - `notya edit` or `notya edit [name]`
 - **[Remove note](https://github.com/anonistas/notya/wiki/Remove)** - `notya remove` or `notya rm [name]`
