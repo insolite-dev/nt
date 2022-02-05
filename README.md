@@ -28,15 +28,13 @@ Run `notya help` or `notya -h` to see default [help.txt](https://github.com/anon
  
 Use `notya [command] --help` for more information about a command.
 
-
 ### Init: 
 Use `notya init` to initialize application. <br/>
 *(It isn't must actually, whenever you call any command of notya, it checks initialization status and if it isn't initialized, initializes app automatically).*
 
 ### Settings (config):
-The config file of notya is autogeneratable, it'd be genereted by Init functionality. <br>
-To see or edit configuration file, run [`notya settings`](https://github.com/anonistas/notya/wiki/Settings). It'll open the settings file with your default editor.
-
+The config file of notya is autogeneratable, it'd be genereted by `Init` functionality. <br>
+**Refer to settings documentation for details - [Settings Wiki](https://github.com/anonistas/notya/wiki/Settings)**
 
 ### Available commands:
 - **[See all notes](https://github.com/anonistas/notya/wiki/List)** - `notya list`
