@@ -26,11 +26,11 @@ func TestChoseNotePrompt(t *testing.T) {
 		{
 			testname: "should generate choosing-note prompt properly",
 			args: arguments{
-				msg:     "test-title",
+				msg:     "edit",
 				options: []string{"1", "2", "3"},
 			},
 			expected: survey.Select{
-				Message: "test-title",
+				Message: "Choose a note to edit:",
 				Options: []string{"1", "2", "3"},
 			},
 		},
