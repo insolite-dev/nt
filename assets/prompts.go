@@ -5,14 +5,16 @@
 package assets
 
 import (
+	"fmt"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/lib/models"
 )
 
 // ChooseNotePrompt is a prompt interface for note choosing.
-func ChooseNotePrompt(msg string, options []string) *survey.Select {
+func ChooseNotePrompt(act string, options []string) *survey.Select {
 	return &survey.Select{
-		Message: msg,
+		Message: fmt.Sprintf("Choose a note to %v:", act),
 		Options: options,
 	}
 }
