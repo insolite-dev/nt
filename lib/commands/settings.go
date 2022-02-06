@@ -94,7 +94,6 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 				pkg.Alert(pkg.ErrorL, err.Error())
 			}
 		}
-
 	}
 }
 
@@ -108,9 +107,12 @@ func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Open settings file
-	settingsFile := models.Note{Title: models.SettingsName}
-	if err := service.Open(settingsFile); err != nil {
+	if err := service.Open(models.Note{
+		Title: models.SettingsName,
+		Path:  service.Path() + models.SettingsName,
+	}); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
+		return
 	}
 
 	afterSettings, err := service.Settings()
