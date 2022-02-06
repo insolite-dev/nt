@@ -11,6 +11,7 @@ import "github.com/anonistas/notya/lib/models"
 // So, local service is just a ServiceRepo implementation which is connected to local device storage.
 // Or we could have remote service, which would be also a ServiceRepo implementation which that is connected to remote DB.
 type ServiceRepo interface {
+	Path() string
 	Init() error
 
 	Settings() (*models.Settings, error)
