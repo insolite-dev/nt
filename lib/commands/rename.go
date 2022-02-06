@@ -5,6 +5,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
@@ -15,7 +17,7 @@ import (
 // renameCommand is a command model which used to change name of notes or files.
 var renameCommand = &cobra.Command{
 	Use:     "rename",
-	Aliases: []string{"rn", "r"},
+	Aliases: []string{"rn"},
 	Short:   "Change/Update note's name",
 	Run:     runRenameCommand,
 }
@@ -45,7 +47,7 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	// Ask for note selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNotePrompt("Choose a note to rename:", pkg.MapNotesList(notes)),
+		assets.ChooseNotePrompt("rename", pkg.MapNotesList(notes)),
 		&selected,
 	)
 
@@ -69,5 +71,5 @@ func askAndRename(selected string) {
 		return
 	}
 
-	pkg.Alert(pkg.SuccessL, "Note renamed successfully: "+newname)
+	pkg.Alert(pkg.SuccessL, fmt.Sprintf("Note renamed: `%v` to `%v`", selected, newname))
 }

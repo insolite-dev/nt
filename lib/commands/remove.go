@@ -45,7 +45,7 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 	// Ask for note selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNotePrompt("Choose a note to remove:", pkg.MapNotesList(notes)),
+		assets.ChooseNotePrompt("remove", pkg.MapNotesList(notes)),
 		&selected,
 	)
 
@@ -59,5 +59,5 @@ func removeAndFinish(note models.Note) {
 		return
 	}
 
-	pkg.Alert(pkg.SuccessL, "Note removed successfully: "+note.Title)
+	pkg.Alert(pkg.SuccessL, "Note removed: "+note.Title)
 }
