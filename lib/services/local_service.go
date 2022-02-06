@@ -5,10 +5,9 @@
 package services
 
 import (
-	"errors"
-	"fmt"
 	"os"
 
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 )
@@ -121,8 +120,7 @@ func (l *LocalService) Open(note models.Note) error {
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("Note not exists at: %v", note.Title)
-		return errors.New(notExists)
+		return assets.NotExists(note.Title)
 	}
 
 	// Open note-file with vi.
@@ -140,8 +138,7 @@ func (l *LocalService) Remove(note models.Note) error {
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("Note not exists at: %v", note.Title)
-		return errors.New(notExists)
+		return assets.NotExists(note.Title)
 	}
 
 	// Delete the note from [notePath].
@@ -159,8 +156,7 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 
 	// Check if file already exists.
 	if pkg.FileExists(notePath) {
-		alreadyExists := "A note with the name " + fmt.Sprintf("`%v`", note.Title) + " already exists"
-		return nil, errors.New(alreadyExists)
+		return nil, assets.AlreadyExists(note.Title)
 	}
 
 	// Create new file.
@@ -178,8 +174,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("Note not exists at: %v", note.Title)
-		return nil, errors.New(notExists)
+		return nil, assets.NotExists(note.Title)
 	}
 
 	// Open and read body of note.
@@ -200,8 +195,7 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 
 	// Check if file exists or not.
 	if !pkg.FileExists(notePath) {
-		notExists := fmt.Sprintf("Note not exists at: %v", note.Title)
-		return nil, errors.New(notExists)
+		return nil, assets.NotExists(note.Title)
 	}
 
 	// Overwrite note's body.
@@ -219,19 +213,17 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 
 	// Check if requested current file exists or not.
 	if !pkg.FileExists(editnote.Current.Path) {
-		notExists := fmt.Sprintf("Note not exists at: %v", editnote.Current.Title)
-		return nil, errors.New(notExists)
+		return nil, assets.NotExists(editnote.Current.Title)
 	}
 
 	// Check if it's same titles.
 	if editnote.Current.Title == editnote.New.Title {
-		return nil, errors.New("Current and new name are same")
+		return nil, assets.SameTitles
 	}
 
 	// Check if file exists at new note path.
 	if pkg.FileExists(editnote.New.Path) {
-		alreadyExists := fmt.Sprintf("A note exists at: %v, please provide a unique name", editnote.New.Title)
-		return nil, errors.New(alreadyExists)
+		return nil, assets.AlreadyExists(editnote.New.Title)
 	}
 
 	// Rename given note.
@@ -251,7 +243,7 @@ func (l *LocalService) GetAll() ([]models.Note, error) {
 	}
 
 	if files == nil || len(files) == 0 {
-		return nil, errors.New("Empty Directory: not created any note yet")
+		return nil, assets.EmptyWorkingDirectory
 	}
 
 	// Fetch notes by files.
