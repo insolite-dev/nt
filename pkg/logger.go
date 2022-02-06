@@ -44,9 +44,9 @@ const (
 
 // Defined constant icon/title codes.
 const (
-	ERROR   string = "[ERROR]"
-	SUCCESS string = "[OK]"
-	INFO    string = "[INFO]"
+	ERROR   string = "[X]"
+	SUCCESS string = "[✔]"
+	INFO    string = "[I]"
 )
 
 // Loggers powered by colors.
