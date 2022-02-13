@@ -34,19 +34,12 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 			New: models.Note{Title: args[1]},
 		}
 
-		Rename(editableNote.Current.Title, editableNote.New.Title)
+		rename(editableNote.Current.Title, editableNote.New.Title)
 		return
 	} 
 
 	if len(args) == 1 {
-		editableNote := models.EditNote{
-			Current : models.Note{Title: args[0]},
-		}
-
-		askAndRename(editableNote.Current.Title)
-		return
-	} else if len(args) > 2 {
-		pkg.Alert(pkg.ErrorL, "Cannot take more than 2 arguments")
+		askAndRename(args[0])
 		return
 	}
 
@@ -87,7 +80,7 @@ func askAndRename(selected string) {
 	pkg.Alert(pkg.SuccessL, "Note renamed successfully: "+newname)
 }
 
-func Rename(selected string, newname string) {
+func rename(selected string, newname string) {
 	// Generate editable note by current note and updated note.
 	editableNote := models.EditNote{
 		Current: models.Note{Title: selected},
