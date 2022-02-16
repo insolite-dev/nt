@@ -15,6 +15,11 @@
 # Installation
 See the [last release](https://github.com/anonistas/notya/releases/latest), where you can find binary files for your ecosystem
 
+### Brew:
+```
+brew install --build-from-source notya
+```
+
 ### Curl:
 ```
 curl -sfL https://raw.githubusercontent.com/anonistas/notya/main/install.sh | sh
