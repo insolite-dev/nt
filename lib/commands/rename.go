@@ -29,12 +29,7 @@ func initRenameCommand() {
 func runRenameCommand(cmd *cobra.Command, args []string) {
 	// Use arguments for old and new note names.
 	if len(args) == 2 {
-		editableNote := models.EditNote{
-			Current: models.Note{Title: args[0]},
-			New:     models.Note{Title: args[1]},
-		}
-
-		rename(editableNote.Current.Title, editableNote.New.Title)
+		rename(args[0], args[1])
 		return
 	}
 
@@ -70,6 +65,7 @@ func askAndRename(selected string) {
 	rename(selected, newname)
 }
 
+// rename takes selected and newname, then makes changes and alerts it.
 func rename(selected string, newname string) {
 	// Generate editable note by current note and updated note.
 	editableNote := models.EditNote{
