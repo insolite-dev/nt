@@ -107,8 +107,14 @@ func (l *LocalService) Settings() (*models.Settings, error) {
 // WriteSettings, overwrites settings data by given settings model.
 func (l *LocalService) WriteSettings(settings models.Settings) error {
 	settingsPath := l.notyaPath + models.SettingsName
-	if err := pkg.WriteNote(settingsPath, settings.ToByte()); err != nil {
-		return err
+
+	// Check settings validness.
+	if !settings.IsValid() {
+		return assets.InvalidSettingsData
+	}
+
+	if writeErr := pkg.WriteNote(settingsPath, settings.ToByte()); writeErr != nil {
+		return writeErr
 	}
 
 	return nil

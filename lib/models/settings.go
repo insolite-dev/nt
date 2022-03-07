@@ -55,6 +55,11 @@ func FromJSON(value string) Settings {
 	return s
 }
 
+// IsValid checks validness of settings structure.
+func (s *Settings) IsValid() bool {
+	return len(s.Editor) > 0 && len(s.LocalPath) > 0
+}
+
 func IsUpdated(old, current Settings) bool {
 	return old.Editor != current.Editor || old.LocalPath != current.LocalPath
 }

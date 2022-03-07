@@ -80,6 +80,35 @@ func TestFromJSON(t *testing.T) {
 	}
 }
 
+func TestIsValid(t *testing.T) {
+	tests := []struct {
+		testname string
+		settings models.Settings
+		expected bool
+	}{
+		{
+			testname: "should check settings validness correctly | [valid]",
+			settings: models.InitSettings("/usr/mock/localpath"),
+			expected: true,
+		},
+		{
+			testname: "should check settings validness correctly | [invalid]",
+			settings: models.Settings{},
+			expected: false,
+		},
+	}
+
+	for _, td := range tests {
+		t.Run(td.testname, func(t *testing.T) {
+			got := td.settings.IsValid()
+
+			if got != td.expected {
+				t.Errorf("IsValid sum was different: Want: %v | Got: %v", got, td.expected)
+			}
+		})
+	}
+}
+
 func TestIsUpdated(t *testing.T) {
 	tests := []struct {
 		testname     string

@@ -16,6 +16,7 @@ var (
 	)
 
 	EmptyWorkingDirectory = errors.New(`Empty working directory, couldn't found any file`)
+	InvalidSettingsData   = errors.New(`Invalid settings data, cannot complete operation`)
 )
 
 // NotExists returns a formatted error message as data-not-exists error.

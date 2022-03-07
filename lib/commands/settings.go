@@ -81,18 +81,21 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	// Update settings data.
 	if err := service.WriteSettings(editedSettings); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
+		return
 	}
 
-	// Ask to move notes if they were updated.
-	if models.IsPathUpdated(*settings, editedSettings) {
-		var moveNotes bool
-		survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
+	// Finish process, if notes path not updated.
+	if !models.IsPathUpdated(*settings, editedSettings) {
+		return
+	}
 
-		if moveNotes {
-			err := service.MoveNotes(editedSettings)
-			if err != nil {
-				pkg.Alert(pkg.ErrorL, err.Error())
-			}
+	// Ask to move notes, in case of notes-path updating.
+	var moveNotes bool
+	survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
+
+	if moveNotes {
+		if err := service.MoveNotes(editedSettings); err != nil {
+			pkg.Alert(pkg.ErrorL, err.Error())
 		}
 	}
 }
