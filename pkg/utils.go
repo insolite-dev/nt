@@ -13,7 +13,9 @@ import (
 )
 
 // NotyaPWD, generates path of notya's notes directory.
-// Basically, it's related with local-service.
+// ╭───────────────────────╮   ╭────────╮   ╭────────────╮
+// │ ~/user-home-directory │ + │ /notya │ = │ local path │
+// ╰───────────────────────╯   ╰────────╯   ╰────────────╯
 func NotyaPWD(settings models.Settings) (*string, error) {
 	path := settings.LocalPath
 

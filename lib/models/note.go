@@ -5,14 +5,21 @@
 package models
 
 // Note is the main note model of application.
+//
+//  Example:
+// ╭─────────────────────────────────────────────╮
+// │ Title: new_note.txt                         │
+// │ Path: /User/random-user/notya/new_note.txt  │
+// │ Body: ... Note content here ...             │
+// ╰─────────────────────────────────────────────╯
 type Note struct {
 	Title string `json:"title"`
 	Path  string `json:"path"`
 	Body  string `json:"body"`
 }
 
-// EditNote is a model that has two note fields inside,
-// which used to edit note or rename it.
+// EditNote is wrapper structure used to
+// store two [new/current] notes.
 type EditNote struct {
 	Current Note `json:"current"`
 	New     Note `json:"new"`

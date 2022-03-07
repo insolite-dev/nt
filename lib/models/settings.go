@@ -18,6 +18,12 @@ const (
 )
 
 // Settings is a main structure model of application settings.
+//
+//  Example
+// ╭────────────────────────────────────────────────────╮
+// │ Editor: vi                                         │
+// │ Local Path: /User/random-user/notya/.settings.json │
+// ╰────────────────────────────────────────────────────╯
 type Settings struct {
 	Editor    string `json:"editor" default:"vi"`
 	LocalPath string `json:"local_path" mapstructure:"local_path" survey:"local_path" default:"notya"`

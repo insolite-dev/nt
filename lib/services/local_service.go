@@ -13,6 +13,8 @@ import (
 )
 
 // LocalService is a class implementation of service repo.
+// Which is connected to local storage of users machine.
+// Uses ~notya/ as main root folder for notes and configuration files.
 type LocalService struct {
 	notyaPath string
 	stdargs   models.StdArgs
