@@ -128,11 +128,11 @@ func (l *LocalService) Open(note models.Note) error {
 	notePath := l.generatePath(note)
 
 	// Check if file exists or not.
-	if !pkg.FileExists(notePath) {
+	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
 		return assets.NotExists(note.Title)
 	}
 
-	// Open note-file with vi.
+	// Open note-file with via editor.
 	openingErr := pkg.OpenViaEditor(notePath, l.stdargs, l.settings)
 	if openingErr != nil {
 		return openingErr
@@ -146,7 +146,7 @@ func (l *LocalService) Remove(note models.Note) error {
 	notePath := l.generatePath(note)
 
 	// Check if file exists or not.
-	if !pkg.FileExists(notePath) {
+	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
 		return assets.NotExists(note.Title)
 	}
 
@@ -203,7 +203,7 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 	notePath := l.generatePath(note)
 
 	// Check if file exists or not.
-	if !pkg.FileExists(notePath) {
+	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
 		return nil, assets.NotExists(note.Title)
 	}
 
@@ -221,7 +221,8 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 	editnote.New.Path = l.settings.LocalPath + editnote.New.Title
 
 	// Check if requested current file exists or not.
-	if !pkg.FileExists(editnote.Current.Path) {
+
+	if len(strings.Trim(editnote.Current.Title, " ")) < 1 || !pkg.FileExists(editnote.Current.Path) {
 		return nil, assets.NotExists(editnote.Current.Title)
 	}
 
