@@ -18,7 +18,12 @@ func TestNotExists(t *testing.T) {
 		expected error
 	}{
 		{
-			testname: "should generate not exists error",
+			testname: "should generate not exists error without path",
+			path:     "",
+			expected: errors.New("File does not exists"),
+		},
+		{
+			testname: "should generate not exists error with path",
 			path:     "test/path.txt",
 			expected: errors.New("File does not exists at: test/path.txt"),
 		},

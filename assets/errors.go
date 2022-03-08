@@ -21,7 +21,13 @@ var (
 
 // NotExists returns a formatted error message as data-not-exists error.
 func NotExists(path string) error {
-	msg := fmt.Sprintf("File does not exists at: %v", path)
+	var msg string
+	if len(path) > 1 {
+		msg = fmt.Sprintf("File does not exists at: %v", path)
+	} else {
+		msg = "File does not exists"
+	}
+
 	return errors.New(msg)
 }
 

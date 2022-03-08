@@ -6,6 +6,7 @@ package services
 
 import (
 	"os"
+	"strings"
 
 	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
@@ -181,7 +182,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 	notePath := l.generatePath(note)
 
 	// Check if file exists or not.
-	if !pkg.FileExists(notePath) {
+	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
 		return nil, assets.NotExists(note.Title)
 	}
 
