@@ -309,8 +309,7 @@ func TestOpenViaEditor(t *testing.T) {
 					pkg.WriteNote(filename, []byte{})
 				},
 			},
-
-			expected: errors.New("exit status 1"),
+			expected: errors.New("signal: abort trap"),
 		},
 	}
 
