@@ -41,7 +41,7 @@ Use `notya init` to initialize application. <br/>
 The config file of notya is autogeneratable, it'd be genereted by `Init` functionality. <br>
 **Refer to settings documentation for details - [Settings Wiki](https://github.com/anonistas/notya/wiki/Settings)**
 
-### Available commands:
+### Commands:
 - **[See all notes](https://github.com/anonistas/notya/wiki/List)** - `notya list`
 - **[View note](https://github.com/anonistas/notya/wiki/View)** - `notya view` or `notya view [name]`
 - **[Create note](https://github.com/anonistas/notya/wiki/Create)** - `notya create` or `notya create [title]`
