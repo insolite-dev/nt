@@ -17,9 +17,9 @@ import (
 // Which is connected to local storage of users machine.
 // Uses ~notya/ as main root folder for notes and configuration files.
 type LocalService struct {
-	notyaPath string
-	stdargs   models.StdArgs
-	settings  models.Settings
+	Stdargs   models.StdArgs
+	NotyaPath string
+	Config    models.Settings
 }
 
 // Set [LocalService] as [ServiceRepo].
@@ -27,34 +27,34 @@ var _ ServiceRepo = &LocalService{}
 
 // NewLocalService creates new local service by given arguments.
 func NewLocalService(stdargs models.StdArgs) *LocalService {
-	return &LocalService{stdargs: stdargs}
+	return &LocalService{Stdargs: stdargs}
 }
 
 // generatePath returns non-zero-valuable string path from given note.
-func (l *LocalService) generatePath(note models.Note) string {
+func (l *LocalService) GeneratePath(note models.Note) string {
 	if note.Path != "" {
 		return note.Path
 	}
 
-	return l.settings.LocalPath + note.Title
+	return l.Config.LocalPath + note.Title
 }
 
 // Path returns current service's base working directory.
 func (l *LocalService) Path() string {
-	return l.notyaPath
+	return l.NotyaPath
 }
 
 // Init creates notya working directory into current machine.
 func (l *LocalService) Init() error {
 	// Generate the notya path.
-	notyaPath, err := pkg.NotyaPWD(l.settings)
+	notyaPath, err := pkg.NotyaPWD(l.Config)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return err
 	}
 
-	l.notyaPath = *notyaPath + "/"
-	settingsPath := l.notyaPath + models.SettingsName
+	l.NotyaPath = *notyaPath + "/"
+	settingsPath := l.NotyaPath + models.SettingsName
 
 	notyaDirSetted := pkg.FileExists(*notyaPath)
 	settingsSetted := pkg.FileExists(settingsPath)
@@ -66,7 +66,7 @@ func (l *LocalService) Init() error {
 			return settingsErr
 		}
 
-		l.settings = *settings
+		l.Config = *settings
 	}
 
 	// Check if working directories already exists or not.
@@ -82,19 +82,19 @@ func (l *LocalService) Init() error {
 	}
 
 	// Initialize settings file.
-	newSettings := models.InitSettings(l.notyaPath)
+	newSettings := models.InitSettings(l.NotyaPath)
 	if settingsError := l.WriteSettings(newSettings); err != nil {
 		return settingsError
 	}
 
-	l.settings = newSettings
+	l.Config = newSettings
 
 	return nil
 }
 
 // Settings gets and returns current settings state data.
 func (l *LocalService) Settings() (*models.Settings, error) {
-	settingsPath := l.notyaPath + models.SettingsName
+	settingsPath := l.NotyaPath + models.SettingsName
 
 	// Get settings data.
 	data, err := pkg.ReadBody(settingsPath)
@@ -102,14 +102,14 @@ func (l *LocalService) Settings() (*models.Settings, error) {
 		return nil, err
 	}
 
-	settings := models.FromJSON(*data)
+	settings := models.DecodeSettings(*data)
 
 	return &settings, nil
 }
 
 // WriteSettings, overwrites settings data by given settings model.
 func (l *LocalService) WriteSettings(settings models.Settings) error {
-	settingsPath := l.notyaPath + models.SettingsName
+	settingsPath := l.NotyaPath + models.SettingsName
 
 	// Check settings validness.
 	if !settings.IsValid() {
@@ -125,7 +125,7 @@ func (l *LocalService) WriteSettings(settings models.Settings) error {
 
 // Open, opens given note by editor.
 func (l *LocalService) Open(note models.Note) error {
-	notePath := l.generatePath(note)
+	notePath := l.GeneratePath(note)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
@@ -133,7 +133,7 @@ func (l *LocalService) Open(note models.Note) error {
 	}
 
 	// Open note-file with via editor.
-	openingErr := pkg.OpenViaEditor(notePath, l.stdargs, l.settings)
+	openingErr := pkg.OpenViaEditor(notePath, l.Stdargs, l.Config)
 	if openingErr != nil {
 		return openingErr
 	}
@@ -143,7 +143,7 @@ func (l *LocalService) Open(note models.Note) error {
 
 // Remove, deletes given note file, from [notya/note.title]
 func (l *LocalService) Remove(note models.Note) error {
-	notePath := l.generatePath(note)
+	notePath := l.GeneratePath(note)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
@@ -161,7 +161,7 @@ func (l *LocalService) Remove(note models.Note) error {
 // Create, creates new note file at [notya notes path],
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {
-	notePath := l.generatePath(note)
+	notePath := l.GeneratePath(note)
 
 	// Check if file already exists.
 	if pkg.FileExists(notePath) {
@@ -179,7 +179,7 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 // View, opens note-file from given [note.Name], then takes it body,
 // and returns new fully-filled note.
 func (l *LocalService) View(note models.Note) (*models.Note, error) {
-	notePath := l.generatePath(note)
+	notePath := l.GeneratePath(note)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
@@ -200,7 +200,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 // Edit, overwrites exiting file's content-body.
 func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
-	notePath := l.generatePath(note)
+	notePath := l.GeneratePath(note)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
@@ -217,8 +217,8 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 
 // Rename, changes given note's name.
 func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
-	editnote.Current.Path = l.settings.LocalPath + editnote.Current.Title
-	editnote.New.Path = l.settings.LocalPath + editnote.New.Title
+	editnote.Current.Path = l.Config.LocalPath + editnote.Current.Title
+	editnote.New.Path = l.Config.LocalPath + editnote.New.Title
 
 	// Check if requested current file exists or not.
 
@@ -247,7 +247,7 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 // GetAll, gets all note [names], and returns it as array list.
 func (l *LocalService) GetAll() ([]models.Note, error) {
 	// Generate array of all file names on LocalPath.
-	files, err := pkg.ListDir(l.settings.LocalPath, models.SettingsName)
+	files, err := pkg.ListDir(l.Config.LocalPath, models.SettingsName)
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +288,6 @@ func (l *LocalService) MoveNotes(settings models.Settings) error {
 		if _, err := l.Create(note); err != nil {
 			continue
 		}
-
 	}
 
 	return nil

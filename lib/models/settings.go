@@ -51,7 +51,7 @@ func (s *Settings) ToByte() []byte {
 }
 
 // FromJSON converts string(map) value to Settings structure.
-func FromJSON(value string) Settings {
+func DecodeSettings(value string) Settings {
 	var m map[string]interface{}
 	_ = json.Unmarshal([]byte(value), &m)
 
