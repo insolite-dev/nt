@@ -115,6 +115,10 @@ func TestPrintNote(t *testing.T) {
 			testName: "should show note properly",
 			note:     models.Note{}, // Empty note
 		},
+		{
+			testName: "should show note properly",
+			note:     models.Note{Body: "Non empty note"},
+		},
 	}
 
 	for _, td := range tests {
@@ -129,6 +133,10 @@ func TestPrintNotes(t *testing.T) {
 		testName string
 		list     []models.Note
 	}{
+		{
+			testName: "should break function",
+			list:     []models.Note{},
+		},
 		{
 			testName: "should show note properly",
 			list: []models.Note{

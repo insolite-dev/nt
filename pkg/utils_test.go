@@ -244,10 +244,12 @@ func TestListDir(t *testing.T) {
 				pkg.NewFolder(foldername)
 				pkg.WriteNote(foldername+"/test_file.txt", []byte{})
 				pkg.WriteNote(foldername+"/test_file_1.txt", []byte{})
+				pkg.WriteNote(foldername+"/expectable.txt", []byte{})
 			},
 			deletingFunc: func(foldername string) {
 				pkg.Delete(foldername + "/test_file.txt")
 				pkg.Delete(foldername + "/test_file_1.txt")
+				pkg.Delete(foldername + "/expectable.txt")
 				pkg.Delete(foldername)
 			},
 			e: expected{
@@ -261,7 +263,7 @@ func TestListDir(t *testing.T) {
 		td.creatingFunc(td.folderName)
 
 		t.Run(td.testName, func(t *testing.T) {
-			got, err := pkg.ListDir(td.folderName, "")
+			got, err := pkg.ListDir(td.folderName, "expectable.txt")
 			if err != td.e.err {
 				t.Errorf("ListDir's error sum was different, Got: %v | Want: %v", err, td.e.err)
 			}
