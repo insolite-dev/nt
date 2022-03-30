@@ -590,3 +590,65 @@ func TestRename(t *testing.T) {
 		}
 	}
 }
+
+func TestGetAll(t *testing.T) {
+	gLS := services.LocalService{
+		NotyaPath: "./.testmocks/",
+		Config:    models.Settings{LocalPath: "./.testmocks/"},
+	}
+
+	tests := []struct {
+		localService services.LocalService
+		beforeAct    func(dir string)
+		afterAct     func(dir string)
+		expected     []models.Note
+		expectedErr  error
+	}{
+		{
+			localService: gLS,
+			beforeAct: func(dir string) {
+				_ = pkg.NewFolder(dir)
+			},
+			afterAct: func(dir string) {
+				_ = pkg.Delete(dir)
+			},
+			expected:    nil,
+			expectedErr: assets.EmptyWorkingDirectory,
+		},
+		{
+			localService: gLS,
+			beforeAct: func(dir string) {
+				_ = pkg.NewFolder(dir)
+				_ = pkg.WriteNote(dir+".new-note.txt", []byte{})
+				_ = pkg.WriteNote(dir+".new-note-1.txt", []byte{})
+			},
+			afterAct: func(dir string) {
+				pkg.Delete(dir + ".new-note.txt")
+				pkg.Delete(dir + ".new-note-1.txt")
+				pkg.Delete(dir)
+			},
+			expected: []models.Note{
+				{Title: ".new-note-1.txt", Path: gLS.NotyaPath + ".new-note-1.txt"},
+				{Title: ".new-note.txt", Path: gLS.NotyaPath + ".new-note.txt"},
+			},
+			expectedErr: nil,
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.localService.NotyaPath)
+		gotRes, gotErr := td.localService.GetAll()
+		td.afterAct(td.localService.NotyaPath)
+
+		for i, got := range gotRes {
+			if got.Title != td.expected[i].Title || got.Body != td.expected[i].Body || got.Path != td.expected[i].Path {
+				t.Errorf("Sum of {res -> index:%v}[GetAll] is different: Got: %v | Want: %v", i, got, td.expected[i])
+			}
+		}
+
+		if (gotErr == nil || td.expectedErr == nil) && gotErr != td.expectedErr ||
+			(gotErr != nil && td.expectedErr != nil) && gotErr.Error() != td.expectedErr.Error() {
+			t.Errorf("Sum of {error}[GetAll] is different: Got: %v | Want: %v", gotErr, td.expectedErr)
+		}
+	}
+}
