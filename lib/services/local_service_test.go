@@ -346,7 +346,7 @@ func TestRemove(t *testing.T) {
 
 		if (got == nil || td.expected == nil) && got != td.expected ||
 			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
-			t.Errorf("Sum of [Rename] is different: Got: %v | Want: %v", got, td.expected)
+			t.Errorf("Sum of [Remove] is different: Got: %v | Want: %v", got, td.expected)
 		}
 	}
 }
@@ -498,6 +498,95 @@ func TestEdit(t *testing.T) {
 		if (gotErr == nil || td.expectedErr == nil) && gotErr != td.expectedErr ||
 			(gotErr != nil && td.expectedErr != nil) && gotErr.Error() != td.expectedErr.Error() {
 			t.Errorf("Sum of {error}[Edit] is different: Got: %v | Want: %v", gotErr, td.expectedErr)
+		}
+	}
+}
+
+func TestRename(t *testing.T) {
+	tests := []struct {
+		editnote     models.EditNote
+		localService services.LocalService
+		beforeAct    func(ed models.EditNote)
+		afterAct     func(ed models.EditNote)
+		expected     *models.Note
+		expectedErr  error
+	}{
+		{
+			editnote: models.EditNote{
+				Current: models.Note{Title: ".current-note"},
+				New:     models.Note{Title: ".new-note"},
+			},
+			localService: ls,
+			beforeAct: func(ed models.EditNote) {
+				_ = pkg.Delete(ls.GeneratePath(ed.Current))
+			},
+			afterAct:    func(ed models.EditNote) {},
+			expected:    nil,
+			expectedErr: assets.NotExists(".current-note"),
+		},
+		{
+			editnote: models.EditNote{
+				Current: models.Note{Title: ".same-name-note"},
+				New:     models.Note{Title: ".same-name-note"},
+			},
+			localService: ls,
+			beforeAct: func(ed models.EditNote) {
+				path := ls.GeneratePath(ed.Current)
+				_ = pkg.WriteNote(path, []byte{})
+			},
+			afterAct: func(ed models.EditNote) {
+				_ = pkg.Delete(ls.GeneratePath(ed.Current))
+			},
+			expected:    nil,
+			expectedErr: assets.SameTitles,
+		},
+		{
+			editnote: models.EditNote{
+				Current: models.Note{Title: ".current-note"},
+				New:     models.Note{Title: ".new-note"},
+			},
+			localService: ls,
+			beforeAct: func(ed models.EditNote) {
+				_ = pkg.WriteNote(ls.GeneratePath(ed.Current), []byte{})
+				_ = pkg.WriteNote(ls.GeneratePath(ed.New), []byte{})
+			},
+			afterAct: func(ed models.EditNote) {
+				_ = pkg.Delete(ls.GeneratePath(ed.Current))
+				_ = pkg.Delete(ls.GeneratePath(ed.New))
+			},
+			expected:    nil,
+			expectedErr: assets.AlreadyExists(".new-note"),
+		},
+		{
+			editnote: models.EditNote{
+				Current: models.Note{Title: ".current-note"},
+				New:     models.Note{Title: ".new-note"},
+			},
+			localService: ls,
+			beforeAct: func(ed models.EditNote) {
+				_ = pkg.WriteNote(ls.GeneratePath(ed.Current), []byte{})
+			},
+			afterAct: func(ed models.EditNote) {
+				_ = pkg.Delete(ls.GeneratePath(ed.New))
+			},
+			expected:    &models.Note{Title: ".new-note"},
+			expectedErr: nil,
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.editnote)
+		gotRes, gotErr := td.localService.Rename(td.editnote)
+		td.afterAct(td.editnote)
+
+		if (gotRes == nil || td.expected == nil) && gotRes != td.expected ||
+			(gotRes != nil && td.expected != nil) && (gotRes.Title != td.expected.Title) {
+			t.Errorf("Sum of {res}[Remove] is different: Got: %v | Want: %v", gotRes, td.expected)
+		}
+
+		if (gotErr == nil || td.expectedErr == nil) && gotErr != td.expectedErr ||
+			(gotErr != nil && td.expectedErr != nil) && gotErr.Error() != td.expectedErr.Error() {
+			t.Errorf("Sum of {error}[Remove] is different: Got: %v | Want: %v", gotErr, td.expectedErr)
 		}
 	}
 }
