@@ -226,3 +226,125 @@ func TestWriteSettings(t *testing.T) {
 		}
 	}
 }
+
+func TestOpen(t *testing.T) {
+	ls := services.LocalService{
+		NotyaPath: "./",
+		Config:    models.Settings{LocalPath: "./", Editor: "vi"},
+		Stdargs:   models.StdArgs{},
+	}
+
+	tests := []struct {
+		note         models.Note
+		localService services.LocalService
+		beforeAct    func(note models.Note)
+		afterAct     func(note models.Note)
+		expected     error
+	}{
+		{
+			note:         models.Note{Title: "somerandomnotethatnotexists"},
+			localService: mockLocalService,
+			beforeAct:    func(note models.Note) {},
+			afterAct:     func(note models.Note) {},
+			expected:     assets.NotExists("somerandomnotethatnotexists"),
+		},
+		{
+			note:         models.Note{Title: ""},
+			localService: mockLocalService,
+			beforeAct:    func(note models.Note) {},
+			afterAct:     func(note models.Note) {},
+			expected:     assets.NotExists(""),
+		},
+		{
+			note:         models.Note{Title: "somerandomnote.txt"},
+			localService: ls,
+			beforeAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.WriteNote(path, []byte{})
+			},
+			afterAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.Delete(path)
+			},
+			expected: errors.New("signal: abort trap"),
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.note)
+		got := td.localService.Open(td.note)
+		td.afterAct(td.note)
+
+		if (got == nil || td.expected == nil) && got != td.expected ||
+			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
+			t.Errorf("Sum of [Open] is different: Got: %v | Want: %v", got, td.expected)
+		}
+	}
+}
+
+func TestDelete(t *testing.T) {
+	ls := services.LocalService{
+		NotyaPath: "./",
+		Config:    models.Settings{LocalPath: "./", Editor: "vi"},
+		Stdargs:   models.StdArgs{},
+	}
+
+	tests := []struct {
+		note         models.Note
+		localService services.LocalService
+		beforeAct    func(note models.Note)
+		afterAct     func(note models.Note)
+		expected     error
+	}{
+		{
+			note:         models.Note{Title: "somerandomnotethatnotexists"},
+			localService: mockLocalService,
+			beforeAct:    func(note models.Note) {},
+			afterAct:     func(note models.Note) {},
+			expected:     assets.NotExists("somerandomnotethatnotexists"),
+		},
+		{
+			note:         models.Note{Title: ""},
+			localService: mockLocalService,
+			beforeAct:    func(note models.Note) {},
+			afterAct:     func(note models.Note) {},
+			expected:     assets.NotExists(""),
+		},
+		{
+			note:         models.Note{Title: ".mock-folder"},
+			localService: mockLocalService,
+			beforeAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.NewFolder(path)
+				_ = pkg.WriteNote(path+"/"+"mock_note.txt", []byte{})
+			},
+			afterAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.Delete(path + "/" + "mock_note.txt")
+				_ = pkg.Delete(path)
+			},
+			expected: assets.NotExists(".mock-folder"),
+		},
+		{
+			note:         models.Note{Title: "somerandomnote.txt"},
+			localService: ls,
+			beforeAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.WriteNote(path, []byte{})
+			},
+			afterAct: func(note models.Note) {},
+			expected: nil,
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.note)
+		got := td.localService.Remove(td.note)
+		td.afterAct(td.note)
+
+		if (got == nil || td.expected == nil) && got != td.expected ||
+			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
+			t.Errorf("Sum of [Rename] is different: Got: %v | Want: %v", got, td.expected)
+		}
+	}
+}
