@@ -56,7 +56,7 @@ func TestToByte(t *testing.T) {
 	}
 }
 
-func TestFromJSON(t *testing.T) {
+func TestDecodeSettings(t *testing.T) {
 	tests := []struct {
 		testname      string
 		argumentValue string
@@ -71,10 +71,10 @@ func TestFromJSON(t *testing.T) {
 
 	for _, td := range tests {
 		t.Run(td.testname, func(t *testing.T) {
-			got := models.FromJSON(td.argumentValue)
+			got := models.DecodeSettings(td.argumentValue)
 
 			if got.Editor != td.expected.Editor {
-				t.Errorf("FromJSON's sum was different: Want: %v | Got: %v", got, td.expected)
+				t.Errorf("DecodeSettings's sum was different: Want: %v | Got: %v", got, td.expected)
 			}
 		})
 	}

@@ -23,8 +23,7 @@ import "github.com/anonistas/notya/lib/models"
 //
 type ServiceRepo interface {
 	// Path returns the path of current base service.
-	// In case of local storage implementation,
-	// path would be the folder path of notes.
+	// In case of local storage implementation, path would be the folder path of the notes.
 	Path() string
 
 	// Init setups all kinda minimal services for application.
