@@ -11,11 +11,10 @@ import (
 )
 
 // Define a mock local service implementation.
-var mockLocalService = services.LocalService{
-	Stdargs: models.StdArgs{},
-	Config: models.Settings{
-		LocalPath: "mock/local-path/",
-	},
+var ls = services.LocalService{
+	NotyaPath: "./",
+	Config:    models.Settings{LocalPath: "./", Editor: "vi"},
+	Stdargs:   models.StdArgs{},
 }
 
 func TestNewLocalService(t *testing.T) {
@@ -28,7 +27,7 @@ func TestNewLocalService(t *testing.T) {
 			expected: services.LocalService{Stdargs: models.StdArgs{}},
 		},
 		{
-			stdargs:  mockLocalService.Stdargs,
+			stdargs:  ls.Stdargs,
 			expected: services.LocalService{Stdargs: models.StdArgs{}},
 		},
 	}
@@ -52,12 +51,12 @@ func TestGeneratePath(t *testing.T) {
 		},
 		{
 			note:     models.Note{Title: "new-note.txt"},
-			expected: mockLocalService.Config.LocalPath + "new-note.txt",
+			expected: ls.Config.LocalPath + "new-note.txt",
 		},
 	}
 
 	for _, td := range tests {
-		got := mockLocalService.GeneratePath(td.note)
+		got := ls.GeneratePath(td.note)
 
 		if got != td.expected {
 			t.Errorf("Sum of [GeneratePath] is different: Got: %v | Want: %v", got, td.expected)
@@ -69,11 +68,11 @@ func TestPath(t *testing.T) {
 	tests := []struct {
 		expected string
 	}{
-		{expected: ""},
+		{expected: ls.Path()},
 	}
 
 	for _, td := range tests {
-		got := mockLocalService.Path()
+		got := ls.Path()
 
 		if got != td.expected {
 			t.Errorf("Sum of [Path] is different: Got: %v | Want: %v", got, td.expected)
@@ -89,8 +88,11 @@ func TestInit(t *testing.T) {
 		expected     error
 	}{
 		{
-			localService: mockLocalService,
-			beforeAct:    func() {},
+			localService: services.LocalService{
+				NotyaPath: "mock/local-path/",
+				Config:    models.Settings{LocalPath: "mock/local-path/"},
+			},
+			beforeAct: func() {},
 			afterAct: func() {
 				notyaPath, _ := pkg.NotyaPWD(models.Settings{})
 				_ = pkg.Delete(*notyaPath + "/" + models.SettingsName)
@@ -243,14 +245,14 @@ func TestOpen(t *testing.T) {
 	}{
 		{
 			note:         models.Note{Title: "somerandomnotethatnotexists"},
-			localService: mockLocalService,
+			localService: ls,
 			beforeAct:    func(note models.Note) {},
 			afterAct:     func(note models.Note) {},
 			expected:     assets.NotExists("somerandomnotethatnotexists"),
 		},
 		{
 			note:         models.Note{Title: ""},
-			localService: mockLocalService,
+			localService: ls,
 			beforeAct:    func(note models.Note) {},
 			afterAct:     func(note models.Note) {},
 			expected:     assets.NotExists(""),
@@ -282,7 +284,7 @@ func TestOpen(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestRemove(t *testing.T) {
 	ls := services.LocalService{
 		NotyaPath: "./",
 		Config:    models.Settings{LocalPath: "./", Editor: "vi"},
@@ -298,21 +300,21 @@ func TestDelete(t *testing.T) {
 	}{
 		{
 			note:         models.Note{Title: "somerandomnotethatnotexists"},
-			localService: mockLocalService,
+			localService: ls,
 			beforeAct:    func(note models.Note) {},
 			afterAct:     func(note models.Note) {},
 			expected:     assets.NotExists("somerandomnotethatnotexists"),
 		},
 		{
 			note:         models.Note{Title: ""},
-			localService: mockLocalService,
+			localService: ls,
 			beforeAct:    func(note models.Note) {},
 			afterAct:     func(note models.Note) {},
 			expected:     assets.NotExists(""),
 		},
 		{
 			note:         models.Note{Title: ".mock-folder"},
-			localService: mockLocalService,
+			localService: ls,
 			beforeAct: func(note models.Note) {
 				path := ls.GeneratePath(note)
 				_ = pkg.NewFolder(path)
@@ -323,7 +325,7 @@ func TestDelete(t *testing.T) {
 				_ = pkg.Delete(path + "/" + "mock_note.txt")
 				_ = pkg.Delete(path)
 			},
-			expected: assets.NotExists(".mock-folder"),
+			expected: errors.New("remove ./.mock-folder: directory not empty"),
 		},
 		{
 			note:         models.Note{Title: "somerandomnote.txt"},
@@ -340,6 +342,51 @@ func TestDelete(t *testing.T) {
 	for _, td := range tests {
 		td.beforeAct(td.note)
 		got := td.localService.Remove(td.note)
+		td.afterAct(td.note)
+
+		if (got == nil || td.expected == nil) && got != td.expected ||
+			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
+			t.Errorf("Sum of [Rename] is different: Got: %v | Want: %v", got, td.expected)
+		}
+	}
+}
+
+func TestCreate(t *testing.T) {
+	tests := []struct {
+		note         models.Note
+		localService services.LocalService
+		beforeAct    func(note models.Note)
+		afterAct     func(note models.Note)
+		expected     error
+	}{
+		{
+			note:         models.Note{Title: "somerandomnotethatexists"},
+			localService: ls,
+			beforeAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.WriteNote(path, []byte{})
+			},
+			afterAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.Delete(path)
+			},
+			expected: assets.AlreadyExists("somerandomnotethatexists"),
+		},
+		{
+			note:         models.Note{Title: "mocknote.txt"},
+			localService: ls,
+			beforeAct:    func(note models.Note) {},
+			afterAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.Delete(path)
+			},
+			expected: nil,
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.note)
+		_, got := td.localService.Create(td.note)
 		td.afterAct(td.note)
 
 		if (got == nil || td.expected == nil) && got != td.expected ||
