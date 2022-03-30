@@ -448,3 +448,56 @@ func TestView(t *testing.T) {
 		}
 	}
 }
+
+func TestEdit(t *testing.T) {
+	tests := []struct {
+		note         models.Note
+		localService services.LocalService
+		beforeAct    func(note models.Note)
+		afterAct     func(note models.Note)
+		expected     *models.Note
+		expectedErr  error
+	}{
+		{
+			note:         models.Note{Title: "somerandomnotethatnotexists"},
+			localService: ls,
+			beforeAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.Delete(path)
+			},
+			afterAct:    func(note models.Note) {},
+			expected:    nil,
+			expectedErr: assets.NotExists("somerandomnotethatnotexists"),
+		},
+		{
+			note:         models.Note{Title: "mocknote.txt", Body: "empty-body"},
+			localService: ls,
+			beforeAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.WriteNote(path, []byte{})
+			},
+			afterAct: func(note models.Note) {
+				path := ls.GeneratePath(note)
+				_ = pkg.Delete(path)
+			},
+			expected:    &models.Note{Title: "mocknote.txt", Body: "empty-body"},
+			expectedErr: nil,
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.note)
+		gotRes, gotErr := td.localService.Edit(td.note)
+		td.afterAct(td.note)
+
+		if (gotRes == nil || td.expected == nil) && gotRes != td.expected ||
+			(gotRes != nil && td.expected != nil) && (gotRes.Title != td.expected.Title || gotRes.Body != td.expected.Body) {
+			t.Errorf("Sum of {res}[Edit] is different: Got: %v | Want: %v", gotRes, td.expected)
+		}
+
+		if (gotErr == nil || td.expectedErr == nil) && gotErr != td.expectedErr ||
+			(gotErr != nil && td.expectedErr != nil) && gotErr.Error() != td.expectedErr.Error() {
+			t.Errorf("Sum of {error}[Edit] is different: Got: %v | Want: %v", gotErr, td.expectedErr)
+		}
+	}
+}
