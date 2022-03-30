@@ -1,3 +1,7 @@
+// Copyright 2022-present Anon. All rights reserved.
+// Use of this source code is governed by Apache 2.0 license
+// that can be found in the LICENSE file.
+
 package services_test
 
 import (
@@ -11,6 +15,10 @@ import (
 )
 
 // Define a mock local service implementation.
+//
+// Note:
+// Tests are based on current-machine's local storage.
+// Mocking techniques not used.
 var ls = services.LocalService{
 	NotyaPath: "./",
 	Config:    models.Settings{LocalPath: "./", Editor: "vi"},
@@ -649,6 +657,61 @@ func TestGetAll(t *testing.T) {
 		if (gotErr == nil || td.expectedErr == nil) && gotErr != td.expectedErr ||
 			(gotErr != nil && td.expectedErr != nil) && gotErr.Error() != td.expectedErr.Error() {
 			t.Errorf("Sum of {error}[GetAll] is different: Got: %v | Want: %v", gotErr, td.expectedErr)
+		}
+	}
+}
+
+func TestMoveNotes(t *testing.T) {
+	tests := []struct {
+		settings     models.Settings
+		localService services.LocalService
+		beforeAct    func(oldS, newS models.Settings)
+		afterAct     func(oldS, newS models.Settings)
+		expected     error
+	}{
+		{
+			settings: models.Settings{LocalPath: ""},
+			localService: services.LocalService{
+				NotyaPath: "./.testmocks/",
+				Config:    models.Settings{LocalPath: "./.testmocks/"},
+			},
+			beforeAct: func(oldS, newS models.Settings) {
+				_ = pkg.NewFolder(oldS.LocalPath)
+			},
+			afterAct: func(oldS, newS models.Settings) {
+				_ = pkg.Delete(oldS.LocalPath)
+			},
+			expected: assets.EmptyWorkingDirectory,
+		},
+		{
+			localService: services.LocalService{
+				NotyaPath: "./.testmocks/",
+				Config:    models.Settings{LocalPath: "./.testmocks/"},
+			},
+			settings: models.Settings{LocalPath: "./.testmocks-1/"},
+			beforeAct: func(oldS, newS models.Settings) {
+				_ = pkg.NewFolder(oldS.LocalPath)
+				_ = pkg.WriteNote(oldS.LocalPath+".note.txt", []byte{})
+				_ = pkg.NewFolder(newS.LocalPath)
+				_ = pkg.WriteNote(newS.LocalPath+".note.txt", []byte{})
+			},
+			afterAct: func(oldS, newS models.Settings) {
+				_ = pkg.Delete(newS.LocalPath + ".note.txt")
+				_ = pkg.Delete(newS.LocalPath)
+				_ = pkg.Delete(oldS.LocalPath)
+			},
+			expected: nil,
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.localService.Config, td.settings)
+		got := td.localService.MoveNotes(td.settings)
+		td.afterAct(td.localService.Config, td.settings)
+
+		if (got == nil || td.expected == nil) && got != td.expected ||
+			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
+			t.Errorf("Sum of {error}[MoveNotes] is different: Got: %v | Want: %v", got, td.expected)
 		}
 	}
 }
