@@ -242,7 +242,16 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 
 // Mkdir creates a new working directory.
 func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
+	title := dir.Title
 	folderPath := l.GeneratePath(dir.Title)
+
+	if string(folderPath[len(folderPath)-1]) != "/" {
+		folderPath += "/"
+	}
+
+	if string(title[len(title)-1]) != "/" {
+		title += "/"
+	}
 
 	// Check if file already exists.
 	if pkg.FileExists(folderPath) {
@@ -254,7 +263,7 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 		return nil, mkdirErr
 	}
 
-	return &dir, nil
+	return &models.Folder{Title: title, Path: folderPath}, nil
 }
 
 // GetAll, gets all note [names], and returns it as array list.

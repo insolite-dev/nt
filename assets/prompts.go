@@ -30,6 +30,14 @@ var CreatePromptQuestion = []*survey.Question{
 	},
 }
 
+// Mkdir is a question list for mkdir command.
+var MkdirPromptQuestion = []*survey.Question{
+	{
+		Prompt:   &survey.Input{Message: "Title"},
+		Validate: survey.MinLength(1),
+	},
+}
+
 // OpenViaEditorPromt is a confirm prompt for editor editing.
 var OpenViaEditorPromt = &survey.Confirm{
 	Message: "Wanna open with editor?",

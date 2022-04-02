@@ -614,7 +614,7 @@ func TestMkdir(t *testing.T) {
 				path := ls.GeneratePath(dir.Title)
 				_ = pkg.Delete(path)
 			},
-			expected: assets.AlreadyExists("./somerandomdirthatexists", "directory"),
+			expected: assets.AlreadyExists("./somerandomdirthatexists/", "directory"),
 		},
 		{
 			dir:          models.Folder{Title: "mocknote"},
