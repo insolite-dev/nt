@@ -252,14 +252,14 @@ func TestOpen(t *testing.T) {
 			localService: ls,
 			beforeAct:    func(note models.Note) {},
 			afterAct:     func(note models.Note) {},
-			expected:     assets.NotExists("somerandomnotethatnotexists"),
+			expected:     assets.NotExists("somerandomnotethatnotexists", "File"),
 		},
 		{
 			note:         models.Note{Title: ""},
 			localService: ls,
 			beforeAct:    func(note models.Note) {},
 			afterAct:     func(note models.Note) {},
-			expected:     assets.NotExists(""),
+			expected:     assets.NotExists("", "File"),
 		},
 		{
 			note:         models.Note{Title: "somerandomnote.txt"},
@@ -307,14 +307,14 @@ func TestRemove(t *testing.T) {
 			localService: ls,
 			beforeAct:    func(note models.Note) {},
 			afterAct:     func(note models.Note) {},
-			expected:     assets.NotExists("somerandomnotethatnotexists"),
+			expected:     assets.NotExists("somerandomnotethatnotexists", "File"),
 		},
 		{
 			note:         models.Note{Title: ""},
 			localService: ls,
 			beforeAct:    func(note models.Note) {},
 			afterAct:     func(note models.Note) {},
-			expected:     assets.NotExists(""),
+			expected:     assets.NotExists("", "File"),
 		},
 		{
 			note:         models.Note{Title: ".mock-folder"},
@@ -418,7 +418,7 @@ func TestView(t *testing.T) {
 			},
 			afterAct:    func(note models.Note) {},
 			expected:    nil,
-			expectedErr: assets.NotExists("somerandomnotethatnotexists"),
+			expectedErr: assets.NotExists("somerandomnotethatnotexists", "File"),
 		},
 		{
 			note:         models.Note{Title: "mocknote.txt"},
@@ -471,7 +471,7 @@ func TestEdit(t *testing.T) {
 			},
 			afterAct:    func(note models.Note) {},
 			expected:    nil,
-			expectedErr: assets.NotExists("somerandomnotethatnotexists"),
+			expectedErr: assets.NotExists("somerandomnotethatnotexists", "File"),
 		},
 		{
 			note:         models.Note{Title: "mocknote.txt", Body: "empty-body"},
@@ -526,7 +526,7 @@ func TestRename(t *testing.T) {
 			},
 			afterAct:    func(ed models.EditNote) {},
 			expected:    nil,
-			expectedErr: assets.NotExists(".current-note"),
+			expectedErr: assets.NotExists(".current-note", "File"),
 		},
 		{
 			editnote: models.EditNote{

@@ -125,7 +125,7 @@ func (l *LocalService) Open(note models.Note) error {
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
-		return assets.NotExists(note.Title)
+		return assets.NotExists(note.Title, "File")
 	}
 
 	// Open note-file with via editor.
@@ -143,7 +143,7 @@ func (l *LocalService) Remove(note models.Note) error {
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
-		return assets.NotExists(note.Title)
+		return assets.NotExists(note.Title, "File")
 	}
 
 	// Delete the note from [notePath].
@@ -179,7 +179,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
-		return nil, assets.NotExists(note.Title)
+		return nil, assets.NotExists(note.Title, "File")
 	}
 
 	// Open and read body of note.
@@ -200,7 +200,7 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
-		return nil, assets.NotExists(note.Title)
+		return nil, assets.NotExists(note.Title, "File")
 	}
 
 	// Overwrite note's body.
@@ -219,7 +219,7 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 	// Check if requested current file exists or not.
 
 	if len(strings.Trim(editnote.Current.Title, " ")) < 1 || !pkg.FileExists(editnote.Current.Path) {
-		return nil, assets.NotExists(editnote.Current.Title)
+		return nil, assets.NotExists(editnote.Current.Title, "File")
 	}
 
 	// Check if it's same titles.
