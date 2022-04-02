@@ -32,7 +32,7 @@ func NotExists(path string) error {
 }
 
 // AlreadyExists returns a formatted error message as data-already-exists error.
-func AlreadyExists(path string) error {
-	msg := fmt.Sprintf("A file already exists at: %v, please provide a unique title", path)
+func AlreadyExists(path, node string) error {
+	msg := fmt.Sprintf("A %v already exists at: %v, please provide a unique title", node, path)
 	return errors.New(msg)
 }

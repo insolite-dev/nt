@@ -39,6 +39,7 @@ type ServiceRepo interface {
 	Edit(note models.Note) (*models.Note, error)
 	Rename(editnote models.EditNote) (*models.Note, error)
 
+	Mkdir(dir models.Folder) (*models.Folder, error)
 	GetAll() ([]models.Note, error)
 
 	// MoveNotes moves all exiting notes from CURRENT directory

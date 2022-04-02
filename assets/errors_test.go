@@ -41,20 +41,27 @@ func TestNotExists(t *testing.T) {
 
 func TestAlreadyExists(t *testing.T) {
 	tests := []struct {
-		testname string
-		path     string
-		expected error
+		testname   string
+		path, node string
+		expected   error
 	}{
 		{
-			testname: "should generate already exists error",
+			testname: "should generate already exists error for note",
+			node:     "file",
 			path:     "test/path.txt",
 			expected: errors.New("A file already exists at: test/path.txt, please provide a unique title"),
+		},
+		{
+			testname: "should generate already exists error for folder",
+			node:     "directory",
+			path:     "test/new-folder/",
+			expected: errors.New("A directory already exists at: test/new-folder/, please provide a unique title"),
 		},
 	}
 
 	for _, td := range tests {
 		t.Run(td.testname, func(t *testing.T) {
-			got := assets.AlreadyExists(td.path)
+			got := assets.AlreadyExists(td.path, td.node)
 			if got.Error() != td.expected.Error() {
 				t.Errorf("Sum of AlreadyExists was different: Want: %v, Got: %v", td.expected, got)
 			}

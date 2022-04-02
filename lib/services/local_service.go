@@ -30,13 +30,9 @@ func NewLocalService(stdargs models.StdArgs) *LocalService {
 	return &LocalService{Stdargs: stdargs}
 }
 
-// generatePath returns non-zero-valuable string path from given note.
-func (l *LocalService) GeneratePath(note models.Note) string {
-	if note.Path != "" {
-		return note.Path
-	}
-
-	return l.Config.LocalPath + note.Title
+// GeneratePath returns non-zero-valuable string path from given additional sub-path(title of node).
+func (l *LocalService) GeneratePath(title string) string {
+	return l.Config.LocalPath + title
 }
 
 // Path returns current service's base working directory.
@@ -125,7 +121,7 @@ func (l *LocalService) WriteSettings(settings models.Settings) error {
 
 // Open, opens given note by editor.
 func (l *LocalService) Open(note models.Note) error {
-	notePath := l.GeneratePath(note)
+	notePath := l.GeneratePath(note.Title)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
@@ -143,7 +139,7 @@ func (l *LocalService) Open(note models.Note) error {
 
 // Remove, deletes given note file, from [notya/note.title]
 func (l *LocalService) Remove(note models.Note) error {
-	notePath := l.GeneratePath(note)
+	notePath := l.GeneratePath(note.Title)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
@@ -161,11 +157,11 @@ func (l *LocalService) Remove(note models.Note) error {
 // Create, creates new note file at [notya notes path],
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note)
+	notePath := l.GeneratePath(note.Title)
 
 	// Check if file already exists.
 	if pkg.FileExists(notePath) {
-		return nil, assets.AlreadyExists(note.Title)
+		return nil, assets.AlreadyExists(note.Title, "file")
 	}
 
 	// Create new file.
@@ -179,7 +175,7 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 // View, opens note-file from given [note.Name], then takes it body,
 // and returns new fully-filled note.
 func (l *LocalService) View(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note)
+	notePath := l.GeneratePath(note.Title)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
@@ -200,7 +196,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 // Edit, overwrites exiting file's content-body.
 func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note)
+	notePath := l.GeneratePath(note.Title)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
@@ -233,7 +229,7 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 
 	// Check if file exists at new note path.
 	if pkg.FileExists(editnote.New.Path) {
-		return nil, assets.AlreadyExists(editnote.New.Title)
+		return nil, assets.AlreadyExists(editnote.New.Title, "file")
 	}
 
 	// Rename given note.
@@ -242,6 +238,23 @@ func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
 	}
 
 	return &editnote.New, nil
+}
+
+// Mkdir creates a new working directory.
+func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
+	folderPath := l.GeneratePath(dir.Title)
+
+	// Check if file already exists.
+	if pkg.FileExists(folderPath) {
+		return nil, assets.AlreadyExists(folderPath, "directory")
+	}
+
+	// Generate the directory.
+	if mkdirErr := pkg.NewFolder(folderPath); mkdirErr != nil {
+		return nil, mkdirErr
+	}
+
+	return &dir, nil
 }
 
 // GetAll, gets all note [names], and returns it as array list.
