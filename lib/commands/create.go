@@ -15,21 +15,44 @@ import (
 // createCommand is a command model that used to create new notes or files.
 var createCommand = &cobra.Command{
 	Use:     "create",
-	Aliases: []string{"new", "make"},
-	Short:   "Create new note",
+	Aliases: []string{"new"},
+	Short:   "Create new node(file/folder)",
 	Run:     runCreateCommand,
 }
 
+// providedFolderName is the value of folder flag.
+var providedFolderName string
+
 // initCreateCommand adds it to the main application command.
 func initCreateCommand() {
+	createCommand.Flags().StringVarP(
+		&providedFolderName, "folder", "f", "",
+		"Make a directory via create command",
+	)
+
 	appCommand.AddCommand(createCommand)
 }
 
 // runCreateCommand runs appropriate service commands to create new note.
 func runCreateCommand(cmd *cobra.Command, args []string) {
+	// Move direction to mkdir command.
+	if providedFolderName != "" {
+		runMkdirCommand(cmd, []string{providedFolderName})
+		return
+	}
+
 	// Take new note's title from arguments, if it's provided.
 	if len(args) > 0 {
 		title := args[0]
+
+		// Check for directory rep-slash at end of the title.
+		// If it's provided, create command should switch  functionality
+		// to mkdir command.
+		if string(title[len(title)-1]) == "/" {
+			runMkdirCommand(cmd, []string{title})
+			return
+		}
+
 		createAndFinish(title)
 		return
 	}
@@ -62,5 +85,5 @@ func createAndFinish(title string) {
 		}
 	}
 
-	pkg.Alert(pkg.SuccessL, "Created new note: "+note.Title)
+	pkg.Alert(pkg.SuccessL, "Created new file: "+note.Title)
 }
