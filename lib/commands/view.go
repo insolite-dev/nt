@@ -49,7 +49,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 	// Ask for note selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNotePrompt("view", pkg.MapNotesList(notes)),
+		assets.ChooseNotePrompt("view", pkg.MapNodesList(notes)),
 		&selected,
 	)
 

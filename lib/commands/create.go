@@ -79,7 +79,7 @@ func createAndFinish(title string) {
 
 	if openNote {
 		// Open created note-file to edit it.
-		if err := service.Open(*note); err != nil {
+		if err := service.Open(note.ToNode()); err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
 			return
 		}

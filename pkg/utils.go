@@ -129,10 +129,10 @@ func OpenViaEditor(filepath string, stdargs models.StdArgs, settings models.Sett
 	return nil
 }
 
-// MapNotesList converts note-models list to a string list.
-func MapNotesList(notes []models.Note) []string {
+// MapNodesList converts node-models list to a string list.
+func MapNodesList(nodes []models.Node) []string {
 	res := []string{}
-	for _, note := range notes {
+	for _, note := range nodes {
 		res = append(res, note.Title)
 	}
 

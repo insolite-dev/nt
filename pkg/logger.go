@@ -119,7 +119,7 @@ func PrintNote(note models.Note) {
 }
 
 // PrintNotes, logs given notes list.
-func PrintNotes(list []models.Note) {
+func PrintNotes(list []models.Node) {
 	if len(list) == 0 {
 		return
 	}

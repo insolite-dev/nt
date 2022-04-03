@@ -24,12 +24,12 @@ func initListCommand() {
 
 // runListCommand runs appropriate service functionalities to log all notes.
 func runListCommand(cmd *cobra.Command, args []string) {
-	// Generate a list of notes.
-	notes, err := service.GetAll()
+	// Generate a list of nodes.
+	nodes, err := service.GetAll()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	pkg.PrintNotes(notes)
+	pkg.PrintNotes(nodes)
 }

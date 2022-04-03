@@ -49,7 +49,7 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	// Ask for note selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNotePrompt("rename:", pkg.MapNotesList(notes)),
+		assets.ChooseNotePrompt("rename:", pkg.MapNodesList(notes)),
 		&selected,
 	)
 
@@ -67,16 +67,16 @@ func askAndRename(selected string) {
 
 // rename takes selected and newname, then makes changes and alerts it.
 func rename(selected string, newname string) {
-	// Generate editable note by current note and updated note.
-	editableNote := models.EditNote{
-		Current: models.Note{Title: selected},
-		New:     models.Note{Title: newname},
+	// Generate editable node by current note and updated note.
+	editNode := models.EditNode{
+		Current: models.Node{Title: selected},
+		New:     models.Node{Title: newname},
 	}
 
-	if _, err := service.Rename(editableNote); err != nil {
+	if err := service.Rename(editNode); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	pkg.Alert(pkg.SuccessL, "Note renamed successfully: "+newname)
+	pkg.Alert(pkg.SuccessL, "Node renamed successfully: "+newname)
 }

@@ -31,3 +31,8 @@ type Folder struct {
 	// Includes full-path strings of the files/folders names.
 	Files []string `json:"files"`
 }
+
+// ToNode converts [Folder] model to [Node] model.
+func (n *Folder) ToNode() Node {
+	return Node{Title: n.Title, Path: n.Path}
+}

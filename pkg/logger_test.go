@@ -131,15 +131,15 @@ func TestPrintNote(t *testing.T) {
 func TestPrintNotes(t *testing.T) {
 	tests := []struct {
 		testName string
-		list     []models.Note
+		list     []models.Node
 	}{
 		{
 			testName: "should break function",
-			list:     []models.Note{},
+			list:     []models.Node{},
 		},
 		{
 			testName: "should show note properly",
-			list: []models.Note{
+			list: []models.Node{
 				{Title: "Test TITLE"},
 			},
 		},

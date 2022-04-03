@@ -28,19 +28,22 @@ type ServiceRepo interface {
 
 	// Init setups all kinda minimal services for application.
 	Init() error
-
 	Settings() (*models.Settings, error)
 	WriteSettings(settings models.Settings) error
 
-	Open(note models.Note) error
-	Remove(note models.Note) error
+	// General functions that used for both [Note]s and [Folder]s
+	Open(node models.Node) error
+	Remove(node models.Node) error
+	Rename(editNode models.EditNode) error
+	GetAll() ([]models.Node, error)
+
+	// Note(file) related functions.
 	Create(note models.Note) (*models.Note, error)
 	View(note models.Note) (*models.Note, error)
 	Edit(note models.Note) (*models.Note, error)
-	Rename(editnote models.EditNote) (*models.Note, error)
 
+	// Folder(directory) related functions.
 	Mkdir(dir models.Folder) (*models.Folder, error)
-	GetAll() ([]models.Note, error)
 
 	// MoveNotes moves all exiting notes from CURRENT directory
 	// to new one, appropriate by settings which comes from arguments.
