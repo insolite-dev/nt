@@ -11,10 +11,10 @@ import (
 	"github.com/anonistas/notya/lib/models"
 )
 
-// ChooseNotePrompt is a prompt interface for note choosing.
-func ChooseNotePrompt(act string, options []string) *survey.Select {
+// ChooseNodePrompt is a prompt interface for tui file or folder choosing bar.
+func ChooseNodePrompt(node, act string, options []string) *survey.Select {
 	return &survey.Select{
-		Message: fmt.Sprintf("Choose a note to %v:", act),
+		Message: fmt.Sprintf("Choose a %v to %v:", node, act),
 		Options: options,
 	}
 }
@@ -47,11 +47,7 @@ var OpenViaEditorPromt = &survey.Confirm{
 
 // NewNamePrompt is a input prompt for rename command.
 func NewNamePrompt(d string) *survey.Input {
-	return &survey.Input{
-		Message: "New name: ",
-		Help:    "Enter new note name/title (don't forget putting type of it, like: `renamed_note.txt`)",
-		Default: d,
-	}
+	return &survey.Input{Message: "New name: ", Default: d}
 }
 
 // SettingsEditPromptQuestions is a question list for settings' edit sub-command.

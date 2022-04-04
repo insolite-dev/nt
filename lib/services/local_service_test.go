@@ -679,7 +679,7 @@ func TestGetAll(t *testing.T) {
 
 	for _, td := range tests {
 		td.beforeAct(td.localService.NotyaPath)
-		gotRes, gotErr := td.localService.GetAll()
+		gotRes, _, gotErr := td.localService.GetAll("")
 		td.afterAct(td.localService.NotyaPath)
 
 		for i, got := range gotRes {

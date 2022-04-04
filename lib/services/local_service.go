@@ -269,30 +269,33 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 }
 
 // GetAll, gets all node [names], and returns it as array list.
-func (l *LocalService) GetAll() ([]models.Node, error) {
-	// Generate array of all file names on LocalPath.
-	files, err := pkg.ListDir(l.Config.LocalPath, models.SettingsName)
+func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error) {
+	// Generate the path
+	path := l.Config.LocalPath + additional
+
+	// Generate array of all file names that are located in [path].
+	files, err := pkg.ListDir(path, models.SettingsName)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if files == nil || len(files) == 0 {
-		return nil, assets.EmptyWorkingDirectory
+		return nil, nil, assets.EmptyWorkingDirectory
 	}
 
 	// Fetch node names.
 	nodes := []models.Node{}
-	for _, name := range files {
-		nodePath := l.GeneratePath(name)
-		nodes = append(nodes, models.Node{Title: name, Path: nodePath})
+	for _, title := range files {
+		path := l.GeneratePath(title)
+		nodes = append(nodes, models.Node{Title: title, Path: path})
 	}
 
-	return nodes, nil
+	return nodes, files, nil
 }
 
 // MoveNote, moves all notes from "CURRENT" path to new path(given by settings parameter).
 func (l *LocalService) MoveNotes(settings models.Settings) error {
-	nodes, err := l.GetAll()
+	nodes, _, err := l.GetAll("")
 	if err != nil {
 		return err
 	}

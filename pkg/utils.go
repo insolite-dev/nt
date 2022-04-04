@@ -99,7 +99,17 @@ func ListDir(path string, expect string) ([]string, error) {
 			continue
 		}
 
-		res = append(res, d.Name())
+		var name string = d.Name()
+
+		// Add slash to directories.
+		if d.IsDir() {
+			name += "/"
+		}
+
+		// TODO: Add second array that stores ascii modified names
+		// Like folders with folder icon and files with file icon.
+
+		res = append(res, name)
 	}
 
 	return res, nil
@@ -127,14 +137,4 @@ func OpenViaEditor(filepath string, stdargs models.StdArgs, settings models.Sett
 	}
 
 	return nil
-}
-
-// MapNodesList converts node-models list to a string list.
-func MapNodesList(nodes []models.Node) []string {
-	res := []string{}
-	for _, note := range nodes {
-		res = append(res, note.Title)
-	}
-
-	return res
 }

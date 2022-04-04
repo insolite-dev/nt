@@ -9,11 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// listCommand is a command that used to list all exiting notes.
+// listCommand is a command that used to list all exiting nodes.
 var listCommand = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
-	Short:   "List all notya notes",
+	Short:   "List all notya nodes(files & folders)",
 	Run:     runListCommand,
 }
 
@@ -22,14 +22,19 @@ func initListCommand() {
 	appCommand.AddCommand(listCommand)
 }
 
-// runListCommand runs appropriate service functionalities to log all notes.
+// runListCommand runs appropriate service functionalities to log all nodes.
 func runListCommand(cmd *cobra.Command, args []string) {
+	var additional string
+	if len(args) > 0 {
+		additional = args[0]
+	}
+
 	// Generate a list of nodes.
-	nodes, err := service.GetAll()
+	nodes, _, err := service.GetAll(additional)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	pkg.PrintNotes(nodes)
+	pkg.PrintNodes(nodes)
 }

@@ -35,7 +35,7 @@ func runMkdirCommand(cmd *cobra.Command, args []string) {
 		survey.Ask(assets.MkdirPromptQuestion, &title)
 	}
 
-	// Create new note-file by given title.
+	// Create new directory by given title.
 	dir, err := service.Mkdir(models.Folder{Title: title})
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())

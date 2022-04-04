@@ -147,7 +147,7 @@ func TestPrintNotes(t *testing.T) {
 
 	for _, td := range tests {
 		t.Run(td.testName, func(t *testing.T) {
-			pkg.PrintNotes(td.list)
+			pkg.PrintNodes(td.list)
 		})
 	}
 }

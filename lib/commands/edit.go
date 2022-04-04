@@ -38,8 +38,8 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Generate all note names.
-	notes, err := service.GetAll()
+	// Generate all node names.
+	_, nodeNames, err := service.GetAll("")
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -48,7 +48,7 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 	// Ask for note selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNotePrompt("edit", pkg.MapNodesList(notes)),
+		assets.ChooseNodePrompt("note", "edit", nodeNames),
 		&selected,
 	)
 

@@ -27,23 +27,23 @@ func initRemoveCommand() {
 
 // runRemoveCommand runs appropriate service commands to remove a file or folder.
 func runRemoveCommand(cmd *cobra.Command, args []string) {
-	// Take note title from arguments. If it's provided.
+	// Take node title from arguments. If it's provided.
 	if len(args) > 0 {
 		removeAndFinish(models.Node{Title: args[0]})
 		return
 	}
 
 	// Generate array of all node names.
-	nodes, err := service.GetAll()
+	_, nodeNames, err := service.GetAll("")
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	// Ask for note selection.
+	// Ask for node selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNotePrompt("remove", pkg.MapNodesList(nodes)),
+		assets.ChooseNodePrompt("node", "remove", nodeNames),
 		&selected,
 	)
 
