@@ -138,3 +138,9 @@ func OpenViaEditor(filepath string, stdargs models.StdArgs, settings models.Sett
 
 	return nil
 }
+
+// IsDir checks if the file (at provided [path]) is directory or not.
+func IsDir(path string) bool {
+	i, _ := os.Stat(path)
+	return i.IsDir()
+}

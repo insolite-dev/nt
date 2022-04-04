@@ -328,3 +328,44 @@ func TestOpenViaEditor(t *testing.T) {
 		})
 	}
 }
+
+func TestIsDir(t *testing.T) {
+	type closures struct {
+		creating func(name string)
+		deleting func(name string)
+	}
+
+	tests := []struct {
+		filename string
+		c        closures
+		expected bool
+	}{
+		{
+			"test.txt",
+			closures{
+				creating: func(name string) { pkg.WriteNote(name, []byte{}) },
+				deleting: func(name string) { pkg.Delete(name) },
+			},
+			false,
+		},
+		{
+			"testfolder",
+			closures{
+				creating: func(name string) { pkg.NewFolder(name) },
+				deleting: func(name string) { pkg.Delete(name) },
+			},
+			true,
+		},
+	}
+
+	for _, td := range tests {
+		td.c.creating(td.filename)
+
+		got := pkg.IsDir(td.filename)
+		if got != td.expected {
+			t.Errorf("IsDir sum was different: Got: %v | Want: %v", got, td.expected)
+		}
+
+		td.c.deleting(td.filename)
+	}
+}

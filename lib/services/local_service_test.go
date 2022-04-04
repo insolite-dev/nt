@@ -50,17 +50,26 @@ func TestNewLocalService(t *testing.T) {
 
 func TestGeneratePath(t *testing.T) {
 	tests := []struct {
+		ls       services.LocalService
 		title    string
 		expected string
 	}{
 		{
+			ls:       ls,
+			title:    "new-note.txt",
+			expected: ls.Config.LocalPath + "new-note.txt",
+		},
+		{
+			ls: services.LocalService{
+				Config: models.Settings{LocalPath: ".", Editor: "vi"},
+			},
 			title:    "new-note.txt",
 			expected: ls.Config.LocalPath + "new-note.txt",
 		},
 	}
 
 	for _, td := range tests {
-		got := ls.GeneratePath(td.title)
+		got := td.ls.GeneratePath(td.title)
 
 		if got != td.expected {
 			t.Errorf("Sum of [GeneratePath] is different: Got: %v | Want: %v", got, td.expected)
@@ -329,7 +338,7 @@ func TestRemove(t *testing.T) {
 				_ = pkg.Delete(path + "/" + "mock_note.txt")
 				_ = pkg.Delete(path)
 			},
-			expected: errors.New("remove ./.mock-folder: directory not empty"),
+			expected: nil,
 		},
 		{
 			node:         models.Node{Title: "somerandomnote.txt"},

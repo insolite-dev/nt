@@ -32,7 +32,13 @@ func NewLocalService(stdargs models.StdArgs) *LocalService {
 
 // GeneratePath returns non-zero-valuable string path from given additional sub-path(title of node).
 func (l *LocalService) GeneratePath(title string) string {
-	return l.Config.LocalPath + title
+	local := l.Config.LocalPath
+
+	if string(local[len(local)-1]) != "/" {
+		local += "/"
+	}
+
+	return local + title
 }
 
 // Path returns current service's base working directory.
@@ -146,10 +152,22 @@ func (l *LocalService) Remove(node models.Node) error {
 		return assets.NotExists(node.Title, "File or Directory")
 	}
 
-	// Delete the node from [notePath].
-	//
-	// TODO: Check for folder. (to delete sub nodes inside that folder)
-	//
+	if pkg.IsDir(nodePath) {
+		subNodes, _, err := l.GetAll("/" + node.Title)
+		if err != nil {
+			return err
+		}
+
+		// Remove all sub nodes of directory that're based at [nodePath].
+		for _, subNode := range subNodes {
+			n := models.Node{Title: node.Title + "/" + subNode.Title}
+			if err := l.Remove(n); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Delete the file from [notePath].
 	if err := pkg.Delete(nodePath); err != nil {
 		return err
 	}
@@ -271,7 +289,7 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 // GetAll, gets all node [names], and returns it as array list.
 func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error) {
 	// Generate the path
-	path := l.Config.LocalPath + additional
+	path := l.GeneratePath("") + additional
 
 	// Generate array of all file names that are located in [path].
 	files, err := pkg.ListDir(path, models.SettingsName)
