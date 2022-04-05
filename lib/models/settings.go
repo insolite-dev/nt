@@ -17,6 +17,13 @@ const (
 	DefaultLocalPath = "notya"
 )
 
+// NotyaIgnoreFiles are those files that shouldn't
+// be represented as note files.
+var NotyaIgnoreFiles []string = []string{
+	SettingsName,
+	".DS_Store", // Darwin related.
+}
+
 // Settings is a main structure model of application settings.
 //
 //  Example

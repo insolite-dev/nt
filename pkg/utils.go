@@ -85,9 +85,15 @@ func ReadBody(path string) (*string, error) {
 }
 
 // ListDir, reads all files from given-path directory.
-func ListDir(path string, expect string) ([]string, []string, error) {
+func ListDir(path, space string, ignore []string, tree bool) ([]string, []string, error) {
 	// Read directory's files.
 	list, err := os.ReadDir(path)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Get path info.
+	pathFI, err := os.Stat(path)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -95,23 +101,63 @@ func ListDir(path string, expect string) ([]string, []string, error) {
 	// Convert list to string list.
 	var res, pretty []string
 	for _, d := range list {
-		if expect == d.Name() {
+		iIgn := false
+
+		// Set i[index]Ignore variable
+		for _, ig := range ignore {
+			if ig == d.Name() {
+				iIgn = true
+			}
+		}
+		if iIgn {
+			iIgn = false // Ignore file, set i[index]Ignore to false.
 			continue
 		}
 
-		var name string = d.Name()
+		name := d.Name()
 		var prettyName string
 
-		// Add slash to directories.
+		// Get full name via including ~/notya
+		if len(space) > 0 {
+			name = pathFI.Name() + "/" + d.Name()
+		}
+
+		var subnames, subpretty []string
 		if d.IsDir() {
 			name += "/"
-			prettyName = " " + name
+			prettyName = space + " " + d.Name() + "/"
+
+			// Split sub-nodes as tree, eg:
+			//
+			//   My-Folder
+			//     note.txt
+			//     second_note.txt
+			//     Sub-folder
+			//       sub_note.txt
+			//      ...
+			if tree {
+				n := models.Node{Path: path}
+				sn, sp, err := ListDir(
+					n.StructAsFolder().Path+d.Name(),
+					space+"  ", ignore, tree,
+				)
+				if err != nil {
+					return res, pretty, err
+				}
+				subnames = sn
+				subpretty = sp
+			}
 		} else {
-			prettyName = " " + name
+			prettyName = space + " " + d.Name()
 		}
 
 		res = append(res, name)
 		pretty = append(pretty, prettyName)
+
+		if len(subnames) > 0 && len(subpretty) > 0 {
+			res = append(res, subnames...)
+			pretty = append(pretty, subpretty...)
+		}
 	}
 
 	return res, pretty, nil
