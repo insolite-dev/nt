@@ -20,5 +20,8 @@ type Note struct {
 
 // ToNode converts [Note] model to [Node] model.
 func (n *Note) ToNode() Node {
-	return Node{Title: n.Title, Path: n.Path}
+	return Node{
+		Title: n.Title, Path: n.Path,
+		Pretty: " " + n.Title,
+	}
 }

@@ -128,7 +128,7 @@ func TestPrintNote(t *testing.T) {
 	}
 }
 
-func TestPrintNotes(t *testing.T) {
+func TestPrintNodes(t *testing.T) {
 	tests := []struct {
 		testName string
 		list     []models.Node
@@ -140,7 +140,7 @@ func TestPrintNotes(t *testing.T) {
 		{
 			testName: "should show note properly",
 			list: []models.Node{
-				{Title: "Test TITLE"},
+				{Pretty: "Test TITLE"},
 			},
 		},
 	}

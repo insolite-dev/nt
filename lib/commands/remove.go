@@ -52,6 +52,9 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 
 // removeAndFinish removes given node and alerts success message if everything is OK.
 func removeAndFinish(node models.Node) {
+	//
+	// TODO: Check for [.](All files).
+	//
 	if err := service.Remove(node); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return

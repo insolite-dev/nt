@@ -34,5 +34,8 @@ type Folder struct {
 
 // ToNode converts [Folder] model to [Node] model.
 func (n *Folder) ToNode() Node {
-	return Node{Title: n.Title, Path: n.Path}
+	return Node{
+		Title: n.Title, Path: n.Path,
+		Pretty: " " + n.Title,
+	}
 }

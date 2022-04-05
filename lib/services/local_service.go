@@ -153,18 +153,25 @@ func (l *LocalService) Remove(node models.Node) error {
 	}
 
 	if pkg.IsDir(nodePath) {
-		subNodes, _, err := l.GetAll("/" + node.Title)
-		if err != nil {
+		subNodes, _, err := l.GetAll(node.StructAsFolder().Title)
+		if err != nil && err != assets.EmptyWorkingDirectory {
 			return err
 		}
 
 		// Remove all sub nodes of directory that're based at [nodePath].
 		for _, subNode := range subNodes {
-			n := models.Node{Title: node.Title + "/" + subNode.Title}
-			if err := l.Remove(n); err != nil {
+			title := node.StructAsFolder().Title + subNode.StructAsNote().Title
+			if err := l.Remove(models.Node{Title: title}); err != nil {
 				return err
 			}
 		}
+
+		// Delete the folder from [notePath].
+		if err := pkg.Delete(nodePath); err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	// Delete the file from [notePath].
@@ -288,11 +295,10 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 
 // GetAll, gets all node [names], and returns it as array list.
 func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error) {
-	// Generate the path
-	path := l.GeneratePath("") + additional
+	path := l.GeneratePath(additional)
 
 	// Generate array of all file names that are located in [path].
-	files, err := pkg.ListDir(path, models.SettingsName)
+	files, pretty, err := pkg.ListDir(path, models.SettingsName)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -301,11 +307,11 @@ func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error
 		return nil, nil, assets.EmptyWorkingDirectory
 	}
 
-	// Fetch node names.
+	// Generate node list via [files] array.
 	nodes := []models.Node{}
-	for _, title := range files {
+	for i, title := range files {
 		path := l.GeneratePath(title)
-		nodes = append(nodes, models.Node{Title: title, Path: path})
+		nodes = append(nodes, models.Node{Title: title, Path: path, Pretty: pretty[i]})
 	}
 
 	return nodes, files, nil

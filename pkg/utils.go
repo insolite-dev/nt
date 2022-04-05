@@ -85,34 +85,36 @@ func ReadBody(path string) (*string, error) {
 }
 
 // ListDir, reads all files from given-path directory.
-func ListDir(path string, expect string) ([]string, error) {
+func ListDir(path string, expect string) ([]string, []string, error) {
 	// Read directory's files.
 	list, err := os.ReadDir(path)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Convert list to string list.
-	res := []string{}
+	var res, pretty []string
 	for _, d := range list {
 		if expect == d.Name() {
 			continue
 		}
 
 		var name string = d.Name()
+		var prettyName string
 
 		// Add slash to directories.
 		if d.IsDir() {
 			name += "/"
+			prettyName = " " + name
+		} else {
+			prettyName = " " + name
 		}
 
-		// TODO: Add second array that stores ascii modified names
-		// Like folders with folder icon and files with file icon.
-
 		res = append(res, name)
+		pretty = append(pretty, prettyName)
 	}
 
-	return res, nil
+	return res, pretty, nil
 }
 
 // OpenViaEditor opens file in custom(appropriate from settings) from given path.
@@ -141,6 +143,10 @@ func OpenViaEditor(filepath string, stdargs models.StdArgs, settings models.Sett
 
 // IsDir checks if the file (at provided [path]) is directory or not.
 func IsDir(path string) bool {
-	i, _ := os.Stat(path)
+	i, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
 	return i.IsDir()
 }

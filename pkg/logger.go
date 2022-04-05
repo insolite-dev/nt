@@ -125,7 +125,7 @@ func PrintNodes(list []models.Node) {
 	}
 
 	for _, value := range list {
-		note := fmt.Sprintf(" • %v", value.Title)
+		note := fmt.Sprintf(" • %v", value.Pretty)
 		text.Add(color.FgYellow).Println(note)
 	}
 }
