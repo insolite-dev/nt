@@ -298,7 +298,7 @@ func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error
 	path := l.GeneratePath(additional)
 
 	// Generate array of all file names that are located in [path].
-	files, pretty, err := pkg.ListDir(path, "", models.NotyaIgnoreFiles, true)
+	files, pretty, err := pkg.ListDir(path, "", "", models.NotyaIgnoreFiles, true)
 	if err != nil {
 		return nil, nil, err
 	}

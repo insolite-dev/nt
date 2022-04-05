@@ -85,7 +85,7 @@ func ReadBody(path string) (*string, error) {
 }
 
 // ListDir, reads all files from given-path directory.
-func ListDir(path, space string, ignore []string, tree bool) ([]string, []string, error) {
+func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string, []string, error) {
 	// Read directory's files.
 	list, err := os.ReadDir(path)
 	if err != nil {
@@ -115,11 +115,15 @@ func ListDir(path, space string, ignore []string, tree bool) ([]string, []string
 		}
 
 		name := d.Name()
-		var prettyName string
+		var prettyName, localPrevPath string
 
+		// Ignore base path's name.
+		if len(space) > 2 {
+			localPrevPath = prevPath
+		}
 		// Get full name via including ~/notya
 		if len(space) > 0 {
-			name = pathFI.Name() + "/" + d.Name()
+			name = localPrevPath + pathFI.Name() + "/" + d.Name()
 		}
 
 		var subnames, subpretty []string
@@ -136,9 +140,10 @@ func ListDir(path, space string, ignore []string, tree bool) ([]string, []string
 			//       sub_note.txt
 			//      ...
 			if tree {
-				n := models.Node{Path: path}
+				n := models.Node{Title: pathFI.Name(), Path: path}
 				sn, sp, err := ListDir(
-					n.StructAsFolder().Path+d.Name(),
+					n.StructAsFolder().Path+d.Name(), n.StructAsFolder().Title,
+					// Push to right by two empty charachters each sub node.
 					space+"  ", ignore, tree,
 				)
 				if err != nil {
