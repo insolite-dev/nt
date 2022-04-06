@@ -50,21 +50,26 @@ func TestNewLocalService(t *testing.T) {
 
 func TestGeneratePath(t *testing.T) {
 	tests := []struct {
-		note     models.Note
+		ls       services.LocalService
+		title    string
 		expected string
 	}{
 		{
-			note:     models.Note{Path: "../random-path-note.txt"},
-			expected: "../random-path-note.txt",
+			ls:       ls,
+			title:    "new-note.txt",
+			expected: ls.Config.LocalPath + "new-note.txt",
 		},
 		{
-			note:     models.Note{Title: "new-note.txt"},
+			ls: services.LocalService{
+				Config: models.Settings{LocalPath: ".", Editor: "vi"},
+			},
+			title:    "new-note.txt",
 			expected: ls.Config.LocalPath + "new-note.txt",
 		},
 	}
 
 	for _, td := range tests {
-		got := ls.GeneratePath(td.note)
+		got := td.ls.GeneratePath(td.title)
 
 		if got != td.expected {
 			t.Errorf("Sum of [GeneratePath] is different: Got: %v | Want: %v", got, td.expected)
@@ -245,35 +250,35 @@ func TestOpen(t *testing.T) {
 	}
 
 	tests := []struct {
-		note         models.Note
+		node         models.Node
 		localService services.LocalService
-		beforeAct    func(note models.Note)
-		afterAct     func(note models.Note)
+		beforeAct    func(node models.Node)
+		afterAct     func(node models.Node)
 		expected     error
 	}{
 		{
-			note:         models.Note{Title: "somerandomnotethatnotexists"},
+			node:         models.Node{Title: "somerandomnotethatnotexists"},
 			localService: ls,
-			beforeAct:    func(note models.Note) {},
-			afterAct:     func(note models.Note) {},
-			expected:     assets.NotExists("somerandomnotethatnotexists"),
+			beforeAct:    func(node models.Node) {},
+			afterAct:     func(node models.Node) {},
+			expected:     assets.NotExists("somerandomnotethatnotexists", "File or Directory"),
 		},
 		{
-			note:         models.Note{Title: ""},
+			node:         models.Node{Title: ""},
 			localService: ls,
-			beforeAct:    func(note models.Note) {},
-			afterAct:     func(note models.Note) {},
-			expected:     assets.NotExists(""),
+			beforeAct:    func(node models.Node) {},
+			afterAct:     func(node models.Node) {},
+			expected:     assets.NotExists("", "File or Directory"),
 		},
 		{
-			note:         models.Note{Title: "somerandomnote.txt"},
+			node:         models.Node{Title: "somerandomnote.txt"},
 			localService: ls,
-			beforeAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+			beforeAct: func(node models.Node) {
+				path := ls.GeneratePath(node.Title)
 				_ = pkg.WriteNote(path, []byte{})
 			},
-			afterAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+			afterAct: func(node models.Node) {
+				path := ls.GeneratePath(node.Title)
 				_ = pkg.Delete(path)
 			},
 			expected: errors.New("signal: abort trap"),
@@ -281,9 +286,9 @@ func TestOpen(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		td.beforeAct(td.note)
-		got := td.localService.Open(td.note)
-		td.afterAct(td.note)
+		td.beforeAct(td.node)
+		got := td.localService.Open(td.node)
+		td.afterAct(td.node)
 
 		if (got == nil || td.expected == nil) && got != td.expected ||
 			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
@@ -300,57 +305,57 @@ func TestRemove(t *testing.T) {
 	}
 
 	tests := []struct {
-		note         models.Note
+		node         models.Node
 		localService services.LocalService
-		beforeAct    func(note models.Note)
-		afterAct     func(note models.Note)
+		beforeAct    func(node models.Node)
+		afterAct     func(node models.Node)
 		expected     error
 	}{
 		{
-			note:         models.Note{Title: "somerandomnotethatnotexists"},
+			node:         models.Node{Title: "somerandomnotethatnotexists"},
 			localService: ls,
-			beforeAct:    func(note models.Note) {},
-			afterAct:     func(note models.Note) {},
-			expected:     assets.NotExists("somerandomnotethatnotexists"),
+			beforeAct:    func(node models.Node) {},
+			afterAct:     func(node models.Node) {},
+			expected:     assets.NotExists("somerandomnotethatnotexists", "File or Directory"),
 		},
 		{
-			note:         models.Note{Title: ""},
+			node:         models.Node{Title: ""},
 			localService: ls,
-			beforeAct:    func(note models.Note) {},
-			afterAct:     func(note models.Note) {},
-			expected:     assets.NotExists(""),
+			beforeAct:    func(node models.Node) {},
+			afterAct:     func(node models.Node) {},
+			expected:     assets.NotExists("", "File or Directory"),
 		},
 		{
-			note:         models.Note{Title: ".mock-folder"},
+			node:         models.Node{Title: ".mock-folder"},
 			localService: ls,
-			beforeAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+			beforeAct: func(node models.Node) {
+				path := ls.GeneratePath(node.Title)
 				_ = pkg.NewFolder(path)
 				_ = pkg.WriteNote(path+"/"+"mock_note.txt", []byte{})
 			},
-			afterAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+			afterAct: func(node models.Node) {
+				path := ls.GeneratePath(node.Title)
 				_ = pkg.Delete(path + "/" + "mock_note.txt")
 				_ = pkg.Delete(path)
 			},
-			expected: errors.New("remove ./.mock-folder: directory not empty"),
+			expected: nil,
 		},
 		{
-			note:         models.Note{Title: "somerandomnote.txt"},
+			node:         models.Node{Title: "somerandomnote.txt"},
 			localService: ls,
-			beforeAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+			beforeAct: func(node models.Node) {
+				path := ls.GeneratePath(node.Title)
 				_ = pkg.WriteNote(path, []byte{})
 			},
-			afterAct: func(note models.Note) {},
+			afterAct: func(node models.Node) {},
 			expected: nil,
 		},
 	}
 
 	for _, td := range tests {
-		td.beforeAct(td.note)
-		got := td.localService.Remove(td.note)
-		td.afterAct(td.note)
+		td.beforeAct(td.node)
+		got := td.localService.Remove(td.node)
+		td.afterAct(td.node)
 
 		if (got == nil || td.expected == nil) && got != td.expected ||
 			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
@@ -371,21 +376,21 @@ func TestCreate(t *testing.T) {
 			note:         models.Note{Title: "somerandomnotethatexists"},
 			localService: ls,
 			beforeAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+				path := ls.GeneratePath(note.Title)
 				_ = pkg.WriteNote(path, []byte{})
 			},
 			afterAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+				path := ls.GeneratePath(note.Title)
 				_ = pkg.Delete(path)
 			},
-			expected: assets.AlreadyExists("somerandomnotethatexists"),
+			expected: assets.AlreadyExists("somerandomnotethatexists", "file"),
 		},
 		{
 			note:         models.Note{Title: "mocknote.txt"},
 			localService: ls,
 			beforeAct:    func(note models.Note) {},
 			afterAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+				path := ls.GeneratePath(note.Title)
 				_ = pkg.Delete(path)
 			},
 			expected: nil,
@@ -417,22 +422,22 @@ func TestView(t *testing.T) {
 			note:         models.Note{Title: "somerandomnotethatnotexists"},
 			localService: ls,
 			beforeAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+				path := ls.GeneratePath(note.Title)
 				_ = pkg.Delete(path)
 			},
 			afterAct:    func(note models.Note) {},
 			expected:    nil,
-			expectedErr: assets.NotExists("somerandomnotethatnotexists"),
+			expectedErr: assets.NotExists("somerandomnotethatnotexists", "File"),
 		},
 		{
 			note:         models.Note{Title: "mocknote.txt"},
 			localService: ls,
 			beforeAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+				path := ls.GeneratePath(note.Title)
 				_ = pkg.WriteNote(path, []byte{})
 			},
 			afterAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+				path := ls.GeneratePath(note.Title)
 				_ = pkg.Delete(path)
 			},
 			expected:    &models.Note{Title: "mocknote.txt", Body: string([]byte{})},
@@ -470,22 +475,22 @@ func TestEdit(t *testing.T) {
 			note:         models.Note{Title: "somerandomnotethatnotexists"},
 			localService: ls,
 			beforeAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+				path := ls.GeneratePath(note.Title)
 				_ = pkg.Delete(path)
 			},
 			afterAct:    func(note models.Note) {},
 			expected:    nil,
-			expectedErr: assets.NotExists("somerandomnotethatnotexists"),
+			expectedErr: assets.NotExists("somerandomnotethatnotexists", "File"),
 		},
 		{
 			note:         models.Note{Title: "mocknote.txt", Body: "empty-body"},
 			localService: ls,
 			beforeAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+				path := ls.GeneratePath(note.Title)
 				_ = pkg.WriteNote(path, []byte{})
 			},
 			afterAct: func(note models.Note) {
-				path := ls.GeneratePath(note)
+				path := ls.GeneratePath(note.Title)
 				_ = pkg.Delete(path)
 			},
 			expected:    &models.Note{Title: "mocknote.txt", Body: "empty-body"},
@@ -512,89 +517,127 @@ func TestEdit(t *testing.T) {
 
 func TestRename(t *testing.T) {
 	tests := []struct {
-		editnote     models.EditNote
+		editnode     models.EditNode
 		localService services.LocalService
-		beforeAct    func(ed models.EditNote)
-		afterAct     func(ed models.EditNote)
-		expected     *models.Note
-		expectedErr  error
+		beforeAct    func(ed models.EditNode)
+		afterAct     func(ed models.EditNode)
+		expected     error
 	}{
 		{
-			editnote: models.EditNote{
-				Current: models.Note{Title: ".current-note"},
-				New:     models.Note{Title: ".new-note"},
+			editnode: models.EditNode{
+				Current: models.Node{Title: ".current-note"},
+				New:     models.Node{Title: ".new-note"},
 			},
 			localService: ls,
-			beforeAct: func(ed models.EditNote) {
-				_ = pkg.Delete(ls.GeneratePath(ed.Current))
+			beforeAct: func(ed models.EditNode) {
+				_ = pkg.Delete(ls.GeneratePath(ed.Current.Title))
 			},
-			afterAct:    func(ed models.EditNote) {},
-			expected:    nil,
-			expectedErr: assets.NotExists(".current-note"),
+			afterAct: func(ed models.EditNode) {},
+			expected: assets.NotExists(".current-note", "File or Directory"),
 		},
 		{
-			editnote: models.EditNote{
-				Current: models.Note{Title: ".same-name-note"},
-				New:     models.Note{Title: ".same-name-note"},
+			editnode: models.EditNode{
+				Current: models.Node{Title: ".same-name-note"},
+				New:     models.Node{Title: ".same-name-note"},
 			},
 			localService: ls,
-			beforeAct: func(ed models.EditNote) {
-				path := ls.GeneratePath(ed.Current)
+			beforeAct: func(ed models.EditNode) {
+				path := ls.GeneratePath(ed.Current.Title)
 				_ = pkg.WriteNote(path, []byte{})
 			},
-			afterAct: func(ed models.EditNote) {
-				_ = pkg.Delete(ls.GeneratePath(ed.Current))
+			afterAct: func(ed models.EditNode) {
+				_ = pkg.Delete(ls.GeneratePath(ed.Current.Title))
 			},
-			expected:    nil,
-			expectedErr: assets.SameTitles,
+			expected: assets.SameTitles,
 		},
 		{
-			editnote: models.EditNote{
-				Current: models.Note{Title: ".current-note"},
-				New:     models.Note{Title: ".new-note"},
+			editnode: models.EditNode{
+				Current: models.Node{Title: ".current-note"},
+				New:     models.Node{Title: ".new-note"},
 			},
 			localService: ls,
-			beforeAct: func(ed models.EditNote) {
-				_ = pkg.WriteNote(ls.GeneratePath(ed.Current), []byte{})
-				_ = pkg.WriteNote(ls.GeneratePath(ed.New), []byte{})
+			beforeAct: func(ed models.EditNode) {
+				_ = pkg.WriteNote(ls.GeneratePath(ed.Current.Title), []byte{})
+				_ = pkg.WriteNote(ls.GeneratePath(ed.New.Title), []byte{})
 			},
-			afterAct: func(ed models.EditNote) {
-				_ = pkg.Delete(ls.GeneratePath(ed.Current))
-				_ = pkg.Delete(ls.GeneratePath(ed.New))
+			afterAct: func(ed models.EditNode) {
+				_ = pkg.Delete(ls.GeneratePath(ed.Current.Title))
+				_ = pkg.Delete(ls.GeneratePath(ed.New.Title))
 			},
-			expected:    nil,
-			expectedErr: assets.AlreadyExists(".new-note"),
+			expected: assets.AlreadyExists(".new-note", "File or Directory"),
 		},
 		{
-			editnote: models.EditNote{
-				Current: models.Note{Title: ".current-note"},
-				New:     models.Note{Title: ".new-note"},
+			editnode: models.EditNode{
+				Current: models.Node{Title: ".current-note"},
+				New:     models.Node{Title: ".new-note"},
 			},
 			localService: ls,
-			beforeAct: func(ed models.EditNote) {
-				_ = pkg.WriteNote(ls.GeneratePath(ed.Current), []byte{})
+			beforeAct: func(ed models.EditNode) {
+				_ = pkg.WriteNote(ls.GeneratePath(ed.Current.Title), []byte{})
 			},
-			afterAct: func(ed models.EditNote) {
-				_ = pkg.Delete(ls.GeneratePath(ed.New))
+			afterAct: func(ed models.EditNode) {
+				_ = pkg.Delete(ls.GeneratePath(ed.New.Title))
 			},
-			expected:    &models.Note{Title: ".new-note"},
-			expectedErr: nil,
+			expected: nil,
 		},
 	}
 
 	for _, td := range tests {
-		td.beforeAct(td.editnote)
-		gotRes, gotErr := td.localService.Rename(td.editnote)
-		td.afterAct(td.editnote)
+		td.beforeAct(td.editnode)
+		got := td.localService.Rename(td.editnode)
+		td.afterAct(td.editnode)
 
-		if (gotRes == nil || td.expected == nil) && gotRes != td.expected ||
-			(gotRes != nil && td.expected != nil) && (gotRes.Title != td.expected.Title) {
-			t.Errorf("Sum of {res}[Remove] is different: Got: %v | Want: %v", gotRes, td.expected)
+		if (got == nil || td.expected == nil) && got != td.expected ||
+			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
+			t.Errorf("Sum of [Rename] is different: Got: %v | Want: %v", got, td.expected)
 		}
+	}
+}
 
-		if (gotErr == nil || td.expectedErr == nil) && gotErr != td.expectedErr ||
-			(gotErr != nil && td.expectedErr != nil) && gotErr.Error() != td.expectedErr.Error() {
-			t.Errorf("Sum of {error}[Remove] is different: Got: %v | Want: %v", gotErr, td.expectedErr)
+func TestMkdir(t *testing.T) {
+	tests := []struct {
+		dir          models.Folder
+		localService services.LocalService
+		beforeAct    func(dir models.Folder)
+		afterAct     func(dir models.Folder)
+		expected     error
+	}{
+		{
+			dir:          models.Folder{Title: "somerandomdirthatexists"},
+			localService: ls,
+			beforeAct: func(dir models.Folder) {
+				path := ls.GeneratePath(dir.Title)
+				_ = pkg.NewFolder(path)
+			},
+			afterAct: func(dir models.Folder) {
+				path := ls.GeneratePath(dir.Title)
+				_ = pkg.Delete(path)
+			},
+			expected: assets.AlreadyExists("./somerandomdirthatexists/", "directory"),
+		},
+		{
+			dir:          models.Folder{Title: "mocknote"},
+			localService: ls,
+			beforeAct: func(dir models.Folder) {
+				path := ls.GeneratePath(dir.Title)
+				_ = pkg.Delete(path)
+			},
+			afterAct: func(dir models.Folder) {
+				path := ls.GeneratePath(dir.Title)
+				_ = pkg.Delete(path)
+			},
+			expected: nil,
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.dir)
+		_, got := td.localService.Mkdir(td.dir)
+		td.afterAct(td.dir)
+
+		if (got == nil || td.expected == nil) && got != td.expected ||
+			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
+			t.Errorf("Sum of [Mkdir] is different: Got: %v | Want: %v", got, td.expected)
 		}
 	}
 }
@@ -645,11 +688,11 @@ func TestGetAll(t *testing.T) {
 
 	for _, td := range tests {
 		td.beforeAct(td.localService.NotyaPath)
-		gotRes, gotErr := td.localService.GetAll()
+		gotRes, _, gotErr := td.localService.GetAll("")
 		td.afterAct(td.localService.NotyaPath)
 
 		for i, got := range gotRes {
-			if got.Title != td.expected[i].Title || got.Body != td.expected[i].Body || got.Path != td.expected[i].Path {
+			if got.Title != td.expected[i].Title || got.Path != td.expected[i].Path {
 				t.Errorf("Sum of {res -> index:%v}[GetAll] is different: Got: %v | Want: %v", i, got, td.expected[i])
 			}
 		}
@@ -696,6 +739,7 @@ func TestMoveNotes(t *testing.T) {
 				_ = pkg.WriteNote(newS.LocalPath+".note.txt", []byte{})
 			},
 			afterAct: func(oldS, newS models.Settings) {
+				_ = pkg.Delete(oldS.LocalPath + ".note.txt")
 				_ = pkg.Delete(newS.LocalPath + ".note.txt")
 				_ = pkg.Delete(newS.LocalPath)
 				_ = pkg.Delete(oldS.LocalPath)

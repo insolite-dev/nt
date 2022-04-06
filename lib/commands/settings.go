@@ -110,7 +110,7 @@ func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Open settings file
-	if err := service.Open(models.Note{
+	if err := service.Open(models.Node{
 		Title: models.SettingsName,
 		Path:  service.Path() + models.SettingsName,
 	}); err != nil {

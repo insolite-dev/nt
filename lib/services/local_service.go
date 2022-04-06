@@ -6,6 +6,7 @@ package services
 
 import (
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/anonistas/notya/assets"
@@ -30,13 +31,15 @@ func NewLocalService(stdargs models.StdArgs) *LocalService {
 	return &LocalService{Stdargs: stdargs}
 }
 
-// generatePath returns non-zero-valuable string path from given note.
-func (l *LocalService) GeneratePath(note models.Note) string {
-	if note.Path != "" {
-		return note.Path
+// GeneratePath returns non-zero-valuable string path from given additional sub-path(title of node).
+func (l *LocalService) GeneratePath(title string) string {
+	local := l.Config.LocalPath
+
+	if string(local[len(local)-1]) != "/" {
+		local += "/"
 	}
 
-	return l.Config.LocalPath + note.Title
+	return local + title
 }
 
 // Path returns current service's base working directory.
@@ -123,17 +126,17 @@ func (l *LocalService) WriteSettings(settings models.Settings) error {
 	return nil
 }
 
-// Open, opens given note by editor.
-func (l *LocalService) Open(note models.Note) error {
-	notePath := l.GeneratePath(note)
+// Open, opens given node(file or folder) via editor.
+func (l *LocalService) Open(node models.Node) error {
+	nodePath := l.GeneratePath(node.Title)
 
-	// Check if file exists or not.
-	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
-		return assets.NotExists(note.Title)
+	// Check if node exists or not.
+	if len(strings.Trim(node.Title, " ")) < 1 || !pkg.FileExists(nodePath) {
+		return assets.NotExists(node.Title, "File or Directory")
 	}
 
-	// Open note-file with via editor.
-	openingErr := pkg.OpenViaEditor(notePath, l.Stdargs, l.Config)
+	// Open the node(file/folder) via editor.
+	openingErr := pkg.OpenViaEditor(nodePath, l.Stdargs, l.Config)
 	if openingErr != nil {
 		return openingErr
 	}
@@ -141,31 +144,81 @@ func (l *LocalService) Open(note models.Note) error {
 	return nil
 }
 
-// Remove, deletes given note file, from [notya/note.title]
-func (l *LocalService) Remove(note models.Note) error {
-	notePath := l.GeneratePath(note)
+// Remove, deletes given node.
+func (l *LocalService) Remove(node models.Node) error {
+	nodePath := l.GeneratePath(node.Title)
 
-	// Check if file exists or not.
-	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
-		return assets.NotExists(note.Title)
+	// Check if node exists or not.
+	if len(strings.Trim(node.Title, " ")) < 1 || !pkg.FileExists(nodePath) {
+		return assets.NotExists(node.Title, "File or Directory")
 	}
 
-	// Delete the note from [notePath].
-	if err := pkg.Delete(notePath); err != nil {
+	// Check for directory, to remove sub nodes of it.
+	if pkg.IsDir(nodePath) {
+		subNodes, _, err := l.GetAll(node.StructAsFolder().Title)
+		if err != nil && err != assets.EmptyWorkingDirectory {
+			return err
+		}
+
+		// Sort subNodes via decreasing order.
+		sort.Slice(
+			subNodes,
+			func(i, j int) bool { return len(subNodes[i].Title) > len(subNodes[j].Title) },
+		)
+
+		// Remove all sub nodes of directory that're based at [nodePath].
+		for _, subNode := range subNodes {
+			title := node.StructAsFolder().Title + subNode.StructAsNote().Title
+			if err := l.Remove(models.Node{Title: title}); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Delete the file from [notePath].
+	if err := pkg.Delete(nodePath); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// Create, creates new note file at [notya notes path],
+// Rename, changes given note's name.
+func (l *LocalService) Rename(editNode models.EditNode) error {
+	editNode.Current.Path = l.Config.LocalPath + editNode.Current.Title
+	editNode.New.Path = l.Config.LocalPath + editNode.New.Title
+
+	// Check if requested current file exists or not.
+	if len(strings.Trim(editNode.Current.Title, " ")) < 1 || !pkg.FileExists(editNode.Current.Path) {
+		return assets.NotExists(editNode.Current.Title, "File or Directory")
+	}
+
+	// Check if it's same titles.
+	if editNode.Current.Title == editNode.New.Title {
+		return assets.SameTitles
+	}
+
+	// Check if file or folder exists at new node path.
+	if pkg.FileExists(editNode.New.Path) {
+		return assets.AlreadyExists(editNode.New.Title, "File or Directory")
+	}
+
+	// Rename given folder/file.
+	if err := os.Rename(editNode.Current.Path, editNode.New.Path); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Create, creates new note file.
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note)
+	notePath := l.GeneratePath(note.Title)
 
 	// Check if file already exists.
 	if pkg.FileExists(notePath) {
-		return nil, assets.AlreadyExists(note.Title)
+		return nil, assets.AlreadyExists(note.Title, "file")
 	}
 
 	// Create new file.
@@ -179,11 +232,11 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 // View, opens note-file from given [note.Name], then takes it body,
 // and returns new fully-filled note.
 func (l *LocalService) View(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note)
+	notePath := l.GeneratePath(note.Title)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
-		return nil, assets.NotExists(note.Title)
+		return nil, assets.NotExists(note.Title, "File")
 	}
 
 	// Open and read body of note.
@@ -200,11 +253,11 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 // Edit, overwrites exiting file's content-body.
 func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note)
+	notePath := l.GeneratePath(note.Title)
 
 	// Check if file exists or not.
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
-		return nil, assets.NotExists(note.Title)
+		return nil, assets.NotExists(note.Title, "File")
 	}
 
 	// Overwrite note's body.
@@ -215,77 +268,72 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 	return &models.Note{Title: note.Title, Path: notePath, Body: note.Body}, nil
 }
 
-// Rename, changes given note's name.
-func (l *LocalService) Rename(editnote models.EditNote) (*models.Note, error) {
-	editnote.Current.Path = l.Config.LocalPath + editnote.Current.Title
-	editnote.New.Path = l.Config.LocalPath + editnote.New.Title
+// Mkdir creates a new working directory.
+func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
+	title := dir.Title
+	folderPath := l.GeneratePath(dir.Title)
 
-	// Check if requested current file exists or not.
-
-	if len(strings.Trim(editnote.Current.Title, " ")) < 1 || !pkg.FileExists(editnote.Current.Path) {
-		return nil, assets.NotExists(editnote.Current.Title)
+	if string(folderPath[len(folderPath)-1]) != "/" {
+		folderPath += "/"
 	}
 
-	// Check if it's same titles.
-	if editnote.Current.Title == editnote.New.Title {
-		return nil, assets.SameTitles
+	if string(title[len(title)-1]) != "/" {
+		title += "/"
 	}
 
-	// Check if file exists at new note path.
-	if pkg.FileExists(editnote.New.Path) {
-		return nil, assets.AlreadyExists(editnote.New.Title)
+	// Check if file already exists.
+	if pkg.FileExists(folderPath) {
+		return nil, assets.AlreadyExists(folderPath, "directory")
 	}
 
-	// Rename given note.
-	if err := os.Rename(editnote.Current.Path, editnote.New.Path); err != nil {
-		return nil, err
+	// Generate the directory.
+	if mkdirErr := pkg.NewFolder(folderPath); mkdirErr != nil {
+		return nil, mkdirErr
 	}
 
-	return &editnote.New, nil
+	return &models.Folder{Title: title, Path: folderPath}, nil
 }
 
-// GetAll, gets all note [names], and returns it as array list.
-func (l *LocalService) GetAll() ([]models.Note, error) {
-	// Generate array of all file names on LocalPath.
-	files, err := pkg.ListDir(l.Config.LocalPath, models.SettingsName)
+// GetAll, gets all node [names], and returns it as array list.
+func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error) {
+	path := l.GeneratePath(additional)
+
+	// Generate array of all file names that are located in [path].
+	files, pretty, err := pkg.ListDir(path, "", "", models.NotyaIgnoreFiles, true)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if files == nil || len(files) == 0 {
-		return nil, assets.EmptyWorkingDirectory
+		return nil, nil, assets.EmptyWorkingDirectory
 	}
 
-	// Fetch notes by files.
-	notes := []models.Note{}
-	for _, name := range files {
-		note, err := l.View(models.Note{Title: name})
-		if err != nil {
-			continue
-		}
-
-		notes = append(notes, *note)
+	// Generate node list via [files] array.
+	nodes := []models.Node{}
+	for i, title := range files {
+		path := l.GeneratePath(title)
+		nodes = append(nodes, models.Node{Title: title, Path: path, Pretty: pretty[i]})
 	}
 
-	return notes, nil
+	return nodes, files, nil
 }
 
 // MoveNote, moves all notes from "CURRENT" path to new path(given by settings parameter).
 func (l *LocalService) MoveNotes(settings models.Settings) error {
-	notes, err := l.GetAll()
+	nodes, _, err := l.GetAll("")
 	if err != nil {
 		return err
 	}
 
-	for _, note := range notes {
+	for _, node := range nodes {
 		// Remove note appropriate by default settings.
-		if err := l.Remove(note); err != nil {
+		if err := l.Remove(node); err != nil {
 			continue
 		}
 
 		// Create note appropriate by updated settings.
-		note.Path = settings.LocalPath + note.Title
-		if _, err := l.Create(note); err != nil {
+		node.Path = settings.LocalPath + node.Title
+		if _, err := l.Create(node.ToNote()); err != nil {
 			continue
 		}
 	}

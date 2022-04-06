@@ -85,24 +85,87 @@ func ReadBody(path string) (*string, error) {
 }
 
 // ListDir, reads all files from given-path directory.
-func ListDir(path string, expect string) ([]string, error) {
+func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string, []string, error) {
 	// Read directory's files.
 	list, err := os.ReadDir(path)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	// Get path info.
+	pathFI, err := os.Stat(path)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	// Convert list to string list.
-	res := []string{}
+	var res, pretty []string
 	for _, d := range list {
-		if expect == d.Name() {
+		iIgn := false
+
+		// Set i[index]Ignore variable
+		for _, ig := range ignore {
+			if ig == d.Name() {
+				iIgn = true
+			}
+		}
+		if iIgn {
+			iIgn = false // Ignore file, set i[index]Ignore to false.
 			continue
 		}
 
-		res = append(res, d.Name())
+		name := d.Name()
+		var prettyName, localPrevPath string
+
+		// Ignore base path's name.
+		if len(space) > 2 {
+			localPrevPath = prevPath
+		}
+		// Get full name via including ~/notya
+		if len(space) > 0 {
+			name = localPrevPath + pathFI.Name() + "/" + d.Name()
+		}
+
+		var subnames, subpretty []string
+		if d.IsDir() {
+			name += "/"
+			prettyName = space + " " + d.Name() + "/"
+
+			// Split sub-nodes as tree, eg:
+			//
+			//   My-Folder
+			//     note.txt
+			//     second_note.txt
+			//     Sub-folder
+			//       sub_note.txt
+			//      ...
+			if tree {
+				n := models.Node{Title: pathFI.Name(), Path: path}
+				sn, sp, err := ListDir(
+					n.StructAsFolder().Path+d.Name(), n.StructAsFolder().Title,
+					// Push to right by two empty charachters each sub node.
+					space+"  ", ignore, tree,
+				)
+				if err != nil {
+					return res, pretty, err
+				}
+				subnames = sn
+				subpretty = sp
+			}
+		} else {
+			prettyName = space + " " + d.Name()
+		}
+
+		res = append(res, name)
+		pretty = append(pretty, prettyName)
+
+		if len(subnames) > 0 && len(subpretty) > 0 {
+			res = append(res, subnames...)
+			pretty = append(pretty, subpretty...)
+		}
 	}
 
-	return res, nil
+	return res, pretty, nil
 }
 
 // OpenViaEditor opens file in custom(appropriate from settings) from given path.
@@ -129,12 +192,12 @@ func OpenViaEditor(filepath string, stdargs models.StdArgs, settings models.Sett
 	return nil
 }
 
-// MapNotesList converts note-models list to a string list.
-func MapNotesList(notes []models.Note) []string {
-	res := []string{}
-	for _, note := range notes {
-		res = append(res, note.Title)
+// IsDir checks if the file (at provided [path]) is directory or not.
+func IsDir(path string) bool {
+	i, err := os.Stat(path)
+	if err != nil {
+		return false
 	}
 
-	return res
+	return i.IsDir()
 }

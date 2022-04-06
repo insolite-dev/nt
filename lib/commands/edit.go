@@ -31,15 +31,15 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 	if len(args) > 0 {
 		note := models.Note{Title: args[0]}
 
-		if err := service.Open(note); err != nil {
+		if err := service.Open(note.ToNode()); err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
 		}
 
 		return
 	}
 
-	// Generate all note names.
-	notes, err := service.GetAll()
+	// Generate all node names.
+	_, nodeNames, err := service.GetAll("")
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -48,12 +48,12 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 	// Ask for note selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNotePrompt("edit", pkg.MapNotesList(notes)),
+		assets.ChooseNodePrompt("note", "edit", nodeNames),
 		&selected,
 	)
 
 	// Open selected note-file.
-	if err := service.Open(models.Note{Title: selected}); err != nil {
+	if err := service.Open(models.Node{Title: selected}); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}

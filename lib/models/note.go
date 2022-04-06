@@ -18,9 +18,10 @@ type Note struct {
 	Body  string `json:"body"`
 }
 
-// EditNote is wrapper structure used to
-// store two [new/current] notes.
-type EditNote struct {
-	Current Note `json:"current"`
-	New     Note `json:"new"`
+// ToNode converts [Note] model to [Node] model.
+func (n *Note) ToNode() Node {
+	return Node{
+		Title: n.Title, Path: n.Path,
+		Pretty: " " + n.Title,
+	}
 }

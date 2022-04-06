@@ -263,7 +263,7 @@ func TestListDir(t *testing.T) {
 		td.creatingFunc(td.folderName)
 
 		t.Run(td.testName, func(t *testing.T) {
-			got, err := pkg.ListDir(td.folderName, "expectable.txt")
+			got, _, err := pkg.ListDir(td.folderName, "", "", []string{"expectable.txt"}, true)
 			if err != td.e.err {
 				t.Errorf("ListDir's error sum was different, Got: %v | Want: %v", err, td.e.err)
 			}
@@ -329,34 +329,51 @@ func TestOpenViaEditor(t *testing.T) {
 	}
 }
 
-func TestMapNotesList(t *testing.T) {
+func TestIsDir(t *testing.T) {
+	type closures struct {
+		creating func(name string)
+		deleting func(name string)
+	}
+
 	tests := []struct {
-		testName string
-		notes    []models.Note
-		expected []string
+		filename string
+		c        closures
+		expected bool
 	}{
 		{
-			"should map to string names properly",
-			[]models.Note{{Title: "new_note.txt"}, {Title: "my_new_note.md"}},
-			[]string{"new_note.txt", "my_new_note.md"},
+			"test.txt",
+			closures{
+				creating: func(name string) {},
+				deleting: func(name string) {},
+			},
+			false,
+		},
+		{
+			"test.txt",
+			closures{
+				creating: func(name string) { pkg.WriteNote(name, []byte{}) },
+				deleting: func(name string) { pkg.Delete(name) },
+			},
+			false,
+		},
+		{
+			"testfolder",
+			closures{
+				creating: func(name string) { pkg.NewFolder(name) },
+				deleting: func(name string) { pkg.Delete(name) },
+			},
+			true,
 		},
 	}
 
 	for _, td := range tests {
-		got := pkg.MapNotesList(td.notes)
+		td.c.creating(td.filename)
 
-		if len(got) != len(td.expected) {
-			t.Errorf("MapNotesList (length) sum was different: Got: %v | Want: %v", len(got), len(td.expected))
-			return
+		got := pkg.IsDir(td.filename)
+		if got != td.expected {
+			t.Errorf("IsDir sum was different: Got: %v | Want: %v", got, td.expected)
 		}
 
-		for index, gotElement := range got {
-			expectedElement := td.expected[index]
-			if gotElement != expectedElement {
-				t.Errorf("MapNotesList sum was different: Got: %v | Want: %v", len(got), len(td.expected))
-				return
-			}
-		}
-
+		td.c.deleting(td.filename)
 	}
 }
