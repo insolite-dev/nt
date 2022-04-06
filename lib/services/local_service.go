@@ -6,6 +6,7 @@ package services
 
 import (
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/anonistas/notya/assets"
@@ -152,11 +153,18 @@ func (l *LocalService) Remove(node models.Node) error {
 		return assets.NotExists(node.Title, "File or Directory")
 	}
 
+	// Check for directory, to remove sub nodes of it.
 	if pkg.IsDir(nodePath) {
 		subNodes, _, err := l.GetAll(node.StructAsFolder().Title)
 		if err != nil && err != assets.EmptyWorkingDirectory {
 			return err
 		}
+
+		// Sort subNodes via decreasing order.
+		sort.Slice(
+			subNodes,
+			func(i, j int) bool { return len(subNodes[i].Title) > len(subNodes[j].Title) },
+		)
 
 		// Remove all sub nodes of directory that're based at [nodePath].
 		for _, subNode := range subNodes {
@@ -165,13 +173,6 @@ func (l *LocalService) Remove(node models.Node) error {
 				return err
 			}
 		}
-
-		// Delete the folder from [notePath].
-		if err := pkg.Delete(nodePath); err != nil {
-			return err
-		}
-
-		return nil
 	}
 
 	// Delete the file from [notePath].
