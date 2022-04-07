@@ -7,7 +7,7 @@ package pkg
 import "github.com/AlecAivazis/survey/v2"
 
 // Version is current version of application.
-const Version = "v0.1.2"
+const Version = "v0.1.3"
 
 var (
 	// Custom configuration for survey icons and colors.
