@@ -14,8 +14,8 @@ import (
 
 func TestChoseNotePrompt(t *testing.T) {
 	type arguments struct {
-		msg     string
-		options []string
+		node, msg string
+		options   []string
 	}
 
 	tests := []struct {
@@ -26,11 +26,12 @@ func TestChoseNotePrompt(t *testing.T) {
 		{
 			testname: "should generate choosing-note prompt properly",
 			args: arguments{
-				msg:     "test-title",
+				node:    "note",
+				msg:     "edit",
 				options: []string{"1", "2", "3"},
 			},
 			expected: survey.Select{
-				Message: "test-title",
+				Message: "Choose a note to edit:",
 				Options: []string{"1", "2", "3"},
 			},
 		},
@@ -38,7 +39,7 @@ func TestChoseNotePrompt(t *testing.T) {
 
 	for _, td := range tests {
 		t.Run(td.testname, func(t *testing.T) {
-			got := assets.ChooseNotePrompt(td.args.msg, td.args.options)
+			got := assets.ChooseNodePrompt(td.args.node, td.args.msg, td.args.options)
 
 			// Closure function to check if options are different or not.
 			var isDiffArr = func() bool {
@@ -74,7 +75,6 @@ func TestNewNamePrompt(t *testing.T) {
 			defaultValue: "default-name",
 			expected: survey.Input{
 				Message: "New name: ",
-				Help:    "Enter new note name/title (don't forget putting type of it, like: `renamed_note.txt`)",
 				Default: "default-name",
 			},
 		},

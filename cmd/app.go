@@ -8,8 +8,8 @@ import (
 	"github.com/anonistas/notya/lib/commands"
 )
 
-// RunApp executes appCommand, and it sets all sub commands and flags of it.
-// It'd be happen only once, on starting program in [main.go].
+// RunApp executes appCommand.
+// It'd be happen only once, on starting program at [main.go].
 func RunApp() {
 	commands.ExecuteApp()
 }

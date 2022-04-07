@@ -115,6 +115,10 @@ func TestPrintNote(t *testing.T) {
 			testName: "should show note properly",
 			note:     models.Note{}, // Empty note
 		},
+		{
+			testName: "should show note properly",
+			note:     models.Note{Body: "Non empty note"},
+		},
 	}
 
 	for _, td := range tests {
@@ -124,22 +128,26 @@ func TestPrintNote(t *testing.T) {
 	}
 }
 
-func TestPrintNotes(t *testing.T) {
+func TestPrintNodes(t *testing.T) {
 	tests := []struct {
 		testName string
-		list     []models.Note
+		list     []models.Node
 	}{
 		{
+			testName: "should break function",
+			list:     []models.Node{},
+		},
+		{
 			testName: "should show note properly",
-			list: []models.Note{
-				{Title: "Test TITLE"},
+			list: []models.Node{
+				{Pretty: "Test TITLE"},
 			},
 		},
 	}
 
 	for _, td := range tests {
 		t.Run(td.testName, func(t *testing.T) {
-			pkg.PrintNotes(td.list)
+			pkg.PrintNodes(td.list)
 		})
 	}
 }

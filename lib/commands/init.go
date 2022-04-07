@@ -6,6 +6,7 @@ package commands
 
 import (
 	"github.com/anonistas/notya/pkg"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -29,5 +30,6 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	pkg.Alert(pkg.SuccessL, `Notya initializing completed successfully, It's ready to use now!`)
+	pkg.Alert(pkg.SuccessL, `Application initialized successfully`)
+	pkg.Print(" > [notya -h/help] for help", color.FgBlue)
 }

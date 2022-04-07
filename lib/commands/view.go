@@ -40,16 +40,16 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Generate array of all note names.
-	notes, err := service.GetAll()
+	_, noteNames, err := service.GetAll("")
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
 	// Ask for note selection.
-	selected := ""
+	var selected string
 	survey.AskOne(
-		assets.ChooseNotePrompt("Choose a note to view:", pkg.MapNotesList(notes)),
+		assets.ChooseNodePrompt("note", "view", noteNames),
 		&selected,
 	)
 

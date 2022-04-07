@@ -56,7 +56,7 @@ func TestToByte(t *testing.T) {
 	}
 }
 
-func TestFromJSON(t *testing.T) {
+func TestDecodeSettings(t *testing.T) {
 	tests := []struct {
 		testname      string
 		argumentValue string
@@ -71,10 +71,39 @@ func TestFromJSON(t *testing.T) {
 
 	for _, td := range tests {
 		t.Run(td.testname, func(t *testing.T) {
-			got := models.FromJSON(td.argumentValue)
+			got := models.DecodeSettings(td.argumentValue)
 
 			if got.Editor != td.expected.Editor {
-				t.Errorf("FromJSON's sum was different: Want: %v | Got: %v", got, td.expected)
+				t.Errorf("DecodeSettings's sum was different: Want: %v | Got: %v", got, td.expected)
+			}
+		})
+	}
+}
+
+func TestIsValid(t *testing.T) {
+	tests := []struct {
+		testname string
+		settings models.Settings
+		expected bool
+	}{
+		{
+			testname: "should check settings validness correctly | [valid]",
+			settings: models.InitSettings("/usr/mock/localpath"),
+			expected: true,
+		},
+		{
+			testname: "should check settings validness correctly | [invalid]",
+			settings: models.Settings{},
+			expected: false,
+		},
+	}
+
+	for _, td := range tests {
+		t.Run(td.testname, func(t *testing.T) {
+			got := td.settings.IsValid()
+
+			if got != td.expected {
+				t.Errorf("IsValid sum was different: Want: %v | Got: %v", got, td.expected)
 			}
 		})
 	}

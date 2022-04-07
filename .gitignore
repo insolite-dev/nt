@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+*notya
 
 # Test binary, built with `go test -c`
 *.test
@@ -12,6 +13,7 @@
 *.out
 
 .DS_Store
+cover.html
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

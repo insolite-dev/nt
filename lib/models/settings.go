@@ -17,7 +17,20 @@ const (
 	DefaultLocalPath = "notya"
 )
 
+// NotyaIgnoreFiles are those files that shouldn't
+// be represented as note files.
+var NotyaIgnoreFiles []string = []string{
+	SettingsName,
+	".DS_Store", // Darwin related.
+}
+
 // Settings is a main structure model of application settings.
+//
+//  Example
+// ╭────────────────────────────────────────────────────╮
+// │ Editor: vi                                         │
+// │ Local Path: /User/random-user/notya/.settings.json │
+// ╰────────────────────────────────────────────────────╯
 type Settings struct {
 	Editor    string `json:"editor" default:"vi"`
 	LocalPath string `json:"local_path" mapstructure:"local_path" survey:"local_path" default:"notya"`
@@ -45,7 +58,7 @@ func (s *Settings) ToByte() []byte {
 }
 
 // FromJSON converts string(map) value to Settings structure.
-func FromJSON(value string) Settings {
+func DecodeSettings(value string) Settings {
 	var m map[string]interface{}
 	_ = json.Unmarshal([]byte(value), &m)
 
@@ -53,6 +66,11 @@ func FromJSON(value string) Settings {
 	mapstructure.Decode(m, &s)
 
 	return s
+}
+
+// IsValid checks validness of settings structure.
+func (s *Settings) IsValid() bool {
+	return len(s.Editor) > 0 && len(s.LocalPath) > 0
 }
 
 func IsUpdated(old, current Settings) bool {

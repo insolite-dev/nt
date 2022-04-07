@@ -12,11 +12,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// removeCommand is a command model that used to remove a note or file.
+// removeCommand is a command model that used to remove a file or folder.
 var removeCommand = &cobra.Command{
 	Use:     "remove",
 	Aliases: []string{"rm", "delete"},
-	Short:   "Remove/Delete a notya file",
+	Short:   "Remove/Delete a notya element",
 	Run:     runRemoveCommand,
 }
 
@@ -25,39 +25,37 @@ func initRemoveCommand() {
 	appCommand.AddCommand(removeCommand)
 }
 
-// runRemoveCommand runs appropriate service commands to remove note.
+// runRemoveCommand runs appropriate service commands to remove a file or folder.
 func runRemoveCommand(cmd *cobra.Command, args []string) {
-	// Take note title from arguments. If it's provided.
-	if len(args) > 0 {
-		note := models.Note{Title: args[0]}
-
-		removeAndFinish(note)
+	// Take node title from arguments. If it's provided.
+	if len(args) > 0 && args[0] != "." {
+		removeAndFinish(models.Node{Title: args[0]})
 		return
 	}
 
-	// Generate array of all note names.
-	notes, err := service.GetAll()
+	// Generate array of all node names.
+	_, nodeNames, err := service.GetAll("")
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	// Ask for note selection.
+	// Ask for node selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNotePrompt("Choose a note to remove:", pkg.MapNotesList(notes)),
+		assets.ChooseNodePrompt("node", "remove", nodeNames),
 		&selected,
 	)
 
-	removeAndFinish(models.Note{Title: selected})
+	removeAndFinish(models.Node{Title: selected})
 }
 
-// removeAndFinish removes given note and alerts success message if everything is OK.
-func removeAndFinish(note models.Note) {
-	if err := service.Remove(note); err != nil {
+// removeAndFinish removes given node and alerts success message if everything is OK.
+func removeAndFinish(node models.Node) {
+	if err := service.Remove(node); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	pkg.Alert(pkg.SuccessL, "Note removed successfully: "+note.Title)
+	pkg.Alert(pkg.SuccessL, "Node removed: "+node.Title)
 }
