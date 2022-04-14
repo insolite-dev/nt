@@ -281,7 +281,7 @@ func TestOpen(t *testing.T) {
 				path := ls.GeneratePath(node.Title)
 				_ = pkg.Delete(path)
 			},
-			expected: errors.New("signal: abort trap"),
+			expected: errors.New("exit status 2"),
 		},
 	}
 
@@ -388,10 +388,10 @@ func TestCreate(t *testing.T) {
 		{
 			note:         models.Note{Title: "mocknote.txt"},
 			localService: ls,
-			beforeAct:    func(note models.Note) {},
+			beforeAct: func(note models.Note) {
+			},
 			afterAct: func(note models.Note) {
-				path := ls.GeneratePath(note.Title)
-				_ = pkg.Delete(path)
+				_ = pkg.Delete(ls.GeneratePath(note.Title))
 			},
 			expected: nil,
 		},
@@ -511,6 +511,50 @@ func TestEdit(t *testing.T) {
 		if (gotErr == nil || td.expectedErr == nil) && gotErr != td.expectedErr ||
 			(gotErr != nil && td.expectedErr != nil) && gotErr.Error() != td.expectedErr.Error() {
 			t.Errorf("Sum of {error}[Edit] is different: Got: %v | Want: %v", gotErr, td.expectedErr)
+		}
+	}
+}
+
+func TestCopy(t *testing.T) {
+	tests := []struct {
+		note         models.Note
+		localService services.LocalService
+		beforeAct    func(note models.Note)
+		afterAct     func(note models.Note)
+		expected     error
+	}{
+		{
+			note:         models.Note{Title: "somerandomnotethatexists"},
+			localService: ls,
+			beforeAct: func(note models.Note) {
+				path := ls.GeneratePath(note.Title)
+				_ = pkg.WriteNote(path, []byte{})
+			},
+			afterAct: func(note models.Note) {
+				path := ls.GeneratePath(note.Title)
+				_ = pkg.Delete(path)
+			},
+			expected: nil,
+		},
+		{
+			note:         models.Note{Title: "mocknote.txt"},
+			localService: ls,
+			beforeAct: func(note models.Note) {
+			},
+			afterAct: func(note models.Note) {
+			},
+			expected: assets.NotExists("mocknote.txt", "File"),
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.note)
+		got := td.localService.Copy(td.note)
+		td.afterAct(td.note)
+
+		if (got == nil || td.expected == nil) && got != td.expected ||
+			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
+			t.Errorf("Sum of [Copy] is different: Got: %v | Want: %v", got, td.expected)
 		}
 	}
 }

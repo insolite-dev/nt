@@ -311,7 +311,7 @@ func TestOpenViaEditor(t *testing.T) {
 					pkg.WriteNote(filename, []byte{})
 				},
 			},
-			expected: errors.New("signal: abort trap"),
+			expected: errors.New("exit status 2"),
 		},
 	}
 
