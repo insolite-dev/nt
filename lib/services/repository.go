@@ -36,14 +36,17 @@ type ServiceRepo interface {
 	Remove(node models.Node) error
 	Rename(editNode models.EditNode) error
 
+	//
 	// TODO: Add functionality to provide ignorable files
 	// Like: ignore folders, files etc.
+	//
 	GetAll(additional string) ([]models.Node, []string, error)
 
 	// Note(file) related functions.
 	Create(note models.Note) (*models.Note, error)
 	View(note models.Note) (*models.Note, error)
 	Edit(note models.Note) (*models.Note, error)
+	Copy(note models.Note) error
 
 	// Folder(directory) related functions.
 	Mkdir(dir models.Folder) (*models.Folder, error)
