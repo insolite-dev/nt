@@ -12,6 +12,7 @@ import (
 
 // Constant values of settings.
 const (
+	DefaultAppName   = "notya"
 	SettingsName     = ".settings.json"
 	DefaultEditor    = "vi"
 	DefaultLocalPath = "notya"
@@ -32,13 +33,16 @@ var NotyaIgnoreFiles []string = []string{
 // │ Local Path: /User/random-user/notya/.settings.json │
 // ╰────────────────────────────────────────────────────╯
 type Settings struct {
-	Editor    string `json:"editor" default:"vi"`
-	LocalPath string `json:"local_path" mapstructure:"local_path" survey:"local_path" default:"notya"`
+	Name               string `json:"name" default:"notya"`
+	Editor             string `json:"editor" default:"vi"`
+	LocalPath          string `json:"local_path" mapstructure:"local_path" survey:"local_path"`
+	FirebaseAccountKey string `json:"firebase" mapstructure:"firebase"`
 }
 
 // InitSettings returns default variant of settings structure model.
 func InitSettings(localPath string) Settings {
 	return Settings{
+		Name:      DefaultAppName,
 		Editor:    DefaultEditor,
 		LocalPath: localPath,
 	}
@@ -70,7 +74,7 @@ func DecodeSettings(value string) Settings {
 
 // IsValid checks validness of settings structure.
 func (s *Settings) IsValid() bool {
-	return len(s.Editor) > 0 && len(s.LocalPath) > 0
+	return len(s.Name) > 0 && len(s.Editor) > 0 && len(s.LocalPath) > 0
 }
 
 func IsUpdated(old, current Settings) bool {

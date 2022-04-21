@@ -5,17 +5,20 @@
 package services
 
 import (
+	"context"
+
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 	"github.com/anonistas/notya/lib/models"
+	"google.golang.org/api/option"
 )
 
 // FirebaseService is a class implementation of service repo.
 // Which's methods are based on Firebase client.
 // ...
 type FirebaseService struct {
-	// Notya related.
+	LS      ServiceRepo // embedded local service.
 	Stdargs models.StdArgs
 	Config  models.Settings
 
@@ -29,76 +32,114 @@ type FirebaseService struct {
 var _ ServiceRepo = &FirebaseService{}
 
 // NewFirebaseService creates new firebase service by given arguments.
-func NewFirebaseService(stdargs models.StdArgs) *FirebaseService {
-	return &FirebaseService{Stdargs: stdargs}
+func NewFirebaseService(stdargs models.StdArgs, ls ServiceRepo) *FirebaseService {
+	return &FirebaseService{Stdargs: stdargs, LS: ls}
+}
+
+// Path returns current service'base working directory.
+func (s *FirebaseService) Path() string {
+	return s.LS.Path()
 }
 
 // TODO: add documentation with feature.
-func (l *FirebaseService) Path() string {
-	return ""
+func (s *FirebaseService) Init() error {
+	if s.FireApp != nil && s.FireStore != nil && s.FireAuth != nil {
+		return nil
+	}
+
+	config, err := s.LS.Settings()
+	if err != nil {
+		return err
+	}
+	s.Config = *config
+
+	return s.InitFirebase()
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) Init() error {
+// Initializes firebase services as [s.FireApp], [s.FireAuth], and [s.FireStore].
+func (s *FirebaseService) InitFirebase() error {
+	ctx := context.Background()
+
+	opts := option.WithCredentialsFile(s.Config.FirebaseAccountKey)
+	config := &firebase.Config{ProjectID: s.Config.Name}
+
+	app, err := firebase.NewApp(ctx, config, opts)
+	if err != nil {
+		return err
+	}
+	s.FireApp = app
+
+	authClient, err := s.FireApp.Auth(ctx)
+	if err != nil {
+		return err
+	}
+	s.FireAuth = authClient
+
+	firestore, err := s.FireApp.Firestore(ctx)
+	if err != nil {
+		return err
+	}
+	s.FireStore = firestore
+
 	return nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) Settings() (*models.Settings, error) {
+// TODO: add documentation & feature.
+func (s *FirebaseService) Settings() (*models.Settings, error) {
 	return nil, nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) WriteSettings(settings models.Settings) error {
+// TODO: add documentation & feature.
+func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 	return nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) Open(node models.Node) error {
+// TODO: add documentation & feature.
+func (s *FirebaseService) Open(node models.Node) error {
+	return s.LS.Open(node)
+}
+
+// TODO: add documentation & feature.
+func (s *FirebaseService) Remove(node models.Node) error {
 	return nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) Remove(node models.Node) error {
+// TODO: add documentation & feature.
+func (s *FirebaseService) Rename(node models.EditNode) error {
 	return nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) Rename(node models.EditNode) error {
-	return nil
-}
-
-// TODO: add documentation with feature.
-func (l *FirebaseService) GetAll(additional string) ([]models.Node, []string, error) {
+// TODO: add documentation & feature.
+func (s *FirebaseService) GetAll(additional string) ([]models.Node, []string, error) {
 	return nil, nil, nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) Create(note models.Note) (*models.Note, error) {
+// TODO: add documentation & feature.
+func (s *FirebaseService) Create(note models.Note) (*models.Note, error) {
 	return nil, nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) View(note models.Note) (*models.Note, error) {
+// TODO: add documentation & feature.
+func (s *FirebaseService) View(note models.Note) (*models.Note, error) {
 	return nil, nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) Edit(note models.Note) (*models.Note, error) {
+// TODO: add documentation & feature.
+func (s *FirebaseService) Edit(note models.Note) (*models.Note, error) {
 	return nil, nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) Copy(note models.Note) error {
+// TODO: add documentation & feature.
+func (s *FirebaseService) Copy(note models.Note) error {
 	return nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
+// TODO: add documentation & feature.
+func (s *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
 	return nil, nil
 }
 
-// TODO: add documentation with feature.
-func (l *FirebaseService) MoveNotes(settings models.Settings) error {
+// TODO: add documentation & feature.
+func (s *FirebaseService) MoveNotes(settings models.Settings) error {
 	return nil
 }
