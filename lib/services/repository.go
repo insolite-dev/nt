@@ -55,3 +55,9 @@ type ServiceRepo interface {
 	// to new one, appropriate by settings which comes from arguments.
 	MoveNotes(settings models.Settings) error
 }
+
+// RemoteServiceRepo is a wrapper interface for [ServiceRepo].
+// Which that, stores remote appropriate and [ServiceRepo] independent values and methods.
+type RemoteServiceRepo interface {
+	ServiceRepo
+}
