@@ -11,6 +11,7 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 	"github.com/anonistas/notya/lib/models"
+	"github.com/mitchellh/mapstructure"
 	"google.golang.org/api/option"
 )
 
@@ -84,9 +85,34 @@ func (s *FirebaseService) InitFirebase() error {
 	return nil
 }
 
-// TODO: add documentation & feature.
+// notyaCollection generates the main firestore collection refrence.
+func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
+	return *s.FireStore.Collection(s.Config.Name)
+}
+
+// getFireDoc gets concrete collection's concrete data (as map).
+func (s *FirebaseService) getFireDoc(collection firestore.CollectionRef, doc string) (res map[string]interface{}, err error) {
+	ctx := context.Background()
+	docSnap, err := collection.Doc(doc).Get(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return docSnap.Data(), nil
+}
+
+// Settings gets and returns current settings state data.
 func (s *FirebaseService) Settings() (*models.Settings, error) {
-	return nil, nil
+	data, err := s.getFireDoc(s.NotyaCollection(), models.SettingsName)
+	if err != nil {
+		return nil, err
+	}
+
+	var settings models.Settings
+	mapstructure.Decode(data, &settings)
+
+	return &settings, nil
 }
 
 // TODO: add documentation & feature.

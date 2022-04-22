@@ -36,7 +36,8 @@ type Settings struct {
 	Name               string `json:"name" default:"notya"`
 	Editor             string `json:"editor" default:"vi"`
 	LocalPath          string `json:"local_path" mapstructure:"local_path" survey:"local_path"`
-	FirebaseAccountKey string `json:"firebase" mapstructure:"firebase"`
+	FirebaseAccountKey string `json:"firebase,omitempty"`
+	FirebaseCollection string `json:"fire_collection,omitempty" mapstructure:"fire_collection,omitempty"`
 }
 
 // InitSettings returns default variant of settings structure model.
