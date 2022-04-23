@@ -6,7 +6,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"cloud.google.com/go/firestore"
@@ -15,6 +14,7 @@ import (
 	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
+	"github.com/atotto/clipboard"
 	"github.com/mitchellh/mapstructure"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -82,7 +82,7 @@ func (s *FirebaseService) GetFireDoc(collection firestore.CollectionRef, doc str
 
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
-			return nil, assets.NotExists(fmt.Sprintf("%v collection", s.Config.FirebaseCollection), doc)
+			return nil, assets.NotExists("", doc)
 		}
 
 		return nil, err
@@ -270,9 +270,19 @@ func (s *FirebaseService) Create(note models.Note) (*models.Note, error) {
 	return &note, nil
 }
 
-// TODO: add documentation & feature.
+// View fetches note from [note.Title].
 func (s *FirebaseService) View(note models.Note) (*models.Note, error) {
-	return nil, nil
+	collection := s.NotyaCollection()
+
+	data, err := s.GetFireDoc(collection, note.Title)
+	if err != nil {
+		return nil, err
+	}
+
+	var model models.Note
+	mapstructure.Decode(data, &model)
+
+	return &model, nil
 }
 
 // TODO: add documentation & feature.
@@ -280,9 +290,14 @@ func (s *FirebaseService) Edit(note models.Note) (*models.Note, error) {
 	return nil, nil
 }
 
-// TODO: add documentation & feature.
+// Copy fetches note from [note.Title], and copies its body to machine's clipboard.
 func (s *FirebaseService) Copy(note models.Note) error {
-	return nil
+	data, err := s.View(note)
+	if err != nil {
+		return err
+	}
+
+	return clipboard.WriteAll(data.Body)
 }
 
 // TODO: add documentation & feature.
