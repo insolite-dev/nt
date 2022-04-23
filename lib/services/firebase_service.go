@@ -7,6 +7,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -15,6 +16,7 @@ import (
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/mitchellh/mapstructure"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -63,7 +65,11 @@ func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
 }
 
 // IsDocumentExists checks if element at given title exists or not.
-func (s *FirebaseService) IsDocumentExists(title string) bool {
+func (s *FirebaseService) IsNotDocumentExists(title string) bool {
+	if len(strings.Trim(title, " ")) < 1 {
+		return true
+	}
+
 	collection := s.NotyaCollection()
 	_, err := collection.Doc(title).Get(s.Ctx)
 
@@ -193,8 +199,8 @@ func (s *FirebaseService) Open(node models.Node) error {
 func (s *FirebaseService) Remove(node models.Node) error {
 	collection := s.NotyaCollection()
 
-	if s.IsDocumentExists(node.Title) {
-		return assets.NotExists(fmt.Sprintf("%v collection", s.Config.FirebaseCollection), node.Title)
+	if s.IsNotDocumentExists(node.Title) {
+		return assets.NotExists("", node.Title)
 	}
 
 	_, err := collection.Doc(node.Title).Delete(s.Ctx)
@@ -206,9 +212,47 @@ func (s *FirebaseService) Rename(node models.EditNode) error {
 	return nil
 }
 
-// TODO: add documentation & feature.
+// GetAll returns all elements from notya collection.
 func (s *FirebaseService) GetAll(additional string) ([]models.Node, []string, error) {
-	return nil, nil, nil
+	var nodes []models.Node
+	var titles []string
+
+	collection := s.NotyaCollection()
+	iter := collection.Documents(s.Ctx)
+	defer iter.Stop()
+
+	for {
+		ignoreCurrent := false
+
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+
+		if err != nil {
+			return nodes, titles, err
+		}
+
+		for _, ignore := range models.NotyaIgnoreFiles {
+			if doc.Ref.ID == ignore {
+				ignoreCurrent = true // mark current loop as ignorable.
+			}
+		}
+
+		if ignoreCurrent {
+			ignoreCurrent = false // reset ignorable for next item.
+			continue
+		}
+
+		// Decode data to node
+		var node models.Node
+		var _ = mapstructure.Decode(doc.Data(), &node)
+
+		nodes = append(nodes, node)
+		titles = append(titles, doc.Ref.ID)
+	}
+
+	return nodes, titles, nil
 }
 
 // TODO: add documentation & feature.
