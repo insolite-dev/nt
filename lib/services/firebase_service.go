@@ -191,7 +191,14 @@ func (s *FirebaseService) Open(node models.Node) error {
 
 // Remove deletes given node.
 func (s *FirebaseService) Remove(node models.Node) error {
-	return nil
+	collection := s.NotyaCollection()
+
+	if s.IsDocumentExists(node.Title) {
+		return assets.NotExists(fmt.Sprintf("%v collection", s.Config.FirebaseCollection), node.Title)
+	}
+
+	_, err := collection.Doc(node.Title).Delete(s.Ctx)
+	return err
 }
 
 // TODO: add documentation & feature.
