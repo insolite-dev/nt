@@ -207,9 +207,30 @@ func (s *FirebaseService) Remove(node models.Node) error {
 	return err
 }
 
-// TODO: add documentation & feature.
-func (s *FirebaseService) Rename(node models.EditNode) error {
-	return nil
+// Rename changes reference ID of document.
+func (s *FirebaseService) Rename(editNode models.EditNode) error {
+	data, err := s.View(editNode.Current.ToNote())
+	if err != nil {
+
+	}
+	if editNode.Current.Title == editNode.New.Title {
+		return assets.SameTitles
+	}
+
+	if !s.IsDocNotExists(editNode.New.Title) {
+		return assets.AlreadyExists(editNode.New.Title, "doc")
+	}
+
+	if err := s.Remove(editNode.Current); err != nil {
+		return err
+	}
+
+	_, createErr := s.Create(models.Note{
+		Title: editNode.New.Title,
+		Body:  data.Body,
+	})
+
+	return createErr
 }
 
 // GetAll returns all elements from notya collection.
@@ -300,9 +321,10 @@ func (s *FirebaseService) Copy(note models.Note) error {
 	return clipboard.WriteAll(data.Body)
 }
 
-// TODO: add documentation & feature.
+// Mkdir does nothing 'cause of firebase document structure.
+// Have to returns [assets.FolderingInFirebase].
 func (s *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
-	return nil, nil
+	return nil, assets.FolderingInFirebase
 }
 
 // TODO: add documentation & feature.

@@ -49,7 +49,7 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	// Ask for node selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNodePrompt("node", "rename:", nodeNames),
+		assets.ChooseNodePrompt("node", "rename", nodeNames),
 		&selected,
 	)
 

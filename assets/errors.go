@@ -15,11 +15,13 @@ var (
 		`Provided "current" and "new" title are the same, please provide a different title`,
 	)
 
-	EmptyWorkingDirectory       = errors.New(`Empty working directory, couldn't found any file`)
-	InvalidSettingsData         = errors.New(`Invalid settings data, cannot complete operation`)
+	EmptyWorkingDirectory = errors.New(`Empty working directory, couldn't found any file`)
+	InvalidSettingsData   = errors.New(`Invalid settings data, cannot complete operation`)
+
 	InvalidFirebaseProjectID    = errors.New(`Providen firebase-project-id is invalid(or empty)`)
 	FirebaseServiceKeyNotExists = errors.New(`Firebase service key file doesn't exists at given path`)
 	InvalidFirebaseCollection   = errors.New(`Provided firebase-collection-id is invalid`)
+	FolderingInFirebase         = errors.New(`Foldering functionality of notya isn't available for firebase service`)
 )
 
 // NotExists returns a formatted error message as data-not-exists error.
