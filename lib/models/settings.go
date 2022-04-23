@@ -33,12 +33,26 @@ var NotyaIgnoreFiles []string = []string{
 // │ Local Path: /User/random-user/notya/.settings.json │
 // ╰────────────────────────────────────────────────────╯
 type Settings struct {
-	Name               string `json:"name" default:"notya"`
-	Editor             string `json:"editor" default:"vi"`
-	LocalPath          string `json:"local_path" mapstructure:"local_path" survey:"local_path"`
+	Name string `json:"name" default:"notya"`
+
+	// CLI base editor of application.
+	Editor string `json:"editor" default:"vi"`
+
+	// Local folder path for notes, independently from [~/notya/] folder.
+	// Does same job as [FirebaseCollection] for local env.
+	// Must be given full path, like: "./User/john-doe/.../my-notya-notes/"
+	LocalPath string `json:"local_path" mapstructure:"local_path" survey:"local_path"`
+
+	// The project id of your firebase project.
+	FirebaseProjectID string `json:"fire_project_id,omitempty" mapstructure:"fire_project_id,omitempty"`
+
+	// The path of key of firebase-service account file.
+	// Must be given full path, like: "./User/john-doe/.../..."
 	FirebaseAccountKey string `json:"firebase,omitempty" mapstructure:"firebase,omitempty"`
+
+	// The concrete collection of nodes.
+	// Does same job as [LocalPath] but has to take just name of collection.
 	FirebaseCollection string `json:"fire_collection,omitempty" mapstructure:"fire_collection,omitempty"`
-	FirebaseProjectID  string `json:"fire_project_id,omitempty" mapstructure:"fire_project_id,omitempty"`
 }
 
 // InitSettings returns default variant of settings structure model.
@@ -87,6 +101,10 @@ func DecodeSettings(value string) Settings {
 // IsValid checks validness of settings structure.
 func (s *Settings) IsValid() bool {
 	return len(s.Name) > 0 && len(s.Editor) > 0 && len(s.LocalPath) > 0
+}
+
+func (s *Settings) IsFirebaseEnabled() bool {
+	return len(s.FirebaseProjectID) > 0 || len(s.FirebaseAccountKey) > 0 || len(s.FirebaseCollection) > 0
 }
 
 func IsUpdated(old, current Settings) bool {

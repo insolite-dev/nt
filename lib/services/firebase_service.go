@@ -6,12 +6,14 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
+	"github.com/anonistas/notya/pkg"
 	"github.com/mitchellh/mapstructure"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc/codes"
@@ -47,26 +49,36 @@ func NewFirebaseService(stdargs models.StdArgs, ls ServiceRepo) *FirebaseService
 
 // Path returns current service'base working directory.
 func (s *FirebaseService) Path() string {
-	return s.LS.Path()
+	return s.Config.FirebaseCollection
+}
+
+// StateConfig returns current configuration of state i.e [s.Config].
+func (s *FirebaseService) StateConfig() models.Settings {
+	return s.Config
 }
 
 // notyaCollection generates the main firestore collection refrence.
-func (s *FirebaseService) NotyaCollection(sub *string) firestore.CollectionRef {
-	collection := *s.FireStore.Collection(s.Config.Name)
-
-	if sub != nil && sub != &s.Config.Name {
-		collection = *collection.Parent.Collection(*sub)
-	}
-
-	return collection
+func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
+	return *s.FireStore.Collection(s.Config.FirebaseCollection)
 }
 
-// getFireDoc gets concrete collection's concrete data (as map).
-func (s *FirebaseService) getFireDoc(collection firestore.CollectionRef, doc string) (res map[string]interface{}, err error) {
-	ctx := context.Background()
+// IsDocumentExists checks if element at given title exists or not.
+func (s *FirebaseService) IsDocumentExists(title string) bool {
+	collection := s.NotyaCollection()
+	_, err := collection.Doc(title).Get(s.Ctx)
 
-	docSnap, err := collection.Doc(doc).Get(ctx)
+	return status.Code(err) == codes.NotFound
+}
+
+// GetFireDoc gets concrete collection's concrete data (as map).
+func (s *FirebaseService) GetFireDoc(collection firestore.CollectionRef, doc string) (res map[string]interface{}, err error) {
+	docSnap, err := collection.Doc(doc).Get(s.Ctx)
+
 	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return nil, assets.NotExists(fmt.Sprintf("%v collection", s.Config.FirebaseCollection), doc)
+		}
+
 		return nil, err
 	}
 
@@ -84,6 +96,19 @@ func (s *FirebaseService) Init() error {
 		return err
 	}
 	s.Config = *localConfig // should be re-written later.
+
+	if len(s.Config.FirebaseProjectID) == 0 {
+		return assets.InvalidFirebaseProjectID
+	}
+
+	// Check validness of firebase account key.
+	if !pkg.FileExists(s.Config.FirebaseAccountKey) || len(s.Config.FirebaseAccountKey) == 0 {
+		return assets.FirebaseServiceKeyNotExists
+	}
+
+	if len(s.Config.FirebaseCollection) == 0 {
+		s.Config.FirebaseCollection = s.Config.Name
+	}
 
 	if err := s.InitFirebase(); err != nil {
 		return err
@@ -133,7 +158,7 @@ func (s *FirebaseService) InitFirebase() error {
 
 // Settings gets and returns current settings state data.
 func (s *FirebaseService) Settings() (*models.Settings, error) {
-	data, err := s.getFireDoc(s.NotyaCollection(nil), models.SettingsName)
+	data, err := s.GetFireDoc(s.NotyaCollection(), models.SettingsName)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +175,7 @@ func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 		return assets.InvalidSettingsData
 	}
 
-	collection := s.NotyaCollection(nil)
+	collection := s.NotyaCollection()
 	if _, err := collection.Doc(models.SettingsName).Set(s.Ctx, settings.ToJSON()); err != nil {
 		return err
 	}
@@ -159,11 +184,12 @@ func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 }
 
 // TODO: add documentation & feature.
+// TODO: impl after [s.View].
 func (s *FirebaseService) Open(node models.Node) error {
 	return s.LS.Open(node)
 }
 
-// TODO: add documentation & feature.
+// Remove deletes given node.
 func (s *FirebaseService) Remove(node models.Node) error {
 	return nil
 }

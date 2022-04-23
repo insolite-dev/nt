@@ -48,6 +48,11 @@ func (l *LocalService) Path() string {
 	return l.NotyaPath
 }
 
+// StateConfig returns current configuration of state i.e [l.Config].
+func (l *LocalService) StateConfig() models.Settings {
+	return l.Config
+}
+
 // Init creates notya working directory into current machine.
 func (l *LocalService) Init() error {
 	// Generate the notya path.

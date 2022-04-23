@@ -19,8 +19,11 @@ var (
 	stdargs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
 )
 
-// service, is the default service of all commands.
-var service services.ServiceRepo
+var (
+	service      services.ServiceRepo // default/active service of all commands.
+	localService services.ServiceRepo // default/main service.
+	fireService  services.ServiceRepo // firebase integrated service.
+)
 
 // appCommand is the root command of application and genesis of all sub-commands.
 var appCommand = &cobra.Command{
@@ -53,14 +56,22 @@ func initCommands() {
 func ExecuteApp() {
 	initCommands()
 
-	// Initialize new local service.
-	service = services.NewLocalService(stdargs)
-
-	// Initialize application.
-	if err := service.Init(); err != nil {
+	localService = services.NewLocalService(stdargs)
+	if err := localService.Init(); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
+
+	config := localService.StateConfig()
+	if config.IsFirebaseEnabled() {
+		fireService = services.NewFirebaseService(stdargs, localService)
+		if err := fireService.Init(); err != nil {
+			pkg.Alert(pkg.ErrorL, err.Error())
+			return
+		}
+	}
+
+	service = fireService // FIXME: overwrite to local.
 
 	_ = appCommand.Execute()
 }

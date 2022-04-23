@@ -26,6 +26,9 @@ type ServiceRepo interface {
 	// In case of local storage implementation, path would be the folder path of the notes.
 	Path() string
 
+	// Current config data of service implementation.
+	StateConfig() models.Settings
+
 	// Init setups all kinda minimal services for application.
 	Init() error
 	Settings() (*models.Settings, error)
