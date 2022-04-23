@@ -10,9 +10,12 @@ import (
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
 	"github.com/mitchellh/mapstructure"
 	"google.golang.org/api/option"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // FirebaseService is a class implementation of service repo.
@@ -24,6 +27,7 @@ type FirebaseService struct {
 	Config  models.Settings
 
 	// Firebase related.
+	Ctx       context.Context
 	FireApp   *firebase.App
 	FireAuth  *auth.Client
 	FireStore *firestore.Client
@@ -34,7 +38,11 @@ var _ ServiceRepo = &FirebaseService{}
 
 // NewFirebaseService creates new firebase service by given arguments.
 func NewFirebaseService(stdargs models.StdArgs, ls ServiceRepo) *FirebaseService {
-	return &FirebaseService{Stdargs: stdargs, LS: ls}
+	return &FirebaseService{
+		LS:      ls,
+		Stdargs: stdargs,
+		Ctx:     context.Background(),
+	}
 }
 
 // Path returns current service'base working directory.
@@ -42,41 +50,79 @@ func (s *FirebaseService) Path() string {
 	return s.LS.Path()
 }
 
-// TODO: add documentation with feature.
+// notyaCollection generates the main firestore collection refrence.
+func (s *FirebaseService) NotyaCollection(sub *string) firestore.CollectionRef {
+	collection := *s.FireStore.Collection(s.Config.Name)
+
+	if sub != nil && sub != &s.Config.Name {
+		collection = *collection.Parent.Collection(*sub)
+	}
+
+	return collection
+}
+
+// getFireDoc gets concrete collection's concrete data (as map).
+func (s *FirebaseService) getFireDoc(collection firestore.CollectionRef, doc string) (res map[string]interface{}, err error) {
+	ctx := context.Background()
+
+	docSnap, err := collection.Doc(doc).Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return docSnap.Data(), nil
+}
+
+// Init creates notya working directory into current machine.
 func (s *FirebaseService) Init() error {
 	if s.FireApp != nil && s.FireStore != nil && s.FireAuth != nil {
 		return nil
 	}
 
-	config, err := s.LS.Settings()
+	localConfig, err := s.LS.Settings()
 	if err != nil {
 		return err
 	}
-	s.Config = *config
+	s.Config = *localConfig // should be re-written later.
 
-	return s.InitFirebase()
+	if err := s.InitFirebase(); err != nil {
+		return err
+	}
+
+	config, err := s.Settings()
+	if status.Code(err) == codes.NotFound {
+		if err := s.WriteSettings(*localConfig); err != nil {
+			return err
+		}
+	}
+
+	if err != nil {
+		return err
+	}
+
+	s.Config = *config // set remote settigns data instead of local.
+
+	return err
 }
 
 // Initializes firebase services as [s.FireApp], [s.FireAuth], and [s.FireStore].
 func (s *FirebaseService) InitFirebase() error {
-	ctx := context.Background()
-
 	opts := option.WithCredentialsFile(s.Config.FirebaseAccountKey)
-	config := &firebase.Config{ProjectID: s.Config.Name}
+	config := &firebase.Config{ProjectID: s.Config.FirebaseProjectID}
 
-	app, err := firebase.NewApp(ctx, config, opts)
+	app, err := firebase.NewApp(s.Ctx, config, opts)
 	if err != nil {
 		return err
 	}
 	s.FireApp = app
 
-	authClient, err := s.FireApp.Auth(ctx)
+	authClient, err := s.FireApp.Auth(s.Ctx)
 	if err != nil {
 		return err
 	}
 	s.FireAuth = authClient
 
-	firestore, err := s.FireApp.Firestore(ctx)
+	firestore, err := s.FireApp.Firestore(s.Ctx)
 	if err != nil {
 		return err
 	}
@@ -85,26 +131,9 @@ func (s *FirebaseService) InitFirebase() error {
 	return nil
 }
 
-// notyaCollection generates the main firestore collection refrence.
-func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
-	return *s.FireStore.Collection(s.Config.Name)
-}
-
-// getFireDoc gets concrete collection's concrete data (as map).
-func (s *FirebaseService) getFireDoc(collection firestore.CollectionRef, doc string) (res map[string]interface{}, err error) {
-	ctx := context.Background()
-	docSnap, err := collection.Doc(doc).Get(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return docSnap.Data(), nil
-}
-
 // Settings gets and returns current settings state data.
 func (s *FirebaseService) Settings() (*models.Settings, error) {
-	data, err := s.getFireDoc(s.NotyaCollection(), models.SettingsName)
+	data, err := s.getFireDoc(s.NotyaCollection(nil), models.SettingsName)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +144,17 @@ func (s *FirebaseService) Settings() (*models.Settings, error) {
 	return &settings, nil
 }
 
-// TODO: add documentation & feature.
+// WriteSettings overwrites settings data by given settings model.
 func (s *FirebaseService) WriteSettings(settings models.Settings) error {
+	if !settings.IsValid() {
+		return assets.InvalidSettingsData
+	}
+
+	collection := s.NotyaCollection(nil)
+	if _, err := collection.Doc(models.SettingsName).Set(s.Ctx, settings.ToJSON()); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -36,8 +36,9 @@ type Settings struct {
 	Name               string `json:"name" default:"notya"`
 	Editor             string `json:"editor" default:"vi"`
 	LocalPath          string `json:"local_path" mapstructure:"local_path" survey:"local_path"`
-	FirebaseAccountKey string `json:"firebase,omitempty"`
+	FirebaseAccountKey string `json:"firebase,omitempty" mapstructure:"firebase,omitempty"`
 	FirebaseCollection string `json:"fire_collection,omitempty" mapstructure:"fire_collection,omitempty"`
+	FirebaseProjectID  string `json:"fire_project_id,omitempty" mapstructure:"fire_project_id,omitempty"`
 }
 
 // InitSettings returns default variant of settings structure model.
@@ -60,6 +61,16 @@ func (s *Settings) ToByte() []byte {
 	res, _ := json.Marshal(&j)
 
 	return res
+}
+
+// ToJSON converts string structure model to map value.
+func (s *Settings) ToJSON() map[string]interface{} {
+	b, _ := json.Marshal(&s)
+
+	var m map[string]interface{}
+	_ = json.Unmarshal(b, &m)
+
+	return m
 }
 
 // FromJSON converts string(map) value to Settings structure.
