@@ -211,13 +211,15 @@ func (s *FirebaseService) Remove(node models.Node) error {
 func (s *FirebaseService) Rename(editNode models.EditNode) error {
 	data, err := s.View(editNode.Current.ToNote())
 	if err != nil {
-
+		return err
 	}
+
 	if editNode.Current.Title == editNode.New.Title {
 		return assets.SameTitles
 	}
 
-	if !s.IsDocNotExists(editNode.New.Title) {
+	isEmpty := len(strings.Trim(editNode.New.Title, " ")) < 1
+	if isEmpty || !s.IsDocNotExists(editNode.New.Title) {
 		return assets.AlreadyExists(editNode.New.Title, "doc")
 	}
 
@@ -268,6 +270,9 @@ func (s *FirebaseService) GetAll(additional string) ([]models.Node, []string, er
 		// Decode data to node
 		var node models.Node
 		var _ = mapstructure.Decode(doc.Data(), &node)
+
+		// Since each doc is file, we've not to care about folder pretties.
+		node.Pretty = " " + node.Title
 
 		nodes = append(nodes, node)
 		titles = append(titles, doc.Ref.ID)
