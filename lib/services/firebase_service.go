@@ -65,7 +65,7 @@ func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
 }
 
 // IsDocumentExists checks if element at given title exists or not.
-func (s *FirebaseService) IsNotDocumentExists(title string) bool {
+func (s *FirebaseService) IsDocNotExists(title string) bool {
 	if len(strings.Trim(title, " ")) < 1 {
 		return true
 	}
@@ -199,7 +199,7 @@ func (s *FirebaseService) Open(node models.Node) error {
 func (s *FirebaseService) Remove(node models.Node) error {
 	collection := s.NotyaCollection()
 
-	if s.IsNotDocumentExists(node.Title) {
+	if s.IsDocNotExists(node.Title) {
 		return assets.NotExists("", node.Title)
 	}
 
@@ -255,9 +255,19 @@ func (s *FirebaseService) GetAll(additional string) ([]models.Node, []string, er
 	return nodes, titles, nil
 }
 
-// TODO: add documentation & feature.
+// Create, creates a new note element at [note.Title] and sets element-body as json.
 func (s *FirebaseService) Create(note models.Note) (*models.Note, error) {
-	return nil, nil
+	collection := s.NotyaCollection()
+
+	if !s.IsDocNotExists(note.Title) {
+		return nil, assets.AlreadyExists(note.Title, "doc")
+	}
+
+	if _, err := collection.Doc(note.Title).Set(s.Ctx, note.ToJSON()); err != nil {
+		return nil, err
+	}
+
+	return &note, nil
 }
 
 // TODO: add documentation & feature.
