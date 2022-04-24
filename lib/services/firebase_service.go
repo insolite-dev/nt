@@ -313,7 +313,17 @@ func (s *FirebaseService) View(note models.Note) (*models.Note, error) {
 
 // TODO: add documentation & feature.
 func (s *FirebaseService) Edit(note models.Note) (*models.Note, error) {
-	return nil, nil
+	collection := s.NotyaCollection()
+
+	if s.IsDocNotExists(note.Title) {
+		return nil, assets.NotExists("", note.Title)
+	}
+
+	if _, err := collection.Doc(note.Title).Set(s.Ctx, note.ToJSON()); err != nil {
+		return nil, err
+	}
+
+	return &note, nil
 }
 
 // Copy fetches note from [note.Title], and copies its body to machine's clipboard.
