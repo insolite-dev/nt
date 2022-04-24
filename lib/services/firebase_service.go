@@ -7,6 +7,7 @@ package services
 import (
 	"context"
 	"strings"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -189,10 +190,40 @@ func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 	return nil
 }
 
-// TODO: add documentation & feature.
-// TODO: impl after [s.View].
+// Open, opens note remotly from firebase.
+// caches it on local, makes able to modify after modifing overwrites on db.
 func (s *FirebaseService) Open(node models.Node) error {
-	return s.LS.Open(node)
+	data, err := s.View(node.ToNote())
+	if err != nil {
+		return err
+	}
+
+	note := models.Note{Title: data.Title + time.Now().String(), Body: data.Body}
+	if _, err := s.LS.Create(note); err != nil {
+		return err
+	}
+
+	// Open via editor to edit.
+	openErr := s.LS.Open(note.ToNode())
+	if openErr != nil {
+		return openErr
+	}
+
+	// Get updated note.
+	updatedNote, err := s.LS.View(note)
+	if err != nil {
+		return err
+	}
+
+	// Clear cache, and skip error.
+	_ = s.LS.Remove(updatedNote.ToNode())
+
+	note = models.Note{Title: data.Title, Path: data.Path, Body: updatedNote.Body}
+	if _, err := s.Edit(note); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Remove deletes given node.
