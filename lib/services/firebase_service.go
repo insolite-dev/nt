@@ -370,10 +370,31 @@ func (s *FirebaseService) Copy(note models.Note) error {
 // Mkdir does nothing 'cause of firebase document structure.
 // Have to returns [assets.FolderingInFirebase].
 func (s *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
-	return nil, assets.FolderingInFirebase
+	return nil, assets.NotAvailableForFirebase
 }
 
-// TODO: add documentation & feature.
+// MoveNote moves all notes from "CURRENT" firebase collection
+// to new collection(given by settings parameter).
 func (s *FirebaseService) MoveNotes(settings models.Settings) error {
+	nodes, _, err := s.GetAll("")
+	if err != nil {
+		return err
+	}
+
+	prevSettings := s.Config
+	for _, node := range nodes {
+		// Remove note appropriate by default settings
+		s.Config.FirebaseCollection = prevSettings.FirebaseCollection
+		if err := s.Remove(node); err != nil {
+			continue
+		}
+
+		// Create note appropriate by updated settings
+		s.Config.FirebaseCollection = settings.FirebaseCollection
+		if _, err := s.Create(node.ToNote()); err != nil {
+			continue
+		}
+	}
+
 	return nil
 }

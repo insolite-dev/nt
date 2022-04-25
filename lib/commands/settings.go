@@ -73,6 +73,7 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	survey.Ask(assets.SettingsEditPromptQuestions(*settings), &editedSettings)
 
 	// Breakdown function, if have no changes.
+	// TODO: compare appropriate to service type.
 	if !models.IsUpdated(*settings, editedSettings) {
 		pkg.Alert(pkg.InfoL, "No changes")
 		return
@@ -85,6 +86,7 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Finish process, if notes path not updated.
+	// TODO: compare appropriate to service type.
 	if !models.IsPathUpdated(*settings, editedSettings) {
 		return
 	}
@@ -125,6 +127,7 @@ func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Ask to move notes if path were updated.
+	// TODO: compare appropriate to service type.
 	if models.IsPathUpdated(*beforeSettings, *afterSettings) {
 		var moveNotes bool
 		survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
