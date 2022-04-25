@@ -122,17 +122,15 @@ func (s *FirebaseService) Init() error {
 	}
 
 	config, err := s.Settings()
+	if err == nil {
+		s.Config = *config // set remote settigns data instead of local.
+	}
+
 	if status.Code(err) == codes.NotFound {
 		if err := s.WriteSettings(*localConfig); err != nil {
 			return err
 		}
 	}
-
-	if err != nil {
-		return err
-	}
-
-	s.Config = *config // set remote settigns data instead of local.
 
 	return err
 }
@@ -165,13 +163,14 @@ func (s *FirebaseService) InitFirebase() error {
 
 // Settings gets and returns current settings state data.
 func (s *FirebaseService) Settings() (*models.Settings, error) {
-	data, err := s.GetFireDoc(s.NotyaCollection(), models.SettingsName)
+	collection := s.NotyaCollection()
+	docSnap, err := collection.Doc(models.SettingsName).Get(s.Ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var settings models.Settings
-	mapstructure.Decode(data, &settings)
+	mapstructure.Decode(docSnap.Data(), &settings)
 
 	return &settings, nil
 }
