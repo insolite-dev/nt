@@ -132,12 +132,10 @@ func PrintNodes(list []models.Node) {
 
 // PrintSettings, logs given settings model.
 func PrintSettings(settings models.Settings) {
-	values := map[string]interface{}{
-		"Editor":     settings.Editor,
-		"Local Path": settings.LocalPath,
-	}
+	values := settings.ToJSON()
 
 	for key, value := range values {
-		text.Add(color.FgHiBlue).Println(fmt.Sprintf(" • %v: %v ", key, value))
+		printable := fmt.Sprintf(" • %s: %s", fmt.Sprintf("%s%s%s", YELLOW, key, NOCOLOR), value)
+		text.Println(printable)
 	}
 }
