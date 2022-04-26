@@ -70,10 +70,14 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	editedSettings := models.Settings{}
-	survey.Ask(assets.SettingsEditPromptQuestions(*settings), &editedSettings)
+	if err := survey.Ask(
+		assets.SettingsEditPromptQuestions(*settings), &editedSettings,
+	); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
 
 	// Breakdown function, if have no changes.
-	// TODO: compare appropriate to service type.
 	if !models.IsUpdated(*settings, editedSettings) {
 		pkg.Alert(pkg.InfoL, "No changes")
 		return

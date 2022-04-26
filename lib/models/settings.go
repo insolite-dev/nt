@@ -48,15 +48,15 @@ type Settings struct {
 	LocalPath string `json:"local_path" mapstructure:"local_path" survey:"local_path"`
 
 	// The project id of your firebase project.
-	FirebaseProjectID string `json:"fire_project_id,omitempty" mapstructure:"fire_project_id,omitempty"`
+	FirebaseProjectID string `json:"fire_project_id,omitempty" mapstructure:"fire_project_id,omitempty" survey:"fire_project_id"`
 
 	// The path of key of firebase-service account file.
 	// Must be given full path, like: "./User/john-doe/.../..."
-	FirebaseAccountKey string `json:"firebase,omitempty" mapstructure:"firebase,omitempty"`
+	FirebaseAccountKey string `json:"fire_account_key,omitempty" mapstructure:"fire_account_key,omitempty" survey:"fire_account_key"`
 
 	// The concrete collection of nodes.
 	// Does same job as [LocalPath] but has to take just name of collection.
-	FirebaseCollection string `json:"fire_collection,omitempty" mapstructure:"fire_collection,omitempty"`
+	FirebaseCollection string `json:"fire_collection,omitempty" mapstructure:"fire_collection,omitempty" survey:"fire_collection"`
 }
 
 // InitSettings returns default variant of settings structure model.
