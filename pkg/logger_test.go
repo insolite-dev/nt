@@ -10,6 +10,7 @@ import (
 
 	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
+	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 )
 
@@ -167,5 +168,21 @@ func TestPrintSettings(t *testing.T) {
 		t.Run(td.testName, func(t *testing.T) {
 			pkg.PrintSettings(td.settings)
 		})
+	}
+}
+
+func TestSpinner(t *testing.T) {
+	got := pkg.Spinner()
+
+	tests := []struct {
+		expected *spinner.Spinner
+	}{
+		{expected: got},
+	}
+
+	for _, td := range tests {
+		if td.expected != got {
+			t.Errorf("Sum of Spinner was different, Want: %v, Got: %v", td.expected, got)
+		}
 	}
 }

@@ -71,12 +71,12 @@ func TestToJSON(t *testing.T) {
 				FirebaseCollection: "notya-notes",
 			},
 			expected: map[string]interface{}{
-				"name":            models.DefaultAppName,
-				"editor":          models.DefaultEditor,
-				"local_path":      "~notya",
-				"fire_project_id": "notya",
-				"firebase":        "~notya/key.json",
-				"fire_collection": "notya-notes",
+				"name":             models.DefaultAppName,
+				"editor":           models.DefaultEditor,
+				"local_path":       "~notya",
+				"fire_project_id":  "notya",
+				"fire_account_key": "~notya/key.json",
+				"fire_collection":  "notya-notes",
 			},
 		},
 	}
@@ -87,7 +87,7 @@ func TestToJSON(t *testing.T) {
 		for key, value := range td.expected {
 
 			if got[key] != value {
-				t.Errorf("ToJSON's sum was different: Want: %v | Got: %v", got, td.expected)
+				t.Errorf("SettingsToJSON's sum was different: Want: %v | Got: %v", got, td.expected)
 			}
 		}
 	}
@@ -174,6 +174,30 @@ func TestIsValid(t *testing.T) {
 	}
 }
 
+func TestIsFirebaseEnabled(t *testing.T) {
+	tests := []struct {
+		settings models.Settings
+		expected bool
+	}{
+		{
+			settings: models.InitSettings("/usr/mock/localpath"),
+			expected: false,
+		},
+		{
+			settings: models.Settings{FirebaseProjectID: "mock-project-id"},
+			expected: true,
+		},
+	}
+
+	for _, td := range tests {
+		got := td.settings.IsFirebaseEnabled()
+
+		if got != td.expected {
+			t.Errorf("IsFirebaseEnabled sum was different: Want: %v | Got: %v", got, td.expected)
+		}
+	}
+}
+
 func TestIsUpdated(t *testing.T) {
 	tests := []struct {
 		testname     string
@@ -240,6 +264,12 @@ func TestIsPathUpdated(t *testing.T) {
 			old:         models.Settings{FirebaseCollection: "test/path"},
 			current:     models.Settings{FirebaseCollection: "new/test/path"},
 			expected:    true,
+		},
+		{
+			serviceType: "undefined",
+			old:         models.Settings{FirebaseCollection: "test/path"},
+			current:     models.Settings{FirebaseCollection: "new/test/path"},
+			expected:    false,
 		},
 	}
 
