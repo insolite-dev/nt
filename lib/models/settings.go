@@ -27,10 +27,14 @@ var NotyaIgnoreFiles []string = []string{
 
 // Settings is a main structure model of application settings.
 //
-//  Example
+//  Example:
 // ╭────────────────────────────────────────────────────╮
+// │ Name: notya                                        │
 // │ Editor: vi                                         │
 // │ Local Path: /User/random-user/notya/.settings.json │
+// │ Firebase Project ID: notya-98tf3                   │
+// │ Firebase Account Key: /User/.../notya/key.json     │
+// │ Firebase Collection: notya-notes                   │
 // ╰────────────────────────────────────────────────────╯
 type Settings struct {
 	Name string `json:"name" default:"notya"`
@@ -98,6 +102,17 @@ func DecodeSettings(value string) Settings {
 	return s
 }
 
+// FirePath returns valid firebase collection name.
+func (s *Settings) FirePath() string {
+	if len(s.FirebaseCollection) > 0 {
+		return s.FirebaseCollection
+	} else if len(s.Name) > 0 {
+		return s.Name
+	}
+
+	return DefaultAppName
+}
+
 // IsValid checks validness of settings structure.
 func (s *Settings) IsValid() bool {
 	return len(s.Name) > 0 && len(s.Editor) > 0 && len(s.LocalPath) > 0
@@ -108,9 +123,22 @@ func (s *Settings) IsFirebaseEnabled() bool {
 }
 
 func IsUpdated(old, current Settings) bool {
-	return old.Editor != current.Editor || old.LocalPath != current.LocalPath
+	return old.Name != current.Name ||
+		old.Editor != current.Editor ||
+		old.LocalPath != current.LocalPath ||
+		old.FirebaseProjectID != current.FirebaseProjectID ||
+		old.FirebaseAccountKey != current.FirebaseAccountKey ||
+		old.FirebaseCollection != current.FirebaseCollection
 }
 
-func IsPathUpdated(old, current Settings) bool {
-	return old.LocalPath != current.LocalPath
+// IsPathUpdated checks path difference via based on service type.
+func IsPathUpdated(old, current Settings, t string) bool {
+	switch t {
+	case "LOCAL":
+		return old.LocalPath != current.LocalPath
+	case "FIREBASE":
+		return old.FirebaseCollection != current.FirebaseCollection
+	}
+
+	return false
 }

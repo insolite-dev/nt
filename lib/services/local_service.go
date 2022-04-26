@@ -43,6 +43,11 @@ func (l *LocalService) GeneratePath(title string) string {
 	return local + title
 }
 
+// Type returns type of LocalService - LOCAL
+func (l *LocalService) Type() string {
+	return LOCAL.ToStr()
+}
+
 // Path returns current service's base working directory.
 func (l *LocalService) Path() string {
 	return l.NotyaPath

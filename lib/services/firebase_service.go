@@ -50,11 +50,6 @@ func NewFirebaseService(stdargs models.StdArgs, ls ServiceRepo) *FirebaseService
 	}
 }
 
-// Path returns current service'base working directory.
-func (s *FirebaseService) Path() string {
-	return s.Config.FirebaseCollection
-}
-
 // StateConfig returns current configuration of state i.e [s.Config].
 func (s *FirebaseService) StateConfig() models.Settings {
 	return s.Config
@@ -62,7 +57,7 @@ func (s *FirebaseService) StateConfig() models.Settings {
 
 // notyaCollection generates the main firestore collection refrence.
 func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
-	return *s.FireStore.Collection(s.Config.FirebaseCollection)
+	return *s.FireStore.Collection(s.Config.FirePath())
 }
 
 // IsDocumentExists checks if element at given title exists or not.
@@ -92,12 +87,18 @@ func (s *FirebaseService) GetFireDoc(collection firestore.CollectionRef, doc str
 	return docSnap.Data(), nil
 }
 
+// Type returns type of FirebaseService - FIRE.
+func (s *FirebaseService) Type() string {
+	return FIRE.ToStr()
+}
+
+// Path returns current service'base working directory.
+func (s *FirebaseService) Path() string {
+	return s.Config.FirePath()
+}
+
 // Init creates notya working directory into current machine.
 func (s *FirebaseService) Init() error {
-	if s.FireApp != nil && s.FireStore != nil && s.FireAuth != nil {
-		return nil
-	}
-
 	localConfig, err := s.LS.Settings()
 	if err != nil {
 		return err
@@ -122,17 +123,17 @@ func (s *FirebaseService) Init() error {
 	}
 
 	config, err := s.Settings()
-	if err == nil {
-		s.Config = *config // set remote settigns data instead of local.
-	}
-
 	if status.Code(err) == codes.NotFound {
 		if err := s.WriteSettings(*localConfig); err != nil {
 			return err
 		}
+	} else if err != nil {
+		return err
 	}
 
-	return err
+	s.Config = *config // set remote settigns data instead of local.
+
+	return nil
 }
 
 // Initializes firebase services as [s.FireApp], [s.FireAuth], and [s.FireStore].
