@@ -29,18 +29,15 @@ func initViewCommand() {
 func runViewCommand(cmd *cobra.Command, args []string) {
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		note, err := service.View(models.Note{Title: args[0]})
-		if err != nil {
-			pkg.Alert(pkg.ErrorL, err.Error())
-			return
-		}
-
-		pkg.PrintNote(*note)
+		viewAndFinish(args[0])
 		return
 	}
 
+	loading.Start()
+
 	// Generate array of all note names.
 	_, noteNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -53,10 +50,16 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 		&selected,
 	)
 
-	// Get selected note.
-	note, viewErr := service.View(models.Note{Title: selected})
-	if viewErr != nil {
-		pkg.Alert(pkg.ErrorL, viewErr.Error())
+	viewAndFinish(selected)
+}
+
+func viewAndFinish(title string) {
+	loading.Start()
+	note, err := service.View(models.Note{Title: title})
+	loading.Stop()
+
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 

@@ -66,8 +66,10 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 
 // createAndFinish asks to edit note and finishes creating loop.
 func createAndFinish(title string) {
-	// Create new note-file by given title.
+	loading.Start()
 	note, err := service.Create(models.Note{Title: title})
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return

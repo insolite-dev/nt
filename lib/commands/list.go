@@ -30,8 +30,12 @@ func runListCommand(cmd *cobra.Command, args []string) {
 		additional = args[0]
 	}
 
+	loading.Start()
+
 	// Generate a list of nodes.
 	nodes, _, err := service.GetAll(additional, models.NotyaIgnoreFiles)
+
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return

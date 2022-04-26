@@ -7,10 +7,13 @@ require (
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/AlecAivazis/survey/v2 v2.3.2
 	github.com/atotto/clipboard v0.1.4
+	github.com/briandowns/spinner v1.18.1
 	github.com/fatih/color v1.13.0
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/spf13/cobra v1.2.1
+	google.golang.org/api v0.59.0
+	google.golang.org/grpc v1.40.0
 )
 
 require (
@@ -32,9 +35,7 @@ require (
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
-	google.golang.org/api v0.59.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20211028162531-8db9c33dc351 // indirect
-	google.golang.org/grpc v1.40.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )

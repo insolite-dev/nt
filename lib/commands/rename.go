@@ -39,8 +39,13 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	loading.Start()
+
 	// Generate array of all node names.
 	_, nodeNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -73,7 +78,11 @@ func rename(selected string, newname string) {
 		New:     models.Node{Title: newname},
 	}
 
-	if err := service.Rename(editNode); err != nil {
+	loading.Start()
+	err := service.Rename(editNode)
+	loading.Stop()
+
+	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}

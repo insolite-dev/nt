@@ -15,6 +15,9 @@ import (
 )
 
 var (
+	// Main spin animator of application.
+	loading = pkg.Spinner()
+
 	// stdargs is the global std arguments-state of application.
 	stdargs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
 )
@@ -54,11 +57,14 @@ func initCommands() {
 //
 // Usually used in [cmd/app.go].
 func ExecuteApp() {
+	loading.Start()
+
 	initCommands()
 
 	localService = services.NewLocalService(stdargs)
 	if err := localService.Init(); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
+		loading.Stop()
 		return
 	}
 
@@ -67,9 +73,12 @@ func ExecuteApp() {
 		fireService = services.NewFirebaseService(stdargs, localService)
 		if err := fireService.Init(); err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
+			loading.Stop()
 			return
 		}
 	}
+
+	loading.Stop()
 
 	service = fireService // FIXME: overwrite to local.
 

@@ -33,8 +33,12 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	loading.Start()
+
 	// Generate array of all node names.
 	_, nodeNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -52,7 +56,12 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 
 // removeAndFinish removes given node and alerts success message if everything is OK.
 func removeAndFinish(node models.Node) {
-	if err := service.Remove(node); err != nil {
+	loading.Start()
+
+	err := service.Remove(node)
+
+	loading.Start()
+	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}

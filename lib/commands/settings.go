@@ -49,7 +49,10 @@ func initSettingsCommand() {
 
 // runSettingsCommand runs appropriate service functionalities to manage settings.
 func runSettingsCommand(cmd *cobra.Command, args []string) {
+	loading.Start()
 	settings, err := service.Settings(nil)
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -63,7 +66,10 @@ func runSettingsCommand(cmd *cobra.Command, args []string) {
 // runEditSettingsCommand runs appropriate service functionalities
 // to edit the configuration file by best way.
 func runEditSettingsCommand(cmd *cobra.Command, args []string) {
+	loading.Start()
 	settings, err := service.Settings(nil)
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -83,9 +89,12 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Update settings data.
-	if err := service.WriteSettings(editedSettings); err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
+	loading.Start()
+	writeErr := service.WriteSettings(editedSettings)
+	loading.Stop()
+
+	if writeErr != nil {
+		pkg.Alert(pkg.ErrorL, writeErr.Error())
 		return
 	}
 
@@ -99,7 +108,11 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
 
 	if moveNotes {
-		if err := service.MoveNotes(editedSettings); err != nil {
+		loading.Start()
+		err := service.MoveNotes(editedSettings)
+		loading.Stop()
+
+		if err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
 		}
 	}
@@ -108,18 +121,25 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 // runViewSettingsCommand runs appropriate service functionalities
 // to open settings file(json) with CURRENT editor.
 func runViewSettingsCommand(cmd *cobra.Command, args []string) {
+	loading.Start()
 	beforeSettings, err := service.Settings(nil)
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	if err := service.OpenSettings(*beforeSettings); err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
+	openErr := service.OpenSettings(*beforeSettings)
+	if openErr != nil {
+		pkg.Alert(pkg.ErrorL, openErr.Error())
 		return
 	}
 
+	loading.Start()
 	afterSettings, err := service.Settings(&beforeSettings.ID)
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -132,7 +152,10 @@ func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 			return
 		}
 
+		loading.Start()
 		err := service.MoveNotes(*afterSettings)
+		loading.Stop()
+
 		if err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
 		}

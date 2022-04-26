@@ -6,8 +6,10 @@ package pkg
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/anonistas/notya/lib/models"
+	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
 )
@@ -138,4 +140,11 @@ func PrintSettings(settings models.Settings) {
 		printable := fmt.Sprintf(" • %s: %s", fmt.Sprintf("%s%s%s", YELLOW, key, NOCOLOR), value)
 		text.Println(printable)
 	}
+}
+
+// Spinner generates static style notya spinner.
+func Spinner() *spinner.Spinner {
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	s.Color("yellow")
+	return s
 }
