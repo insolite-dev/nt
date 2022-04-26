@@ -177,7 +177,7 @@ func (l *LocalService) Remove(node models.Node) error {
 
 	// Check for directory, to remove sub nodes of it.
 	if pkg.IsDir(nodePath) {
-		subNodes, _, err := l.GetAll(node.StructAsFolder().Title)
+		subNodes, _, err := l.GetAll(node.StructAsFolder().Title, []string{})
 		if err != nil && err != assets.EmptyWorkingDirectory {
 			return err
 		}
@@ -319,11 +319,11 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 }
 
 // GetAll gets all node [names], and returns it as array list.
-func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error) {
+func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
 	path := l.GeneratePath(additional)
 
 	// Generate array of all file names that are located in [path].
-	files, pretty, err := pkg.ListDir(path, "", "", models.NotyaIgnoreFiles, true)
+	files, pretty, err := pkg.ListDir(path, "", "", ignore, true)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -344,7 +344,7 @@ func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error
 
 // MoveNote moves all notes from "CURRENT" path to new path(given by settings parameter).
 func (l *LocalService) MoveNotes(settings models.Settings) error {
-	nodes, _, err := l.GetAll("")
+	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
 	if err != nil {
 		return err
 	}

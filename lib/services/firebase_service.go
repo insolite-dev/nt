@@ -169,7 +169,7 @@ func (s *FirebaseService) Settings(p *string) (*models.Settings, error) {
 		sp = *p
 	}
 
-	collection := s.NotyaCollection()
+	collection := s.FireStore.Collection(s.Config.Name)
 	docSnap, err := collection.Doc(sp).Get(s.Ctx)
 	if err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 		return assets.InvalidSettingsData
 	}
 
-	collection := s.NotyaCollection()
+	collection := s.FireStore.Collection(s.Config.Name)
 	if _, err := collection.Doc(models.SettingsName).Set(s.Ctx, settings.ToJSON()); err != nil {
 		return err
 	}
@@ -311,7 +311,7 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 }
 
 // GetAll returns all elements from notya collection.
-func (s *FirebaseService) GetAll(additional string) ([]models.Node, []string, error) {
+func (s *FirebaseService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
 	var nodes []models.Node
 	var titles []string
 
@@ -331,8 +331,8 @@ func (s *FirebaseService) GetAll(additional string) ([]models.Node, []string, er
 			return nodes, titles, err
 		}
 
-		for _, ignore := range models.NotyaIgnoreFiles {
-			if doc.Ref.ID == ignore {
+		for _, ig := range ignore {
+			if doc.Ref.ID == ig {
 				ignoreCurrent = true // mark current loop as ignorable.
 			}
 		}
@@ -420,7 +420,7 @@ func (s *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
 // MoveNote moves all notes from "CURRENT" firebase collection
 // to new collection(given by settings parameter).
 func (s *FirebaseService) MoveNotes(settings models.Settings) error {
-	nodes, _, err := s.GetAll("")
+	nodes, _, err := s.GetAll("", models.NotyaIgnoreFiles)
 	if err != nil {
 		return err
 	}

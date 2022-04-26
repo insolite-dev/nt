@@ -5,6 +5,7 @@
 package commands
 
 import (
+	"github.com/anonistas/notya/lib/models"
 	"github.com/anonistas/notya/pkg"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +31,7 @@ func runListCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Generate a list of nodes.
-	nodes, _, err := service.GetAll(additional)
+	nodes, _, err := service.GetAll(additional, models.NotyaIgnoreFiles)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return

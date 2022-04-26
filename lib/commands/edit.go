@@ -39,7 +39,7 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Generate all node names.
-	_, nodeNames, err := service.GetAll("")
+	_, nodeNames, err := service.GetAll("", models.NotyaIgnoreFiles)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
