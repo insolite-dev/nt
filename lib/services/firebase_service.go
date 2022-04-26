@@ -99,7 +99,7 @@ func (s *FirebaseService) Path() string {
 
 // Init creates notya working directory into current machine.
 func (s *FirebaseService) Init() error {
-	localConfig, err := s.LS.Settings()
+	localConfig, err := s.LS.Settings(nil)
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (s *FirebaseService) Init() error {
 		return err
 	}
 
-	config, err := s.Settings()
+	config, err := s.Settings(nil)
 	if status.Code(err) == codes.NotFound {
 		if err := s.WriteSettings(*localConfig); err != nil {
 			return err
@@ -163,9 +163,14 @@ func (s *FirebaseService) InitFirebase() error {
 }
 
 // Settings gets and returns current settings state data.
-func (s *FirebaseService) Settings() (*models.Settings, error) {
+func (s *FirebaseService) Settings(p *string) (*models.Settings, error) {
+	sp := models.SettingsName
+	if p != nil && len(*p) != 0 {
+		sp = *p
+	}
+
 	collection := s.NotyaCollection()
-	docSnap, err := collection.Doc(models.SettingsName).Get(s.Ctx)
+	docSnap, err := collection.Doc(sp).Get(s.Ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -185,6 +190,45 @@ func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 	collection := s.NotyaCollection()
 	if _, err := collection.Doc(models.SettingsName).Set(s.Ctx, settings.ToJSON()); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// OpenSettigns, opens note remotly from firebase.
+// caches it on local, makes able to modify after modifing overwrites on db.
+func (s *FirebaseService) OpenSettings(settings models.Settings) error {
+	prevSettings, err := s.Settings(nil)
+	if err != nil {
+		return err
+	}
+
+	title := time.Now().String() + models.SettingsName[1:]
+
+	note := models.Note{
+		Title: title,
+		Body:  string(prevSettings.ToByte()),
+	}
+	if _, err := s.LS.Create(note); err != nil {
+		return err
+	}
+
+	// Open cloned settings data via editor.
+	prevSettings.ID = note.Title
+	if err := s.LS.OpenSettings(*prevSettings); err != nil {
+		return err
+	}
+
+	updatedSettings, err := s.LS.Settings(&prevSettings.ID)
+	if err != nil {
+		return err
+	}
+
+	// Clear cache, and skip error.
+	_ = s.LS.Remove(note.ToNode())
+
+	if models.IsUpdated(*prevSettings, *updatedSettings) {
+		return s.WriteSettings(*updatedSettings)
 	}
 
 	return nil

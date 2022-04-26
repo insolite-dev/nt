@@ -37,6 +37,9 @@ var NotyaIgnoreFiles []string = []string{
 // │ Firebase Collection: notya-notes                   │
 // ╰────────────────────────────────────────────────────╯
 type Settings struct {
+	// Development related field, shouldn't be used in production.
+	ID string `json:",omitempty"`
+
 	Name string `json:"name" default:"notya"`
 
 	// CLI base editor of application.

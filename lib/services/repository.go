@@ -57,8 +57,9 @@ type ServiceRepo interface {
 
 	// Init setups all kinda minimal services for application.
 	Init() error
-	Settings() (*models.Settings, error)
+	Settings(p *string) (*models.Settings, error)
 	WriteSettings(settings models.Settings) error
+	OpenSettings(settings models.Settings) error
 
 	// General functions that used for both [Note]s and [Folder]s
 	Open(node models.Node) error

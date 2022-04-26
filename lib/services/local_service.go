@@ -75,7 +75,7 @@ func (l *LocalService) Init() error {
 
 	// If settings exists, set it to state.
 	if settingsSetted {
-		settings, settingsErr := l.Settings()
+		settings, settingsErr := l.Settings(nil)
 		if settingsErr != nil {
 			return settingsErr
 		}
@@ -107,8 +107,13 @@ func (l *LocalService) Init() error {
 }
 
 // Settings gets and returns current settings state data.
-func (l *LocalService) Settings() (*models.Settings, error) {
-	settingsPath := l.NotyaPath + models.SettingsName
+func (l *LocalService) Settings(p *string) (*models.Settings, error) {
+	var settingsPath string
+	if p != nil && len(*p) != 0 {
+		settingsPath = l.GeneratePath(*p)
+	} else {
+		settingsPath = l.NotyaPath + models.SettingsName
+	}
 
 	data, err := pkg.ReadBody(settingsPath)
 	if err != nil {
@@ -133,6 +138,17 @@ func (l *LocalService) WriteSettings(settings models.Settings) error {
 	}
 
 	return nil
+}
+
+// OpenSettings opens given settings via editor.
+func (l *LocalService) OpenSettings(settings models.Settings) error {
+	path := models.SettingsName
+	if len(settings.ID) > 0 {
+		path = settings.ID
+	}
+
+	// We could use open func of node, in local service.
+	return l.Open(models.Node{Title: path})
 }
 
 // Open opens given node(file or folder) via editor.

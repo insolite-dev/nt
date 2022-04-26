@@ -49,7 +49,7 @@ func initSettingsCommand() {
 
 // runSettingsCommand runs appropriate service functionalities to manage settings.
 func runSettingsCommand(cmd *cobra.Command, args []string) {
-	settings, err := service.Settings()
+	settings, err := service.Settings(nil)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -63,7 +63,7 @@ func runSettingsCommand(cmd *cobra.Command, args []string) {
 // runEditSettingsCommand runs appropriate service functionalities
 // to edit the configuration file by best way.
 func runEditSettingsCommand(cmd *cobra.Command, args []string) {
-	settings, err := service.Settings()
+	settings, err := service.Settings(nil)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -108,22 +108,18 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 // runViewSettingsCommand runs appropriate service functionalities
 // to open settings file(json) with CURRENT editor.
 func runViewSettingsCommand(cmd *cobra.Command, args []string) {
-	beforeSettings, err := service.Settings()
+	beforeSettings, err := service.Settings(nil)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	// Open settings file
-	if err := service.Open(models.Node{
-		Title: models.SettingsName,
-		Path:  service.Path() + models.SettingsName,
-	}); err != nil {
+	if err := service.OpenSettings(*beforeSettings); err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	afterSettings, err := service.Settings()
+	afterSettings, err := service.Settings(&beforeSettings.ID)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -132,13 +128,13 @@ func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 	// Ask to move notes if path were updated.
 	if models.IsPathUpdated(*beforeSettings, *afterSettings, service.Type()) {
 		var moveNotes bool
-		survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
+		if survey.AskOne(assets.MoveNotesPrompt, &moveNotes); !moveNotes {
+			return
+		}
 
-		if moveNotes {
-			err := service.MoveNotes(*afterSettings)
-			if err != nil {
-				pkg.Alert(pkg.ErrorL, err.Error())
-			}
+		err := service.MoveNotes(*afterSettings)
+		if err != nil {
+			pkg.Alert(pkg.ErrorL, err.Error())
 		}
 	}
 }
