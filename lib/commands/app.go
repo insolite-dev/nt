@@ -38,8 +38,16 @@ var appCommand = &cobra.Command{
 	),
 }
 
+// Decides whether use firebase service or the default one.
+var firebaseF bool
+
 // initCommands initializes all sub-commands of application.
 func initCommands() {
+	appCommand.PersistentFlags().BoolVarP(
+		&firebaseF, "firebase", "f", false,
+		"Run commands base on firebase service",
+	)
+
 	initSetupCommand()
 	initSettingsCommand()
 	initCreateCommand()
@@ -62,25 +70,38 @@ func ExecuteApp() {
 	initCommands()
 
 	localService = services.NewLocalService(stdargs)
-	if err := localService.Init(); err != nil {
+	err := localService.Init()
+
+	loading.Stop()
+	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
-		loading.Stop()
 		return
 	}
 
-	config := localService.StateConfig()
-	if config.IsFirebaseEnabled() {
-		fireService = services.NewFirebaseService(stdargs, localService)
-		if err := fireService.Init(); err != nil {
-			pkg.Alert(pkg.ErrorL, err.Error())
-			loading.Stop()
-			return
-		}
+	service = localService
+
+	_ = appCommand.Execute()
+}
+
+// determineService checks user input service after execution main command.
+// if user has provided a custom service for specific command-execution, it updates
+// the [service] value with that custom-service[fireService ... etc].
+func determineService() {
+	if !firebaseF {
+		return
 	}
+
+	loading.Start()
+
+	fireService = services.NewFirebaseService(stdargs, localService)
+	err := fireService.Init()
 
 	loading.Stop()
 
-	service = fireService // FIXME: overwrite to local.
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
 
-	_ = appCommand.Execute()
+	service = fireService
 }

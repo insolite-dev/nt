@@ -27,6 +27,8 @@ func initEditCommand() {
 
 // runEditCommand runs appropriate service commands to edit/overwrite note data.
 func runEditCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
 		note := models.Note{Title: args[0]}

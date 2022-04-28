@@ -27,6 +27,8 @@ func initRemoveCommand() {
 
 // runRemoveCommand runs appropriate service commands to remove a file or folder.
 func runRemoveCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	// Take node title from arguments. If it's provided.
 	if len(args) > 0 && args[0] != "." {
 		removeAndFinish(models.Node{Title: args[0]})

@@ -27,6 +27,8 @@ func initCopyCommand() {
 
 // runCopyCommand runs appropriate service commands to copy note data to clipboard.
 func runCopyCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	if len(args) > 0 {
 		copyAndFinish(models.Note{Title: args[0]})
 		return

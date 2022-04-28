@@ -27,6 +27,8 @@ func initViewCommand() {
 
 // runViewCommand runs appropriate service commands to log full note data.
 func runViewCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
 		viewAndFinish(args[0])

@@ -49,6 +49,8 @@ func initSettingsCommand() {
 
 // runSettingsCommand runs appropriate service functionalities to manage settings.
 func runSettingsCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	loading.Start()
 	settings, err := service.Settings(nil)
 	loading.Stop()
@@ -66,6 +68,8 @@ func runSettingsCommand(cmd *cobra.Command, args []string) {
 // runEditSettingsCommand runs appropriate service functionalities
 // to edit the configuration file by best way.
 func runEditSettingsCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	loading.Start()
 	settings, err := service.Settings(nil)
 	loading.Stop()
@@ -121,6 +125,8 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 // runViewSettingsCommand runs appropriate service functionalities
 // to open settings file(json) with CURRENT editor.
 func runViewSettingsCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	loading.Start()
 	beforeSettings, err := service.Settings(nil)
 	loading.Stop()

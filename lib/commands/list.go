@@ -25,6 +25,8 @@ func initListCommand() {
 
 // runListCommand runs appropriate service functionalities to log all nodes.
 func runListCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	var additional string
 	if len(args) > 0 {
 		additional = args[0]

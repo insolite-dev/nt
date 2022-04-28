@@ -27,6 +27,8 @@ func initRenameCommand() {
 
 // runRenameCommand runs appropriate service commands to rename a node.
 func runRenameCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	// Use arguments for old and new node names.
 	if len(args) == 2 {
 		rename(args[0], args[1])
