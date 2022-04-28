@@ -10,6 +10,35 @@ import (
 	"github.com/anonistas/notya/lib/models"
 )
 
+func TestToJSONofNote(t *testing.T) {
+	tests := []struct {
+		model    models.Note
+		expected map[string]interface{}
+	}{
+		{
+			model: models.Note{
+				Title: "mock-title.txt",
+				Path:  "~/mock-title.txt",
+				Body:  "empty",
+			},
+			expected: map[string]interface{}{
+				"title": "mock-title.txt",
+				"path":  "~/mock-title.txt",
+				"body":  "empty",
+			},
+		},
+	}
+
+	for _, td := range tests {
+		got := td.model.ToJSON()
+		for key, value := range td.expected {
+			if got[key] != value {
+				t.Errorf("NoteToJSON's sum was different: Want: %v | Got: %v", got, td.expected)
+			}
+		}
+	}
+}
+
 func TestNoteToNode(t *testing.T) {
 	tests := []struct {
 		note     models.Note

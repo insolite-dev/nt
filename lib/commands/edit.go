@@ -27,6 +27,8 @@ func initEditCommand() {
 
 // runEditCommand runs appropriate service commands to edit/overwrite note data.
 func runEditCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
 		note := models.Note{Title: args[0]}
@@ -39,7 +41,9 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Generate all node names.
-	_, nodeNames, err := service.GetAll("")
+	loading.Start()
+	_, nodeNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return

@@ -25,7 +25,13 @@ func initSetupCommand() {
 
 // runInitCommand runs appropriate functionalities to setup notya and make it ready-to-use.
 func runInitCommand(cmd *cobra.Command, args []string) {
-	if err := service.Init(); err != nil {
+	determineService()
+
+	loading.Start()
+	err := service.Init()
+	loading.Stop()
+
+	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}

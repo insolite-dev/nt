@@ -15,12 +15,18 @@ import (
 )
 
 var (
+	// Main spin animator of application.
+	loading = pkg.Spinner()
+
 	// stdargs is the global std arguments-state of application.
 	stdargs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
 )
 
-// service, is the default service of all commands.
-var service services.ServiceRepo
+var (
+	service      services.ServiceRepo // default/active service of all commands.
+	localService services.ServiceRepo // default/main service.
+	fireService  services.ServiceRepo // firebase integrated service.
+)
 
 // appCommand is the root command of application and genesis of all sub-commands.
 var appCommand = &cobra.Command{
@@ -32,8 +38,16 @@ var appCommand = &cobra.Command{
 	),
 }
 
+// Decides whether use firebase service or the default one.
+var firebaseF bool
+
 // initCommands initializes all sub-commands of application.
 func initCommands() {
+	appCommand.PersistentFlags().BoolVarP(
+		&firebaseF, "firebase", "f", false,
+		"Run commands base on firebase service",
+	)
+
 	initSetupCommand()
 	initSettingsCommand()
 	initCreateCommand()
@@ -51,16 +65,43 @@ func initCommands() {
 //
 // Usually used in [cmd/app.go].
 func ExecuteApp() {
+	loading.Start()
+
 	initCommands()
 
-	// Initialize new local service.
-	service = services.NewLocalService(stdargs)
+	localService = services.NewLocalService(stdargs)
+	err := localService.Init()
 
-	// Initialize application.
-	if err := service.Init(); err != nil {
+	loading.Stop()
+	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
+	service = localService
+
 	_ = appCommand.Execute()
+}
+
+// determineService checks user input service after execution main command.
+// if user has provided a custom service for specific command-execution, it updates
+// the [service] value with that custom-service[fireService ... etc].
+func determineService() {
+	if !firebaseF {
+		return
+	}
+
+	loading.Start()
+
+	fireService = services.NewFirebaseService(stdargs, localService)
+	err := fireService.Init()
+
+	loading.Stop()
+
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
+
+	service = fireService
 }

@@ -26,7 +26,7 @@ var providedFolderName string
 // initCreateCommand adds it to the main application command.
 func initCreateCommand() {
 	createCommand.Flags().StringVarP(
-		&providedFolderName, "folder", "f", "",
+		&providedFolderName, "folder", "d", "",
 		"Make a directory via create command",
 	)
 
@@ -35,6 +35,8 @@ func initCreateCommand() {
 
 // runCreateCommand runs appropriate service commands to create new note.
 func runCreateCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	// Move direction to mkdir command.
 	if providedFolderName != "" {
 		runMkdirCommand(cmd, []string{providedFolderName})
@@ -66,8 +68,10 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 
 // createAndFinish asks to edit note and finishes creating loop.
 func createAndFinish(title string) {
-	// Create new note-file by given title.
+	loading.Start()
 	note, err := service.Create(models.Note{Title: title})
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return

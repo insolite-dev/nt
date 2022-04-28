@@ -49,7 +49,12 @@ func initSettingsCommand() {
 
 // runSettingsCommand runs appropriate service functionalities to manage settings.
 func runSettingsCommand(cmd *cobra.Command, args []string) {
-	settings, err := service.Settings()
+	determineService()
+
+	loading.Start()
+	settings, err := service.Settings(nil)
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -63,14 +68,24 @@ func runSettingsCommand(cmd *cobra.Command, args []string) {
 // runEditSettingsCommand runs appropriate service functionalities
 // to edit the configuration file by best way.
 func runEditSettingsCommand(cmd *cobra.Command, args []string) {
-	settings, err := service.Settings()
+	determineService()
+
+	loading.Start()
+	settings, err := service.Settings(nil)
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
 	editedSettings := models.Settings{}
-	survey.Ask(assets.SettingsEditPromptQuestions(*settings), &editedSettings)
+	if err := survey.Ask(
+		assets.SettingsEditPromptQuestions(*settings), &editedSettings,
+	); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		return
+	}
 
 	// Breakdown function, if have no changes.
 	if !models.IsUpdated(*settings, editedSettings) {
@@ -78,14 +93,17 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Update settings data.
-	if err := service.WriteSettings(editedSettings); err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
+	loading.Start()
+	writeErr := service.WriteSettings(editedSettings)
+	loading.Stop()
+
+	if writeErr != nil {
+		pkg.Alert(pkg.ErrorL, writeErr.Error())
 		return
 	}
 
 	// Finish process, if notes path not updated.
-	if !models.IsPathUpdated(*settings, editedSettings) {
+	if !models.IsPathUpdated(*settings, editedSettings, service.Type()) {
 		return
 	}
 
@@ -94,7 +112,11 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
 
 	if moveNotes {
-		if err := service.MoveNotes(editedSettings); err != nil {
+		loading.Start()
+		err := service.MoveNotes(editedSettings)
+		loading.Stop()
+
+		if err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
 		}
 	}
@@ -103,37 +125,45 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 // runViewSettingsCommand runs appropriate service functionalities
 // to open settings file(json) with CURRENT editor.
 func runViewSettingsCommand(cmd *cobra.Command, args []string) {
-	beforeSettings, err := service.Settings()
+	determineService()
+
+	loading.Start()
+	beforeSettings, err := service.Settings(nil)
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
-	// Open settings file
-	if err := service.Open(models.Node{
-		Title: models.SettingsName,
-		Path:  service.Path() + models.SettingsName,
-	}); err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
+	openErr := service.OpenSettings(*beforeSettings)
+	if openErr != nil {
+		pkg.Alert(pkg.ErrorL, openErr.Error())
 		return
 	}
 
-	afterSettings, err := service.Settings()
+	loading.Start()
+	afterSettings, err := service.Settings(&beforeSettings.ID)
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
 	// Ask to move notes if path were updated.
-	if models.IsPathUpdated(*beforeSettings, *afterSettings) {
+	if models.IsPathUpdated(*beforeSettings, *afterSettings, service.Type()) {
 		var moveNotes bool
-		survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
+		if survey.AskOne(assets.MoveNotesPrompt, &moveNotes); !moveNotes {
+			return
+		}
 
-		if moveNotes {
-			err := service.MoveNotes(*afterSettings)
-			if err != nil {
-				pkg.Alert(pkg.ErrorL, err.Error())
-			}
+		loading.Start()
+		err := service.MoveNotes(*afterSettings)
+		loading.Stop()
+
+		if err != nil {
+			pkg.Alert(pkg.ErrorL, err.Error())
 		}
 	}
 }

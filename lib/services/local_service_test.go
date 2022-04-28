@@ -77,6 +77,22 @@ func TestGeneratePath(t *testing.T) {
 	}
 }
 
+func TestType(t *testing.T) {
+	tests := []struct {
+		expected string
+	}{
+		{expected: services.LOCAL.ToStr()},
+	}
+
+	for _, td := range tests {
+		got := ls.Type()
+
+		if got != td.expected {
+			t.Errorf("Sum of [Type] is different: Got: %v | Want: %v", got, td.expected)
+		}
+	}
+}
+
 func TestPath(t *testing.T) {
 	tests := []struct {
 		expected string
@@ -89,6 +105,22 @@ func TestPath(t *testing.T) {
 
 		if got != td.expected {
 			t.Errorf("Sum of [Path] is different: Got: %v | Want: %v", got, td.expected)
+		}
+	}
+}
+
+func TestStateConfig(t *testing.T) {
+	tests := []struct {
+		expected models.Settings
+	}{
+		{expected: ls.Config},
+	}
+
+	for _, td := range tests {
+		got := ls.StateConfig()
+
+		if got != td.expected {
+			t.Errorf("Sum of [StateConfig] is different: Got: %v | Want: %v", got, td.expected)
 		}
 	}
 }
@@ -162,6 +194,7 @@ func TestInit(t *testing.T) {
 func TestSettings(t *testing.T) {
 	tests := []struct {
 		localService  services.LocalService
+		arg           *string
 		beforeAct     func()
 		afterAct      func()
 		expectedError error
@@ -186,7 +219,7 @@ func TestSettings(t *testing.T) {
 
 	for _, td := range tests {
 		td.beforeAct()
-		got, err := td.localService.Settings()
+		got, err := td.localService.Settings(td.arg)
 		td.afterAct()
 
 		if got.Editor != td.expected.Editor || got.LocalPath != td.expected.LocalPath {
@@ -238,6 +271,62 @@ func TestWriteSettings(t *testing.T) {
 
 		if got != td.expected {
 			t.Errorf("Sum of [WriteSettings] is different: Got: %v | Want: %v", got, td.expected)
+		}
+	}
+}
+
+func TestOpenSettings(t *testing.T) {
+	ls := services.LocalService{
+		NotyaPath: "./",
+		Config:    models.Settings{LocalPath: "./", Editor: "vi"},
+		Stdargs:   models.StdArgs{},
+	}
+
+	tests := []struct {
+		settings     models.Settings
+		localService services.LocalService
+		beforeAct    func(title string)
+		afterAct     func(title string)
+		expected     error
+	}{
+		{
+			settings:     models.Settings{ID: "somerandomnotethatnotexists"},
+			localService: ls,
+			beforeAct:    func(title string) {},
+			afterAct:     func(title string) {},
+			expected:     assets.NotExists("somerandomnotethatnotexists", "File or Directory"),
+		},
+		{
+			settings:     models.Settings{ID: ""},
+			localService: ls,
+			beforeAct:    func(title string) {},
+			afterAct:     func(title string) {},
+			expected:     assets.NotExists(models.SettingsName, "File or Directory"),
+		},
+		{
+
+			settings:     models.Settings{ID: "somerandomdirthatexists"},
+			localService: ls,
+			beforeAct: func(title string) {
+				path := ls.GeneratePath(title)
+				_ = pkg.WriteNote(path, []byte{})
+			},
+			afterAct: func(title string) {
+				path := ls.GeneratePath(title)
+				_ = pkg.Delete(path)
+			},
+			expected: errors.New("exit status 2"),
+		},
+	}
+
+	for _, td := range tests {
+		td.beforeAct(td.settings.ID)
+		got := td.localService.OpenSettings(td.settings)
+		td.afterAct(td.settings.ID)
+
+		if (got == nil || td.expected == nil) && got != td.expected ||
+			(got != nil && td.expected != nil) && got.Error() != td.expected.Error() {
+			t.Errorf("Sum of [OpenSettings] is different: Got: %v | Want: %v", got, td.expected)
 		}
 	}
 }
@@ -732,7 +821,7 @@ func TestGetAll(t *testing.T) {
 
 	for _, td := range tests {
 		td.beforeAct(td.localService.NotyaPath)
-		gotRes, _, gotErr := td.localService.GetAll("")
+		gotRes, _, gotErr := td.localService.GetAll("", models.NotyaIgnoreFiles)
 		td.afterAct(td.localService.NotyaPath)
 
 		for i, got := range gotRes {

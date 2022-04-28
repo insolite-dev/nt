@@ -102,6 +102,15 @@ func TestSettingsEditPromptQuestions(t *testing.T) {
 			defaultSettings: models.InitSettings("default_path"),
 			expected: []*survey.Question{
 				{
+					Name: "name",
+					Prompt: &survey.Input{
+						Default: models.InitSettings("default_path").Name,
+						Message: "App Name",
+						Help:    "Customize your application env's name",
+					},
+					Validate: survey.MinLength(1),
+				},
+				{
 					Name: "editor",
 					Prompt: &survey.Input{
 						Default: models.InitSettings("default_path").Editor,
@@ -116,6 +125,30 @@ func TestSettingsEditPromptQuestions(t *testing.T) {
 						Default: models.InitSettings("default_path").LocalPath,
 						Message: "Local Path",
 						Help:    "Local path of notya base working directory",
+					},
+				},
+				{
+					Name: "fire_project_id",
+					Prompt: &survey.Input{
+						Default: models.InitSettings("default_path").FirebaseProjectID,
+						Message: "Firebase Project ID",
+						Help:    "Project ID of your (integrated-with-notya) firebase project",
+					},
+				},
+				{
+					Name: "fire_account_key",
+					Prompt: &survey.Input{
+						Default: models.InitSettings("default_path").FirebaseAccountKey,
+						Message: "Firebase Key File",
+						Help:    "Path of firebase service key file",
+					},
+				},
+				{
+					Name: "fire_collection",
+					Prompt: &survey.Input{
+						Default: models.InitSettings("default_path").FirebaseCollection,
+						Message: "Firebase Collection",
+						Help:    "Main notya collection name in firestore",
 					},
 				},
 			},

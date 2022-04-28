@@ -43,9 +43,19 @@ func (l *LocalService) GeneratePath(title string) string {
 	return local + title
 }
 
+// Type returns type of LocalService - LOCAL
+func (l *LocalService) Type() string {
+	return LOCAL.ToStr()
+}
+
 // Path returns current service's base working directory.
 func (l *LocalService) Path() string {
 	return l.NotyaPath
+}
+
+// StateConfig returns current configuration of state i.e [l.Config].
+func (l *LocalService) StateConfig() models.Settings {
+	return l.Config
 }
 
 // Init creates notya working directory into current machine.
@@ -65,7 +75,7 @@ func (l *LocalService) Init() error {
 
 	// If settings exists, set it to state.
 	if settingsSetted {
-		settings, settingsErr := l.Settings()
+		settings, settingsErr := l.Settings(nil)
 		if settingsErr != nil {
 			return settingsErr
 		}
@@ -97,8 +107,13 @@ func (l *LocalService) Init() error {
 }
 
 // Settings gets and returns current settings state data.
-func (l *LocalService) Settings() (*models.Settings, error) {
-	settingsPath := l.NotyaPath + models.SettingsName
+func (l *LocalService) Settings(p *string) (*models.Settings, error) {
+	var settingsPath string
+	if p != nil && len(*p) != 0 {
+		settingsPath = l.GeneratePath(*p)
+	} else {
+		settingsPath = l.NotyaPath + models.SettingsName
+	}
 
 	data, err := pkg.ReadBody(settingsPath)
 	if err != nil {
@@ -123,6 +138,17 @@ func (l *LocalService) WriteSettings(settings models.Settings) error {
 	}
 
 	return nil
+}
+
+// OpenSettings opens given settings via editor.
+func (l *LocalService) OpenSettings(settings models.Settings) error {
+	path := models.SettingsName
+	if len(settings.ID) > 0 {
+		path = settings.ID
+	}
+
+	// We could use open func of node, in local service.
+	return l.Open(models.Node{Title: path})
 }
 
 // Open opens given node(file or folder) via editor.
@@ -151,7 +177,7 @@ func (l *LocalService) Remove(node models.Node) error {
 
 	// Check for directory, to remove sub nodes of it.
 	if pkg.IsDir(nodePath) {
-		subNodes, _, err := l.GetAll(node.StructAsFolder().Title)
+		subNodes, _, err := l.GetAll(node.StructAsFolder().Title, []string{})
 		if err != nil && err != assets.EmptyWorkingDirectory {
 			return err
 		}
@@ -293,11 +319,11 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 }
 
 // GetAll gets all node [names], and returns it as array list.
-func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error) {
+func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
 	path := l.GeneratePath(additional)
 
 	// Generate array of all file names that are located in [path].
-	files, pretty, err := pkg.ListDir(path, "", "", models.NotyaIgnoreFiles, true)
+	files, pretty, err := pkg.ListDir(path, "", "", ignore, true)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -318,7 +344,7 @@ func (l *LocalService) GetAll(additional string) ([]models.Node, []string, error
 
 // MoveNote moves all notes from "CURRENT" path to new path(given by settings parameter).
 func (l *LocalService) MoveNotes(settings models.Settings) error {
-	nodes, _, err := l.GetAll("")
+	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
 	if err != nil {
 		return err
 	}

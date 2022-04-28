@@ -27,6 +27,8 @@ func initRenameCommand() {
 
 // runRenameCommand runs appropriate service commands to rename a node.
 func runRenameCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	// Use arguments for old and new node names.
 	if len(args) == 2 {
 		rename(args[0], args[1])
@@ -39,8 +41,13 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	loading.Start()
+
 	// Generate array of all node names.
-	_, nodeNames, err := service.GetAll("")
+	_, nodeNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+
+	loading.Stop()
+
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -49,7 +56,7 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	// Ask for node selection.
 	var selected string
 	survey.AskOne(
-		assets.ChooseNodePrompt("node", "rename:", nodeNames),
+		assets.ChooseNodePrompt("node", "rename", nodeNames),
 		&selected,
 	)
 
@@ -73,7 +80,11 @@ func rename(selected string, newname string) {
 		New:     models.Node{Title: newname},
 	}
 
-	if err := service.Rename(editNode); err != nil {
+	loading.Start()
+	err := service.Rename(editNode)
+	loading.Stop()
+
+	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}

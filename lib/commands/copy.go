@@ -27,13 +27,17 @@ func initCopyCommand() {
 
 // runCopyCommand runs appropriate service commands to copy note data to clipboard.
 func runCopyCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	if len(args) > 0 {
 		copyAndFinish(models.Note{Title: args[0]})
 		return
 	}
 
+	loading.Start()
 	// Generate array of all node names.
-	_, nodeNames, err := service.GetAll("")
+	_, nodeNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -50,10 +54,13 @@ func runCopyCommand(cmd *cobra.Command, args []string) {
 }
 
 func copyAndFinish(note models.Note) {
+	loading.Start()
 	if err := service.Copy(note); err != nil {
+		loading.Stop()
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
 
+	loading.Stop()
 	pkg.Alert(pkg.SuccessL, "Note copied to clipboard")
 }

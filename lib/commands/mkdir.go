@@ -27,6 +27,8 @@ func initMkdirCommand() {
 
 // runMkdirCommand() runs appropriate service commands to create new folder.
 func runMkdirCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	var title string
 
 	if len(args) > 0 { // Take folder's title from arguments, if it's provided.
@@ -35,8 +37,12 @@ func runMkdirCommand(cmd *cobra.Command, args []string) {
 		survey.Ask(assets.MkdirPromptQuestion, &title)
 	}
 
+	loading.Start()
+
 	// Create new directory by given title.
 	dir, err := service.Mkdir(models.Folder{Title: title})
+
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
