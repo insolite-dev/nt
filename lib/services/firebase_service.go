@@ -347,7 +347,7 @@ func (s *FirebaseService) GetAll(additional string, ignore []string) ([]models.N
 		var _ = mapstructure.Decode(doc.Data(), &node)
 
 		// Since each doc is file, we've not to care about folder pretties.
-		node.Pretty = " " + node.Title
+		node.Pretty = ""
 
 		nodes = append(nodes, node)
 		titles = append(titles, doc.Ref.ID)

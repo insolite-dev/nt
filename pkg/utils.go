@@ -129,7 +129,7 @@ func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string
 		var subnames, subpretty []string
 		if d.IsDir() {
 			name += "/"
-			prettyName = space + " " + d.Name() + "/"
+			prettyName = space + ""
 
 			// Split sub-nodes as tree, eg:
 			//
@@ -153,7 +153,7 @@ func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string
 				subpretty = sp
 			}
 		} else {
-			prettyName = space + " " + d.Name()
+			prettyName = space + ""
 		}
 
 		res = append(res, name)

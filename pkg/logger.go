@@ -38,10 +38,14 @@ const (
 
 // Defined constant color codes, for [OutputLevel].
 const (
-	RED     string = "\033[0;31m"
-	GREEN   string = "\033[0;32m"
-	YELLOW  string = "\033[1;33m"
-	NOCOLOR string = "\033[0m"
+	GREY       string = "\033[1;30m"
+	RED        string = "\033[0;31m"
+	GREEN      string = "\033[0;32m"
+	YELLOW     string = "\033[1;33m"
+	DARKYELLOW string = "\033[2;33m"
+	PURPLE     string = "\033[1;35m"
+	CYAN       string = "\033[1;36m"
+	NOCOLOR    string = "\033[0m"
 )
 
 // Defined constant icon/title codes.
@@ -127,7 +131,12 @@ func PrintNodes(list []models.Node) {
 	}
 
 	for _, value := range list {
-		note := fmt.Sprintf(" • %v", value.Pretty)
+		note := fmt.Sprintf(
+			" %v %s %v",
+			fmt.Sprintf("%s%s%s", GREY, "•", NOCOLOR),
+			fmt.Sprintf("%s%s%s", YELLOW, value.Pretty, NOCOLOR),
+			fmt.Sprintf("%s%s%s", DARKYELLOW, value.Title, NOCOLOR),
+		)
 		text.Add(color.FgYellow).Println(note)
 	}
 }
@@ -144,7 +153,7 @@ func PrintSettings(settings models.Settings) {
 
 // Spinner generates static style notya spinner.
 func Spinner() *spinner.Spinner {
-	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	s := spinner.New(spinner.CharSets[31], 100*time.Millisecond)
 	s.Color("yellow")
 	return s
 }
