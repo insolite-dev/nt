@@ -122,7 +122,9 @@ func PrintNote(note models.Note) {
 
 	// Log the final note files.
 	text.Println(title)
-	text.Println(path)
+	if len(note.Path) > 0 {
+		text.Println(path)
+	}
 
 	// Printout no content if body is empty.
 	if len(note.Body) == 0 {
@@ -142,8 +144,8 @@ func PrintNodes(list []models.Node) {
 		note := fmt.Sprintf(
 			" %v %s %v",
 			fmt.Sprintf("%s%s%s", GREY, "•", NOCOLOR),
-			fmt.Sprintf("%s%s%s", YELLOW, value.Pretty, NOCOLOR),
-			fmt.Sprintf("%s%s%s", DARKYELLOW, value.Title, NOCOLOR),
+			fmt.Sprintf("%s%s%s", YELLOW, value.Pretty[0], NOCOLOR),
+			fmt.Sprintf("%s%s%s", DARKYELLOW, value.Pretty[1], NOCOLOR),
 		)
 		text.Println(note)
 	}

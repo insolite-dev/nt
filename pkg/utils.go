@@ -85,7 +85,7 @@ func ReadBody(path string) (*string, error) {
 }
 
 // ListDir, reads all files from given-path directory.
-func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string, []string, error) {
+func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string, [][]string, error) {
 	// Read directory's files.
 	list, err := os.ReadDir(path)
 	if err != nil {
@@ -99,7 +99,8 @@ func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string
 	}
 
 	// Convert list to string list.
-	var res, pretty []string
+	var res []string
+	var pretty [][]string
 	for _, d := range list {
 		iIgn := false
 
@@ -126,7 +127,8 @@ func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string
 			name = localPrevPath + pathFI.Name() + "/" + d.Name()
 		}
 
-		var subnames, subpretty []string
+		var subnames []string
+		var subpretty [][]string
 		if d.IsDir() {
 			name += "/"
 			prettyName = space + ""
@@ -157,7 +159,7 @@ func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string
 		}
 
 		res = append(res, name)
-		pretty = append(pretty, prettyName)
+		pretty = append(pretty, []string{prettyName, d.Name()})
 
 		if len(subnames) > 0 && len(subpretty) > 0 {
 			res = append(res, subnames...)

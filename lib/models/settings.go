@@ -23,6 +23,7 @@ const (
 var NotyaIgnoreFiles []string = []string{
 	SettingsName,
 	".DS_Store", // Darwin related.
+	".git",
 }
 
 // Settings is a main structure model of application settings.

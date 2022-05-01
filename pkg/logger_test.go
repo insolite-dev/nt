@@ -141,7 +141,7 @@ func TestPrintNodes(t *testing.T) {
 		{
 			testName: "should show note properly",
 			list: []models.Node{
-				{Pretty: "Test TITLE"},
+				{Pretty: []string{"icon", "Test TITLE"}},
 			},
 		},
 	}
