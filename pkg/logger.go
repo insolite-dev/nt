@@ -108,13 +108,21 @@ func Print(data string, c color.Attribute) {
 // ShowNote, logs given full note.
 func PrintNote(note models.Note) {
 	// Modify note fields to make it ready to log.
-	title := fmt.Sprintf("\nTitle: %v", note.Title)
-	path := fmt.Sprintf("Path: %v", note.Path)
+	title := fmt.Sprintf(
+		"\n%v %v",
+		fmt.Sprintf("%s%s%s", PURPLE, "Title:", NOCOLOR),
+		fmt.Sprintf("%s%s%s", GREY, note.Title, NOCOLOR),
+	)
+	path := fmt.Sprintf("%v %v",
+		fmt.Sprintf("%s%s%s", PURPLE, "Path:", NOCOLOR),
+		fmt.Sprintf("%s%s%s", GREY, note.Path, NOCOLOR),
+	)
+
 	body := fmt.Sprintf("\n%v", note.Body)
 
 	// Log the final note files.
-	rainbowText.Println(title)
-	lowText.Println(path)
+	text.Println(title)
+	text.Println(path)
 
 	// Printout no content if body is empty.
 	if len(note.Body) == 0 {
@@ -137,7 +145,7 @@ func PrintNodes(list []models.Node) {
 			fmt.Sprintf("%s%s%s", YELLOW, value.Pretty, NOCOLOR),
 			fmt.Sprintf("%s%s%s", DARKYELLOW, value.Title, NOCOLOR),
 		)
-		text.Add(color.FgYellow).Println(note)
+		text.Println(note)
 	}
 }
 
