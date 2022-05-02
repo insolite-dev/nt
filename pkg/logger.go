@@ -163,7 +163,7 @@ func PrintSettings(settings models.Settings) {
 
 // Spinner generates static style notya spinner.
 func Spinner() *spinner.Spinner {
-	s := spinner.New(spinner.CharSets[31], 100*time.Millisecond)
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 	s.Color("yellow")
 	return s
 }

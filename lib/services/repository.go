@@ -79,4 +79,11 @@ type ServiceRepo interface {
 	// MoveNotes moves all exiting notes from CURRENT directory
 	// to new one, appropriate by settings which comes from arguments.
 	MoveNotes(settings models.Settings) error
+
+	// Fetch fetches nodes(that doesn't exists
+	// on current service) from remote service to local service.
+	Fetch(remote ServiceRepo) ([]models.Node, error)
+
+	// Push uploads all notes from local service to provided remote.
+	Push(remote ServiceRepo) ([]models.Node, error)
 }
