@@ -364,3 +364,13 @@ func (l *LocalService) MoveNotes(settings models.Settings) error {
 
 	return nil
 }
+
+// TODO: add comment doc & functionality.
+func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, error) {
+	return nil, nil
+}
+
+// TODO: add comment doc & functionality.
+func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, error) {
+	return nil, nil
+}

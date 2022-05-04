@@ -442,3 +442,13 @@ func (s *FirebaseService) MoveNotes(settings models.Settings) error {
 
 	return nil
 }
+
+// TODO: add comment doc & functionality.
+func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, error) {
+	return nil, nil
+}
+
+// TODO: add comment doc & functionality.
+func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, error) {
+	return nil, nil
+}

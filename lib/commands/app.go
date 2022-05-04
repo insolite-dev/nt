@@ -75,7 +75,7 @@ func ExecuteApp() {
 	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
-		return
+		os.Exit(1)
 	}
 
 	service = localService
@@ -100,7 +100,7 @@ func determineService() {
 
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
-		return
+		os.Exit(1)
 	}
 
 	service = fireService
