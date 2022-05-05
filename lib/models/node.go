@@ -15,6 +15,9 @@ type Node struct {
 
 	// Pretty is Title but powered with ascii emojys.
 	Pretty []string `json:"pretty"`
+
+	// A field representation of [Note]'s [Body].
+	Body string `json:"body"`
 }
 
 // EditNote is wrapper structure used to
@@ -26,7 +29,7 @@ type EditNode struct {
 
 // ToNote converts [Node] object to [Note].
 func (n *Node) ToNote() Note {
-	return Note{Title: n.Title, Path: n.Path}
+	return Note{Title: n.Title, Path: n.Path, Body: n.Body}
 }
 
 // ToFile converts [Node] object to [Folder].

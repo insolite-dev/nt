@@ -33,14 +33,18 @@ func NewLocalService(stdargs models.StdArgs) *LocalService {
 }
 
 // GeneratePath returns non-zero-valuable string path from given additional sub-path(title of node).
-func (l *LocalService) GeneratePath(title string) string {
+func (l *LocalService) GeneratePath(n models.Node) string {
+	if strings.Trim(n.Path, " ") != "" {
+		return n.Path
+	}
+
 	local := l.Config.LocalPath
 
 	if string(local[len(local)-1]) != "/" {
 		local += "/"
 	}
 
-	return local + title
+	return local + n.Title
 }
 
 // Type returns type of LocalService - LOCAL
@@ -110,7 +114,7 @@ func (l *LocalService) Init() error {
 func (l *LocalService) Settings(p *string) (*models.Settings, error) {
 	var settingsPath string
 	if p != nil && len(*p) != 0 {
-		settingsPath = l.GeneratePath(*p)
+		settingsPath = l.GeneratePath(models.Node{Title: *p})
 	} else {
 		settingsPath = l.NotyaPath + models.SettingsName
 	}
@@ -153,7 +157,7 @@ func (l *LocalService) OpenSettings(settings models.Settings) error {
 
 // Open opens given node(file or folder) via editor.
 func (l *LocalService) Open(node models.Node) error {
-	nodePath := l.GeneratePath(node.Title)
+	nodePath := l.GeneratePath(node)
 
 	if len(strings.Trim(node.Title, " ")) < 1 || !pkg.FileExists(nodePath) {
 		return assets.NotExists(node.Title, "File or Directory")
@@ -169,7 +173,7 @@ func (l *LocalService) Open(node models.Node) error {
 
 // Remove deletes given node.
 func (l *LocalService) Remove(node models.Node) error {
-	nodePath := l.GeneratePath(node.Title)
+	nodePath := l.GeneratePath(node)
 
 	if len(strings.Trim(node.Title, " ")) < 1 || !pkg.FileExists(nodePath) {
 		return assets.NotExists(node.Title, "File or Directory")
@@ -231,7 +235,7 @@ func (l *LocalService) Rename(editNode models.EditNode) error {
 // Create creates new note file.
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note.Title)
+	notePath := l.GeneratePath(note.ToNode())
 
 	if pkg.FileExists(notePath) {
 		return nil, assets.AlreadyExists(note.Title, "file")
@@ -247,9 +251,9 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 // View opens note-file from given [note.Name], then takes it body,
 // and returns new fully-filled note.
 func (l *LocalService) View(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note.Title)
+	notePath := l.GeneratePath(note.ToNode())
 
-	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
+	if !pkg.FileExists(notePath) {
 		return nil, assets.NotExists(note.Title, "File")
 	}
 
@@ -266,7 +270,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 // Edit overwrites exiting file's content-body.
 func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note.Title)
+	notePath := l.GeneratePath(note.ToNode())
 
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
 		return nil, assets.NotExists(note.Title, "File")
@@ -281,7 +285,7 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 
 // Copy writes given notes' body, to machines main clipboard.
 func (l *LocalService) Copy(note models.Note) error {
-	notePath := l.GeneratePath(note.Title)
+	notePath := l.GeneratePath(note.ToNode())
 	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
 		return assets.NotExists(note.Title, "File")
 	}
@@ -297,7 +301,7 @@ func (l *LocalService) Copy(note models.Note) error {
 // Mkdir creates a new working directory.
 func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 	title := dir.Title
-	folderPath := l.GeneratePath(dir.Title)
+	folderPath := l.GeneratePath(dir.ToNode())
 
 	if string(folderPath[len(folderPath)-1]) != "/" {
 		folderPath += "/"
@@ -320,7 +324,7 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 
 // GetAll gets all node [names], and returns it as array list.
 func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
-	path := l.GeneratePath(additional)
+	path := l.GeneratePath(models.Node{Title: additional})
 
 	// Generate array of all file names that are located in [path].
 	files, pretty, err := pkg.ListDir(path, "", "", ignore, true)
@@ -335,8 +339,17 @@ func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node
 	// Generate node list via [files] array.
 	nodes := []models.Node{}
 	for i, title := range files {
-		path := l.GeneratePath(title)
-		nodes = append(nodes, models.Node{Title: title, Path: path, Pretty: pretty[i]})
+		path := l.GeneratePath(models.Node{Title: title})
+		node := models.Node{Title: title, Path: path, Pretty: pretty[i]}
+
+		if !pkg.IsDir(path) {
+			data, err := l.View(node.ToNote())
+			if err == nil {
+				node = models.Node{Title: title, Path: path, Pretty: pretty[i], Body: data.Body}
+			}
+		}
+
+		nodes = append(nodes, node)
 	}
 
 	return nodes, files, nil
