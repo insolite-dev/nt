@@ -5,6 +5,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/services"
@@ -56,6 +58,8 @@ func runFetchCommand(cmd *cobra.Command, args []string) {
 	// TODO: log fetched nodes.
 
 	if err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
+		for i, e := range err {
+			pkg.Alert(pkg.ErrorL, fmt.Sprintf("%v | %v", i, e.Error()))
+		}
 	}
 }

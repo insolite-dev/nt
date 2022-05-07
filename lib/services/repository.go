@@ -47,7 +47,7 @@ func (s *ServiceType) ToStr() string {
 //        folder for notes.
 //
 type ServiceRepo interface {
-	// Type returns its type.
+	// Type returns the current implementation's type.
 	// - LOCAL, if it's local service implementation.
 	// - FIRE, if it's firebase service implementation.
 	// and etc ...
@@ -87,8 +87,8 @@ type ServiceRepo interface {
 
 	// Fetch fetches nodes(that doesn't exists
 	// on current service) from remote service to local service.
-	Fetch(remote ServiceRepo) ([]models.Node, error)
+	Fetch(remote ServiceRepo) ([]models.Node, []error)
 
 	// Push uploads all notes from local service to provided remote.
-	Push(remote ServiceRepo) ([]models.Node, error)
+	Push(remote ServiceRepo) ([]models.Node, []error)
 }

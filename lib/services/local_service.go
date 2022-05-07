@@ -378,12 +378,65 @@ func (l *LocalService) MoveNotes(settings models.Settings) error {
 	return nil
 }
 
-// TODO: add comment doc & functionality.
-func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, error) {
-	return nil, nil
+// Fetch creates a clone of nodes(that doesn't exists on [l](local-service)) from given [remote] service.
+func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
+	nodes, _, err := remote.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	// Sort nodes via title-len decreasing order.
+	sort.Slice(
+		nodes,
+		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+	)
+
+	fetched := []models.Node{}
+	errors := []error{}
+
+	for _, node := range nodes {
+		isDir := (len(node.Pretty) > 0 && node.Pretty[0] == models.FolderPretty) || string(node.Title[len(node.Title)-1]) == "/"
+
+		if !isDir && pkg.FileExists(l.GeneratePath(node)) {
+			local, err := l.View(node.ToNote())
+			if err != nil {
+				errors = append(errors, err) // TODO: make error appropriate to situation
+				continue
+			}
+
+			if local.Body != node.Body {
+				local.Body = node.Body
+				if _, err := l.Edit(*local); err != nil {
+					errors = append(errors, err) // TODO: make error appropriate to situation
+					continue
+				}
+
+				fetched = append(fetched, node)
+			}
+
+			continue
+		}
+
+		if isDir {
+			if _, err := l.Mkdir(node.ToFolder()); err != nil {
+				errors = append(errors, err) // TODO: make error appropriate to situation
+			} else {
+				fetched = append(fetched, node)
+			}
+			continue
+		}
+
+		if _, err := l.Create(node.ToNote()); err != nil {
+			errors = append(errors, err) // TODO: make error appropriate to situation
+		}
+
+		fetched = append(fetched, node)
+	}
+
+	return fetched, errors
 }
 
 // TODO: add comment doc & functionality.
-func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, error) {
+func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 	return nil, nil
 }

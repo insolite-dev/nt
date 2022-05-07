@@ -131,7 +131,7 @@ func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string
 		var subpretty [][]string
 		if d.IsDir() {
 			name += "/"
-			prettyName = space + ""
+			prettyName = space + models.FolderPretty
 
 			// Split sub-nodes as tree, eg:
 			//
@@ -155,7 +155,7 @@ func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string
 				subpretty = sp
 			}
 		} else {
-			prettyName = space + ""
+			prettyName = space + models.NotePretty
 		}
 
 		res = append(res, name)

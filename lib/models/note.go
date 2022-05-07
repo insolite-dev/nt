@@ -34,6 +34,6 @@ func (s *Note) ToJSON() map[string]interface{} {
 func (n *Note) ToNode() Node {
 	return Node{
 		Title: n.Title, Path: n.Path,
-		Pretty: []string{"", n.Title},
+		Pretty: []string{NotePretty, n.Title},
 	}
 }

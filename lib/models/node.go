@@ -4,6 +4,11 @@
 
 package models
 
+var (
+	NotePretty   = ""
+	FolderPretty = ""
+)
+
 // Node is general purpose data object that used as abstract of
 // [Folder] and [Note] structure models.
 type Node struct {

@@ -36,6 +36,6 @@ type Folder struct {
 func (n *Folder) ToNode() Node {
 	return Node{
 		Title: n.Title, Path: n.Path,
-		Pretty: []string{"", n.Title},
+		Pretty: []string{FolderPretty, n.Title},
 	}
 }

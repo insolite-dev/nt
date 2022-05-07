@@ -347,7 +347,7 @@ func (s *FirebaseService) GetAll(additional string, ignore []string) ([]models.N
 		var _ = mapstructure.Decode(doc.Data(), &node)
 
 		// Since each doc is file, we've not to care about folder pretties.
-		node.Pretty = []string{"", doc.Ref.ID}
+		node.Pretty = []string{models.NotePretty, doc.Ref.ID}
 
 		nodes = append(nodes, node)
 		titles = append(titles, doc.Ref.ID)
@@ -444,11 +444,11 @@ func (s *FirebaseService) MoveNotes(settings models.Settings) error {
 }
 
 // TODO: add comment doc & functionality.
-func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, error) {
+func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 	return nil, nil
 }
 
 // TODO: add comment doc & functionality.
-func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, error) {
+func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
 	return nil, nil
 }
