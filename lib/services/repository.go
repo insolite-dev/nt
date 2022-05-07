@@ -9,6 +9,11 @@ import "github.com/anonistas/notya/lib/models"
 var (
 	LOCAL ServiceType = "LOCAL"
 	FIRE  ServiceType = "FIREBASE"
+
+	Services []string = []string{
+		LOCAL.ToStr(),
+		FIRE.ToStr(),
+	}
 )
 
 // Custom string struct to define type of services
