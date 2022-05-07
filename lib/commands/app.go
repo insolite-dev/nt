@@ -74,6 +74,7 @@ func initCommands() {
 	initListCommand()
 	initCopyCommand()
 	initFetchCommand()
+	initPushCommand()
 }
 
 // ExecuteApp is a main function that app starts executing and working.
