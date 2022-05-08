@@ -436,7 +436,56 @@ func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 	return fetched, errors
 }
 
-// TODO: add comment doc & functionality.
+// Push uploads nodes(that doesn't exists on given remote) from [l](current) to given [remote].
 func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
-	return nil, nil
+	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	// Sort nodes via title-len decreasing order.
+	sort.Slice(
+		nodes,
+		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+	)
+
+	fetched := []models.Node{}
+	errors := []error{}
+
+	for _, node := range nodes {
+		if pkg.IsDir(l.GeneratePath(node)) {
+			if _, err := remote.Mkdir(node.ToFolder()); err != nil {
+				errors = append(errors, err) // TODO: make error appropriate to situation
+			} else {
+				fetched = append(fetched, node)
+			}
+
+			continue
+		}
+
+		r, err := remote.View(node.ToNote())
+		if err != nil && err.Error() == assets.NotExists("", node.Title).Error() {
+			if _, err := remote.Create(node.ToNote()); err != nil {
+				errors = append(errors, err) // TODO: make error appropriate to situation
+			} else {
+				fetched = append(fetched, node)
+			}
+
+			continue
+		} else if err != nil {
+			errors = append(errors, err) // TODO: make error appropriate to situation
+			continue
+		}
+
+		if r.Body != node.Body {
+			if _, err := remote.Edit(node.ToNote()); err != nil {
+				errors = append(errors, err) // TODO: make error appropriate to situation
+				continue
+			}
+
+			fetched = append(fetched, node)
+		}
+	}
+
+	return fetched, errors
 }
