@@ -161,6 +161,29 @@ func PrintSettings(settings models.Settings) {
 	}
 }
 
+// PrintFPRes, is general success logger for push and fetch command results.
+func PrintFPRes(act string, l int, th string) {
+	text.Println(
+		fmt.Sprintf(
+			"%v %v",
+			fmt.Sprintf("%s%s%s", GREY, "•", NOCOLOR),
+			fmt.Sprintf("%s%s%s", YELLOW, fmt.Sprintf("%v %v %v", act, l, th), NOCOLOR),
+		),
+	)
+}
+
+// PrintErrors, is general error logger for push and fetch command error results.
+func PrintErrors(act string, errs []error) {
+	for i, e := range errs {
+		err := fmt.Sprintf("%v | %v",
+			fmt.Sprintf("%s%s%s", RED, fmt.Sprintf("- SWW fetch:%v", i+1), NOCOLOR),
+			e.Error(),
+		)
+
+		text.Println(err)
+	}
+}
+
 // Spinner generates static style notya spinner.
 func Spinner() *spinner.Spinner {
 	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)

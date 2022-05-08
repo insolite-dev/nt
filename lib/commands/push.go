@@ -5,12 +5,11 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/services"
 	"github.com/anonistas/notya/pkg"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -50,15 +49,14 @@ func runPushCommand(cmd *cobra.Command, args []string) {
 	selectedService := serviceFromType(selected, true)
 
 	loading.Start()
-	_, err := service.Push(selectedService)
+	pushedNodes, errs := service.Push(selectedService)
 	loading.Stop()
 
-	// TODO: log got errors.
-	// TODO: log fetched nodes.
-
-	if err != nil {
-		for i, e := range err {
-			pkg.Alert(pkg.ErrorL, fmt.Sprintf("%v | %v", i, e.Error()))
-		}
+	if len(pushedNodes) == 0 && len(errs) == 0 {
+		pkg.Print("Everything up-to-date", color.FgHiGreen)
+		return
 	}
+
+	pkg.PrintFPRes("Pushed", len(pushedNodes), "nodes \n")
+	pkg.PrintErrors("push", errs)
 }

@@ -5,12 +5,11 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/services"
 	"github.com/anonistas/notya/pkg"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -51,15 +50,14 @@ func runFetchCommand(cmd *cobra.Command, args []string) {
 	selectedService := serviceFromType(selected, true)
 
 	loading.Start()
-	_, err := service.Fetch(selectedService)
+	fetchedNodes, errs := service.Fetch(selectedService)
 	loading.Stop()
 
-	// TODO: log got errors.
-	// TODO: log fetched nodes.
-
-	if err != nil {
-		for i, e := range err {
-			pkg.Alert(pkg.ErrorL, fmt.Sprintf("%v | %v", i, e.Error()))
-		}
+	if len(fetchedNodes) == 0 && len(errs) == 0 {
+		pkg.Print("Already up to date", color.FgHiGreen)
+		return
 	}
+
+	pkg.PrintFPRes("Fetched", len(fetchedNodes), "nodes \n")
+	pkg.PrintErrors("fetch", errs)
 }
