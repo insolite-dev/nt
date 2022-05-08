@@ -5,6 +5,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/services"
@@ -57,6 +59,6 @@ func runPushCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	pkg.PrintFPRes("Pushed", len(pushedNodes), "nodes \n")
 	pkg.PrintErrors("push", errs)
+	pkg.Alert(pkg.SuccessL, fmt.Sprintf("Pushed %v nodes", len(pushedNodes)))
 }

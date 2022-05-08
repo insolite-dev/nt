@@ -400,14 +400,14 @@ func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 		if !isDir && pkg.FileExists(l.GeneratePath(node)) {
 			local, err := l.View(node.ToNote())
 			if err != nil {
-				errors = append(errors, err) // TODO: make error appropriate to situation
+				errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
 				continue
 			}
 
 			if local.Body != node.Body {
 				local.Body = node.Body
 				if _, err := l.Edit(*local); err != nil {
-					errors = append(errors, err) // TODO: make error appropriate to situation
+					errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
 					continue
 				}
 
@@ -419,7 +419,7 @@ func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 
 		if isDir {
 			if _, err := l.Mkdir(node.ToFolder()); err != nil {
-				errors = append(errors, err) // TODO: make error appropriate to situation
+				errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
 			} else {
 				fetched = append(fetched, node)
 			}
@@ -427,10 +427,10 @@ func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 		}
 
 		if _, err := l.Create(node.ToNote()); err != nil {
-			errors = append(errors, err) // TODO: make error appropriate to situation
+			errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+		} else {
+			fetched = append(fetched, node)
 		}
-
-		fetched = append(fetched, node)
 	}
 
 	return fetched, errors
@@ -455,7 +455,7 @@ func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 	for _, node := range nodes {
 		if pkg.IsDir(l.GeneratePath(node)) {
 			if _, err := remote.Mkdir(node.ToFolder()); err != nil {
-				errors = append(errors, err) // TODO: make error appropriate to situation
+				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
 			} else {
 				fetched = append(fetched, node)
 			}
@@ -464,22 +464,22 @@ func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 		}
 
 		r, err := remote.View(node.ToNote())
-		if err != nil && err.Error() == assets.NotExists("", node.Title).Error() {
+		if err != nil && err.Error() != assets.NotExists("", node.Title).Error() {
+			errors = append(errors, assets.CannotDoSth("push", node.Title, err))
+			continue
+		} else if err != nil {
 			if _, err := remote.Create(node.ToNote()); err != nil {
-				errors = append(errors, err) // TODO: make error appropriate to situation
+				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
 			} else {
 				fetched = append(fetched, node)
 			}
 
 			continue
-		} else if err != nil {
-			errors = append(errors, err) // TODO: make error appropriate to situation
-			continue
 		}
 
 		if r.Body != node.Body {
 			if _, err := remote.Edit(node.ToNote()); err != nil {
-				errors = append(errors, err) // TODO: make error appropriate to situation
+				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
 				continue
 			}
 
