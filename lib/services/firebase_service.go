@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"sort"
 	"strings"
 	"time"
 
@@ -454,9 +455,61 @@ func (s *FirebaseService) MoveNotes(settings models.Settings) error {
 	return nil
 }
 
-// TODO: add comment doc & functionality.
+// Fetch creates a clone of nodes(that doesn't exists on
+// [s](firebase-service)) from given [remote] service.
 func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
-	return nil, nil
+	nodes, _, err := remote.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	// Sort nodes via title-len decreasing order.
+	sort.Slice(
+		nodes,
+		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+	)
+
+	fetched := []models.Node{}
+	errors := []error{}
+
+	for _, node := range nodes {
+		isDir := (len(node.Pretty) > 0 && node.Pretty[0] == models.FolderPretty) || string(node.Title[len(node.Title)-1]) == "/"
+		if isDir {
+			errors = append(errors, assets.CannotDoSth("fetch", node.Title, assets.NotAvailableForFirebase))
+			continue
+		}
+
+		if exists, err := s.IsNodeExists(node); err != nil {
+			errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+			continue
+		} else if exists {
+			local, err := s.View(node.ToNote())
+			if err != nil {
+				errors = append(errors, err)
+				continue
+			}
+
+			if local.Body != node.Body {
+				local.Body = node.Body
+				if _, err := s.Edit(*local); err != nil {
+					errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+					continue
+				}
+
+				fetched = append(fetched, node)
+			}
+
+			continue
+		}
+
+		if _, err := s.Create(node.ToNote()); err != nil {
+			errors = append(errors, err)
+		} else {
+			fetched = append(fetched, node)
+		}
+	}
+
+	return fetched, errors
 }
 
 // TODO: add comment doc & functionality.
