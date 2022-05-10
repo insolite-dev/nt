@@ -67,6 +67,7 @@ type ServiceRepo interface {
 	OpenSettings(settings models.Settings) error
 
 	// General functions that used for both [Note]s and [Folder]s
+	IsNodeExists(node models.Node) (bool, error)
 	Open(node models.Node) error
 	Remove(node models.Node) error
 	Rename(editNode models.EditNode) error

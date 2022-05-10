@@ -60,18 +60,6 @@ func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
 	return *s.FireStore.Collection(s.Config.FirePath())
 }
 
-// IsDocumentExists checks if element at given title exists or not.
-func (s *FirebaseService) IsDocNotExists(title string) bool {
-	if len(strings.Trim(title, " ")) < 1 {
-		return true
-	}
-
-	collection := s.NotyaCollection()
-	_, err := collection.Doc(title).Get(s.Ctx)
-
-	return status.Code(err) == codes.NotFound
-}
-
 // GetFireDoc gets concrete collection's concrete data (as map).
 func (s *FirebaseService) GetFireDoc(collection firestore.CollectionRef, doc string) (res map[string]interface{}, err error) {
 	docSnap, err := collection.Doc(doc).Get(s.Ctx)
@@ -195,6 +183,22 @@ func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 	return nil
 }
 
+// IsNodeExists checks if an element(given node) exists at notya collection or not.
+// Note: rather than local-service error checking is required.
+func (s *FirebaseService) IsNodeExists(node models.Node) (bool, error) {
+	if len(strings.Trim(node.Title, " ")) < 1 {
+		return true, nil
+	}
+
+	collection := s.NotyaCollection()
+	_, err := collection.Doc(node.Title).Get(s.Ctx)
+	if err != nil && status.Code(err) == codes.NotFound {
+		return false, nil
+	}
+
+	return true, err
+}
+
 // OpenSettigns, opens note remotly from firebase.
 // caches it on local, makes able to modify after modifing overwrites on db.
 func (s *FirebaseService) OpenSettings(settings models.Settings) error {
@@ -274,7 +278,9 @@ func (s *FirebaseService) Open(node models.Node) error {
 func (s *FirebaseService) Remove(node models.Node) error {
 	collection := s.NotyaCollection()
 
-	if s.IsDocNotExists(node.Title) {
+	if nodeExists, err := s.IsNodeExists(node); err != nil {
+		return err
+	} else if !nodeExists {
 		return assets.NotExists("", node.Title)
 	}
 
@@ -293,8 +299,9 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 		return assets.SameTitles
 	}
 
-	isEmpty := len(strings.Trim(editNode.New.Title, " ")) < 1
-	if isEmpty || !s.IsDocNotExists(editNode.New.Title) {
+	if nodeExists, err := s.IsNodeExists(editNode.New); err != nil {
+		return err
+	} else if nodeExists {
 		return assets.AlreadyExists(editNode.New.Title, "doc")
 	}
 
@@ -360,7 +367,9 @@ func (s *FirebaseService) GetAll(additional string, ignore []string) ([]models.N
 func (s *FirebaseService) Create(note models.Note) (*models.Note, error) {
 	collection := s.NotyaCollection()
 
-	if !s.IsDocNotExists(note.Title) {
+	if nodeExists, err := s.IsNodeExists(note.ToNode()); err != nil {
+		return nil, err
+	} else if nodeExists {
 		return nil, assets.AlreadyExists(note.Title, "doc")
 	}
 
@@ -390,7 +399,9 @@ func (s *FirebaseService) View(note models.Note) (*models.Note, error) {
 func (s *FirebaseService) Edit(note models.Note) (*models.Note, error) {
 	collection := s.NotyaCollection()
 
-	if s.IsDocNotExists(note.Title) {
+	if nodeExists, err := s.IsNodeExists(note.ToNode()); err != nil {
+		return nil, err
+	} else if !nodeExists {
 		return nil, assets.NotExists("", note.Title)
 	}
 
