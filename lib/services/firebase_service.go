@@ -6,7 +6,6 @@ package services
 
 import (
 	"context"
-	"sort"
 	"strings"
 	"time"
 
@@ -463,12 +462,6 @@ func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 		return nil, []error{err}
 	}
 
-	// Sort nodes via title-len decreasing order.
-	sort.Slice(
-		nodes,
-		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
-	)
-
 	fetched := []models.Node{}
 	errors := []error{}
 
@@ -512,7 +505,50 @@ func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 	return fetched, errors
 }
 
-// TODO: add comment doc & functionality.
+// Push uploads nodes(that doens't exists on given remote) from [s](current) to given [remote].
 func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
-	return nil, nil
+	nodes, _, err := s.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	errors := []error{}
+	pushed := []models.Node{}
+
+	for _, node := range nodes {
+		exists, err := remote.IsNodeExists(node)
+		if err != nil {
+			errors = append(errors, err)
+			continue
+		}
+
+		if !exists {
+			if _, err := remote.Create(node.ToNote()); err != nil {
+				errors = append(errors, err)
+			} else {
+				pushed = append(pushed, node)
+			}
+
+			continue
+		}
+
+		r, err := remote.View(node.ToNote())
+		if err != nil {
+			errors = append(errors, err)
+			continue
+		}
+
+		if r.Body == node.Body {
+			continue
+		}
+
+		if _, err := remote.Edit(node.ToNote()); err != nil {
+			errors = append(errors, err)
+		} else {
+			pushed = append(pushed, node)
+		}
+
+	}
+
+	return pushed, errors
 }
