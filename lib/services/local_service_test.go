@@ -357,7 +357,7 @@ func TestOpen(t *testing.T) {
 			localService: ls,
 			beforeAct:    func(node models.Node) {},
 			afterAct:     func(node models.Node) {},
-			expected:     assets.NotExists("", "File or Directory"),
+			expected:     errors.New("exit status 2"),
 		},
 		{
 			node:         models.Node{Title: "somerandomnote.txt"},
@@ -388,8 +388,8 @@ func TestOpen(t *testing.T) {
 
 func TestRemove(t *testing.T) {
 	ls := services.LocalService{
-		NotyaPath: "./",
-		Config:    models.Settings{LocalPath: "./", Editor: "vi"},
+		NotyaPath: "./test/",
+		Config:    models.Settings{LocalPath: "./test/", Editor: "vi"},
 		Stdargs:   models.StdArgs{},
 	}
 
@@ -408,17 +408,18 @@ func TestRemove(t *testing.T) {
 			expected:     assets.NotExists("somerandomnotethatnotexists", "File or Directory"),
 		},
 		{
-			node:         models.Node{Title: ""},
+			node:         models.Node{Title: "newfile"},
 			localService: ls,
 			beforeAct:    func(node models.Node) {},
 			afterAct:     func(node models.Node) {},
-			expected:     assets.NotExists("", "File or Directory"),
+			expected:     assets.NotExists("newfile", "File or Directory"),
 		},
 		{
 			node:         models.Node{Title: ".mock-folder"},
 			localService: ls,
 			beforeAct: func(node models.Node) {
 				path := ls.GeneratePath(node)
+				_ = pkg.NewFolder(ls.Path())
 				_ = pkg.NewFolder(path)
 				_ = pkg.WriteNote(path+"/"+"mock_note.txt", []byte{})
 			},
@@ -426,6 +427,7 @@ func TestRemove(t *testing.T) {
 				path := ls.GeneratePath(node)
 				_ = pkg.Delete(path + "/" + "mock_note.txt")
 				_ = pkg.Delete(path)
+				_ = pkg.Delete(ls.Path())
 			},
 			expected: nil,
 		},
@@ -434,9 +436,12 @@ func TestRemove(t *testing.T) {
 			localService: ls,
 			beforeAct: func(node models.Node) {
 				path := ls.GeneratePath(node)
+				_ = pkg.NewFolder(ls.Path())
 				_ = pkg.WriteNote(path, []byte{})
 			},
-			afterAct: func(node models.Node) {},
+			afterAct: func(node models.Node) {
+				_ = pkg.Delete(ls.Path())
+			},
 			expected: nil,
 		},
 	}
@@ -891,4 +896,12 @@ func TestMoveNotes(t *testing.T) {
 			t.Errorf("Sum of {error}[MoveNotes] is different: Got: %v | Want: %v", got, td.expected)
 		}
 	}
+}
+
+func TestFetch(t *testing.T) {
+	// TODO: Implement tests by mocking.
+}
+
+func TestPush(t *testing.T) {
+	// TODO: Implement tests by mocking.
 }
