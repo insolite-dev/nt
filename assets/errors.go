@@ -17,6 +17,11 @@ var (
 
 	EmptyWorkingDirectory = errors.New(`Empty working directory, couldn't found any file`)
 	InvalidSettingsData   = errors.New(`Invalid settings data, cannot complete operation`)
+
+	NotAvailableForFirebase     = errors.New(`This functionality isn't available for firebase service`)
+	InvalidFirebaseProjectID    = errors.New(`Providen firebase-project-id is invalid(or empty)`)
+	FirebaseServiceKeyNotExists = errors.New(`Firebase service key file doesn't exists at given path`)
+	InvalidFirebaseCollection   = errors.New(`Provided firebase-collection-id is invalid`)
 )
 
 // NotExists returns a formatted error message as data-not-exists error.
@@ -35,4 +40,11 @@ func NotExists(path, node string) error {
 func AlreadyExists(path, node string) error {
 	msg := fmt.Sprintf("A %v already exists at: %v, please provide a unique title", node, path)
 	return errors.New(msg)
+}
+
+// CannotDoSth generates a extre informative error via migrating with actual error.
+func CannotDoSth(act, doc string, err error) error {
+	return errors.New(
+		fmt.Sprintf("Cannot %v %v | %v", act, doc, err.Error()),
+	)
 }

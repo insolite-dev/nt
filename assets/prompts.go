@@ -19,6 +19,14 @@ func ChooseNodePrompt(node, act string, options []string) *survey.Select {
 	}
 }
 
+// ChooseRemotePrompt is a prompt interface for tui remote service choosing bar.
+func ChooseRemotePrompt(services []string) *survey.Select {
+	return &survey.Select{
+		Message: "Choose remote service:",
+		Options: services,
+	}
+}
+
 // CreatePromptQuestion is a question list for create command.
 var CreatePromptQuestion = []*survey.Question{
 	{
@@ -54,6 +62,15 @@ func NewNamePrompt(d string) *survey.Input {
 func SettingsEditPromptQuestions(defaultSettings models.Settings) []*survey.Question {
 	return []*survey.Question{
 		{
+			Name: "name",
+			Prompt: &survey.Input{
+				Default: defaultSettings.Name,
+				Message: "App Name",
+				Help:    "Customize your application env's name",
+			},
+			Validate: survey.MinLength(1),
+		},
+		{
 			Name: "editor",
 			Prompt: &survey.Input{
 				Default: defaultSettings.Editor,
@@ -68,6 +85,31 @@ func SettingsEditPromptQuestions(defaultSettings models.Settings) []*survey.Ques
 				Default: defaultSettings.LocalPath,
 				Message: "Local Path",
 				Help:    "Local path of notya base working directory",
+			},
+			Validate: survey.MinLength(1),
+		},
+		{
+			Name: "fire_project_id",
+			Prompt: &survey.Input{
+				Default: defaultSettings.FirebaseProjectID,
+				Message: "Firebase Project ID",
+				Help:    "Project ID of your (integrated-with-notya) firebase project",
+			},
+		},
+		{
+			Name: "fire_account_key",
+			Prompt: &survey.Input{
+				Default: defaultSettings.FirebaseAccountKey,
+				Message: "Firebase Key File",
+				Help:    "Path of firebase service key file",
+			},
+		},
+		{
+			Name: "fire_collection",
+			Prompt: &survey.Input{
+				Default: defaultSettings.FirebaseCollection,
+				Message: "Firebase Collection",
+				Help:    "Main notya collection name in firestore",
 			},
 		},
 	}

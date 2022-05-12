@@ -70,3 +70,24 @@ func TestAlreadyExists(t *testing.T) {
 		})
 	}
 }
+
+func TestCannotDoSth(t *testing.T) {
+	tests := []struct {
+		act, doc      string
+		err, expected error
+	}{
+		{
+			act: "fetch", doc: "note",
+			err:      errors.New("sww"),
+			expected: errors.New("Cannot fetch note | sww"),
+		},
+	}
+
+	for _, td := range tests {
+		got := assets.CannotDoSth(td.act, td.doc, td.err)
+		if got.Error() != td.expected.Error() {
+			t.Errorf("Sum of CannotDoSth was different: Want: %v, Got: %v", td.expected, got)
+		}
+	}
+
+}

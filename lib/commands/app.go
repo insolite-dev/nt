@@ -15,12 +15,36 @@ import (
 )
 
 var (
+	// Main spin animator of application.
+	loading = pkg.Spinner()
+
 	// stdargs is the global std arguments-state of application.
 	stdargs models.StdArgs = models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
 )
 
-// service, is the default service of all commands.
-var service services.ServiceRepo
+var (
+	service      services.ServiceRepo // default/active service of all commands.
+	localService services.ServiceRepo // default/main service.
+	fireService  services.ServiceRepo // firebase integrated service.
+)
+
+// serviceFromType returns type appropriate service instance.
+func serviceFromType(t string, enable bool) services.ServiceRepo {
+	switch t {
+	case services.LOCAL.ToStr():
+		return localService
+	case services.FIRE.ToStr():
+		if enable {
+			setupFirebaseService()
+		}
+		return fireService
+	}
+
+	return service
+}
+
+// Decides whether use firebase service as main service or not.
+var firebaseF bool
 
 // appCommand is the root command of application and genesis of all sub-commands.
 var appCommand = &cobra.Command{
@@ -34,6 +58,11 @@ var appCommand = &cobra.Command{
 
 // initCommands initializes all sub-commands of application.
 func initCommands() {
+	appCommand.PersistentFlags().BoolVarP(
+		&firebaseF, "firebase", "f", false,
+		"Run commands base on firebase service",
+	)
+
 	initSetupCommand()
 	initSettingsCommand()
 	initCreateCommand()
@@ -43,6 +72,9 @@ func initCommands() {
 	initEditCommand()
 	initRenameCommand()
 	initListCommand()
+	initCopyCommand()
+	initFetchCommand()
+	initPushCommand()
 }
 
 // ExecuteApp is a main function that app starts executing and working.
@@ -50,16 +82,60 @@ func initCommands() {
 //
 // Usually used in [cmd/app.go].
 func ExecuteApp() {
+	loading.Start()
+
 	initCommands()
 
-	// Initialize new local service.
-	service = services.NewLocalService(stdargs)
+	setupLocalService()
+	service = localService
 
-	// Initialize application.
-	if err := service.Init(); err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
+	_ = appCommand.Execute()
+}
+
+// determineService checks user input service after execution main command.
+// if user has provided a custom service for specific command-execution, it updates
+// the [service] value with that custom-service[fireService ... etc].
+func determineService() {
+	if !firebaseF {
 		return
 	}
 
-	_ = appCommand.Execute()
+	setupFirebaseService()
+	service = fireService
+
+	//
+	// TODO: implement other services.
+	//
+}
+
+// setupLocalService initializes the local service.
+// makes it able at [localService] instance.
+func setupLocalService() {
+	loading.Start()
+
+	localService = services.NewLocalService(stdargs)
+	err := localService.Init()
+
+	loading.Stop()
+
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		os.Exit(1)
+	}
+}
+
+// setupFirebaseService initializes the firebase service.
+// makes it able at [fireService] instance.
+func setupFirebaseService() {
+	loading.Start()
+
+	fireService = services.NewFirebaseService(stdargs, localService)
+	err := fireService.Init()
+
+	loading.Stop()
+
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		os.Exit(1)
+	}
 }

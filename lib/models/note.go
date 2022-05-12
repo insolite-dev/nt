@@ -4,6 +4,8 @@
 
 package models
 
+import "encoding/json"
+
 // Note is the main note model of application.
 //
 //  Example:
@@ -18,10 +20,20 @@ type Note struct {
 	Body  string `json:"body"`
 }
 
+// ToJSON converts string note structure model to map value.
+func (s *Note) ToJSON() map[string]interface{} {
+	b, _ := json.Marshal(&s)
+
+	var m map[string]interface{}
+	_ = json.Unmarshal(b, &m)
+
+	return m
+}
+
 // ToNode converts [Note] model to [Node] model.
 func (n *Note) ToNode() Node {
 	return Node{
 		Title: n.Title, Path: n.Path,
-		Pretty: " " + n.Title,
+		Pretty: []string{NotePretty, n.Title},
 	}
 }

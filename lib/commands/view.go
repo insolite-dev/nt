@@ -27,20 +27,27 @@ func initViewCommand() {
 
 // runViewCommand runs appropriate service commands to log full note data.
 func runViewCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
+	loading.Start()
+
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
 		note, err := service.View(models.Note{Title: args[0]})
+		loading.Stop()
+
 		if err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
-			return
+		} else {
+			pkg.PrintNote(*note)
 		}
 
-		pkg.PrintNote(*note)
 		return
 	}
 
 	// Generate array of all note names.
-	_, noteNames, err := service.GetAll("")
+	nodes, noteNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -53,12 +60,9 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 		&selected,
 	)
 
-	// Get selected note.
-	note, viewErr := service.View(models.Note{Title: selected})
-	if viewErr != nil {
-		pkg.Alert(pkg.ErrorL, viewErr.Error())
-		return
+	for _, n := range nodes {
+		if n.Title == selected {
+			pkg.PrintNote(n.ToNote())
+		}
 	}
-
-	pkg.PrintNote(*note)
 }

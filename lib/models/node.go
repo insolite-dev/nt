@@ -4,6 +4,11 @@
 
 package models
 
+var (
+	NotePretty   = ""
+	FolderPretty = ""
+)
+
 // Node is general purpose data object that used as abstract of
 // [Folder] and [Note] structure models.
 type Node struct {
@@ -14,12 +19,22 @@ type Node struct {
 	Path string `json:"path"`
 
 	// Pretty is Title but powered with ascii emojys.
-	Pretty string `json:"pretty"`
+	Pretty []string `json:"pretty"`
+
+	// A field representation of [Note]'s [Body].
+	Body string `json:"body"`
+}
+
+// EditNote is wrapper structure used to
+// store two [new/current] nodes.
+type EditNode struct {
+	Current Node `json:"current"`
+	New     Node `json:"new"`
 }
 
 // ToNote converts [Node] object to [Note].
 func (n *Node) ToNote() Note {
-	return Note{Title: n.Title, Path: n.Path}
+	return Note{Title: n.Title, Path: n.Path, Body: n.Body}
 }
 
 // ToFile converts [Node] object to [Folder].
@@ -55,11 +70,4 @@ func (n *Node) StructAsNote() Node {
 	}
 
 	return Node{Title: title, Path: path, Pretty: n.Pretty}
-}
-
-// EditNote is wrapper structure used to
-// store two [new/current] nodes.
-type EditNode struct {
-	Current Node `json:"current"`
-	New     Node `json:"new"`
 }
