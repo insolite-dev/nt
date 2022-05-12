@@ -14,7 +14,7 @@
 
 ---
 
-<img src="https://user-images.githubusercontent.com/59066341/162023376-061e09fd-f76e-47e2-99ab-735372746309.gif" alt="Overview Vid">
+<!-- <img src="https://user-images.githubusercontent.com/59066341/162023376-061e09fd-f76e-47e2-99ab-735372746309.gif" alt="Overview Vid"> -->
 
 
 # Installation
