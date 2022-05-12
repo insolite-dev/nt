@@ -19,6 +19,14 @@ func ChooseNodePrompt(node, act string, options []string) *survey.Select {
 	}
 }
 
+// ChooseRemotePrompt is a prompt interface for tui remote service choosing bar.
+func ChooseRemotePrompt(services []string) *survey.Select {
+	return &survey.Select{
+		Message: "Choose remote service:",
+		Options: services,
+	}
+}
+
 // CreatePromptQuestion is a question list for create command.
 var CreatePromptQuestion = []*survey.Question{
 	{

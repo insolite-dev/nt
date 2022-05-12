@@ -5,6 +5,7 @@
 package pkg_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -118,7 +119,7 @@ func TestPrintNote(t *testing.T) {
 		},
 		{
 			testName: "should show note properly",
-			note:     models.Note{Body: "Non empty note"},
+			note:     models.Note{Body: "Non empty note", Path: "non-empty-path"},
 		},
 	}
 
@@ -141,7 +142,7 @@ func TestPrintNodes(t *testing.T) {
 		{
 			testName: "should show note properly",
 			list: []models.Node{
-				{Pretty: "Test TITLE"},
+				{Pretty: []string{"icon", "Test TITLE"}},
 			},
 		},
 	}
@@ -168,6 +169,24 @@ func TestPrintSettings(t *testing.T) {
 		t.Run(td.testName, func(t *testing.T) {
 			pkg.PrintSettings(td.settings)
 		})
+	}
+}
+
+func TestPrintErrors(t *testing.T) {
+	tests := []struct {
+		act  string
+		errs []error
+	}{
+		{
+			act: "fetch",
+			errs: []error{
+				errors.New("new mockerror"),
+			},
+		},
+	}
+
+	for _, td := range tests {
+		pkg.PrintErrors(td.act, td.errs)
 	}
 }
 

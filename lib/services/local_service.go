@@ -33,14 +33,18 @@ func NewLocalService(stdargs models.StdArgs) *LocalService {
 }
 
 // GeneratePath returns non-zero-valuable string path from given additional sub-path(title of node).
-func (l *LocalService) GeneratePath(title string) string {
+func (l *LocalService) GeneratePath(n models.Node) string {
+	if strings.Trim(n.Path, " ") != "" {
+		return n.Path
+	}
+
 	local := l.Config.LocalPath
 
 	if string(local[len(local)-1]) != "/" {
 		local += "/"
 	}
 
-	return local + title
+	return local + n.Title
 }
 
 // Type returns type of LocalService - LOCAL
@@ -110,7 +114,7 @@ func (l *LocalService) Init() error {
 func (l *LocalService) Settings(p *string) (*models.Settings, error) {
 	var settingsPath string
 	if p != nil && len(*p) != 0 {
-		settingsPath = l.GeneratePath(*p)
+		settingsPath = l.GeneratePath(models.Node{Title: *p})
 	} else {
 		settingsPath = l.NotyaPath + models.SettingsName
 	}
@@ -121,7 +125,6 @@ func (l *LocalService) Settings(p *string) (*models.Settings, error) {
 	}
 
 	settings := models.DecodeSettings(*data)
-
 	return &settings, nil
 }
 
@@ -140,6 +143,14 @@ func (l *LocalService) WriteSettings(settings models.Settings) error {
 	return nil
 }
 
+// IsNodeExists checks for a file or folder at [node.Path]
+// or at generated path from [node.Title].
+// Note: rather than remote services, error checking is not required.
+func (l *LocalService) IsNodeExists(node models.Node) (bool, error) {
+	exists := pkg.FileExists(l.GeneratePath(node)) || len(strings.Trim(node.Title, " ")) < 1
+	return exists, nil
+}
+
 // OpenSettings opens given settings via editor.
 func (l *LocalService) OpenSettings(settings models.Settings) error {
 	path := models.SettingsName
@@ -153,15 +164,15 @@ func (l *LocalService) OpenSettings(settings models.Settings) error {
 
 // Open opens given node(file or folder) via editor.
 func (l *LocalService) Open(node models.Node) error {
-	nodePath := l.GeneratePath(node.Title)
-
-	if len(strings.Trim(node.Title, " ")) < 1 || !pkg.FileExists(nodePath) {
+	if nodeExists, _ := l.IsNodeExists(node); !nodeExists {
 		return assets.NotExists(node.Title, "File or Directory")
 	}
 
-	openingErr := pkg.OpenViaEditor(nodePath, l.Stdargs, l.Config)
-	if openingErr != nil {
-		return openingErr
+	if err := pkg.OpenViaEditor(
+		l.GeneratePath(node),
+		l.Stdargs, l.Config,
+	); err != nil {
+		return err
 	}
 
 	return nil
@@ -169,11 +180,11 @@ func (l *LocalService) Open(node models.Node) error {
 
 // Remove deletes given node.
 func (l *LocalService) Remove(node models.Node) error {
-	nodePath := l.GeneratePath(node.Title)
-
-	if len(strings.Trim(node.Title, " ")) < 1 || !pkg.FileExists(nodePath) {
+	if nodeExists, _ := l.IsNodeExists(node); !nodeExists {
 		return assets.NotExists(node.Title, "File or Directory")
 	}
+
+	nodePath := l.GeneratePath(node)
 
 	// Check for directory, to remove sub nodes of it.
 	if pkg.IsDir(nodePath) {
@@ -209,7 +220,7 @@ func (l *LocalService) Rename(editNode models.EditNode) error {
 	editNode.Current.Path = l.Config.LocalPath + editNode.Current.Title
 	editNode.New.Path = l.Config.LocalPath + editNode.New.Title
 
-	if len(strings.Trim(editNode.Current.Title, " ")) < 1 || !pkg.FileExists(editNode.Current.Path) {
+	if currentExists, _ := l.IsNodeExists(editNode.Current); !currentExists {
 		return assets.NotExists(editNode.Current.Title, "File or Directory")
 	}
 
@@ -217,7 +228,7 @@ func (l *LocalService) Rename(editNode models.EditNode) error {
 		return assets.SameTitles
 	}
 
-	if pkg.FileExists(editNode.New.Path) {
+	if newExists, _ := l.IsNodeExists(editNode.New); newExists {
 		return assets.AlreadyExists(editNode.New.Title, "File or Directory")
 	}
 
@@ -231,9 +242,9 @@ func (l *LocalService) Rename(editNode models.EditNode) error {
 // Create creates new note file.
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note.Title)
+	notePath := l.GeneratePath(note.ToNode())
 
-	if pkg.FileExists(notePath) {
+	if nodeExists, _ := l.IsNodeExists(note.ToNode()); nodeExists {
 		return nil, assets.AlreadyExists(note.Title, "file")
 	}
 
@@ -247,9 +258,9 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 // View opens note-file from given [note.Name], then takes it body,
 // and returns new fully-filled note.
 func (l *LocalService) View(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note.Title)
+	notePath := l.GeneratePath(note.ToNode())
 
-	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
+	if nodeExists, _ := l.IsNodeExists(note.ToNode()); !nodeExists {
 		return nil, assets.NotExists(note.Title, "File")
 	}
 
@@ -266,9 +277,9 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 // Edit overwrites exiting file's content-body.
 func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
-	notePath := l.GeneratePath(note.Title)
+	notePath := l.GeneratePath(note.ToNode())
 
-	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
+	if nodeExists, _ := l.IsNodeExists(note.ToNode()); !nodeExists {
 		return nil, assets.NotExists(note.Title, "File")
 	}
 
@@ -281,8 +292,7 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 
 // Copy writes given notes' body, to machines main clipboard.
 func (l *LocalService) Copy(note models.Note) error {
-	notePath := l.GeneratePath(note.Title)
-	if len(strings.Trim(note.Title, " ")) < 1 || !pkg.FileExists(notePath) {
+	if nodeExists, _ := l.IsNodeExists(note.ToNode()); !nodeExists {
 		return assets.NotExists(note.Title, "File")
 	}
 
@@ -297,7 +307,7 @@ func (l *LocalService) Copy(note models.Note) error {
 // Mkdir creates a new working directory.
 func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 	title := dir.Title
-	folderPath := l.GeneratePath(dir.Title)
+	folderPath := l.GeneratePath(dir.ToNode())
 
 	if string(folderPath[len(folderPath)-1]) != "/" {
 		folderPath += "/"
@@ -307,7 +317,7 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 		title += "/"
 	}
 
-	if pkg.FileExists(folderPath) {
+	if dirExists, _ := l.IsNodeExists(dir.ToNode()); dirExists {
 		return nil, assets.AlreadyExists(folderPath, "directory")
 	}
 
@@ -320,7 +330,7 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 
 // GetAll gets all node [names], and returns it as array list.
 func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
-	path := l.GeneratePath(additional)
+	path := l.GeneratePath(models.Node{Title: additional})
 
 	// Generate array of all file names that are located in [path].
 	files, pretty, err := pkg.ListDir(path, "", "", ignore, true)
@@ -328,15 +338,24 @@ func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node
 		return nil, nil, err
 	}
 
-	if files == nil || len(files) == 0 {
+	if len(files) == 0 {
 		return nil, nil, assets.EmptyWorkingDirectory
 	}
 
 	// Generate node list via [files] array.
 	nodes := []models.Node{}
 	for i, title := range files {
-		path := l.GeneratePath(title)
-		nodes = append(nodes, models.Node{Title: title, Path: path, Pretty: pretty[i]})
+		path := l.GeneratePath(models.Node{Title: title})
+		node := models.Node{Title: title, Path: path, Pretty: pretty[i]}
+
+		if !pkg.IsDir(path) {
+			data, err := l.View(node.ToNote())
+			if err == nil {
+				node = models.Node{Title: title, Path: path, Pretty: pretty[i], Body: data.Body}
+			}
+		}
+
+		nodes = append(nodes, node)
 	}
 
 	return nodes, files, nil
@@ -363,4 +382,116 @@ func (l *LocalService) MoveNotes(settings models.Settings) error {
 	}
 
 	return nil
+}
+
+// Fetch creates a clone of nodes(that doesn't exists on [l](local-service)) from given [remote] service.
+func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
+	nodes, _, err := remote.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	// Sort nodes via title-len decreasing order.
+	sort.Slice(
+		nodes,
+		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+	)
+
+	fetched := []models.Node{}
+	errors := []error{}
+
+	for _, node := range nodes {
+		isDir := (len(node.Pretty) > 0 && node.Pretty[0] == models.FolderPretty) || string(node.Title[len(node.Title)-1]) == "/"
+
+		if exists, _ := l.IsNodeExists(node); exists && !isDir {
+			local, err := l.View(node.ToNote())
+			if err != nil {
+				errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+				continue
+			}
+
+			if local.Body != node.Body {
+				local.Body = node.Body
+				if _, err := l.Edit(*local); err != nil {
+					errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+					continue
+				}
+
+				fetched = append(fetched, node)
+			}
+
+			continue
+		}
+
+		if isDir {
+			if _, err := l.Mkdir(node.ToFolder()); err != nil {
+				errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+			} else {
+				fetched = append(fetched, node)
+			}
+			continue
+		}
+
+		if _, err := l.Create(node.ToNote()); err != nil {
+			errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+		} else {
+			fetched = append(fetched, node)
+		}
+	}
+
+	return fetched, errors
+}
+
+// Push uploads nodes(that doesn't exists on given remote) from [l](current) to given [remote].
+func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
+	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	// Sort nodes via title-len decreasing order.
+	sort.Slice(
+		nodes,
+		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+	)
+
+	fetched := []models.Node{}
+	errors := []error{}
+
+	for _, node := range nodes {
+		if pkg.IsDir(l.GeneratePath(node)) {
+			if _, err := remote.Mkdir(node.ToFolder()); err != nil {
+				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
+			} else {
+				fetched = append(fetched, node)
+			}
+
+			continue
+		}
+
+		r, err := remote.View(node.ToNote())
+		if err != nil && err.Error() != assets.NotExists("", node.Title).Error() {
+			errors = append(errors, assets.CannotDoSth("push", node.Title, err))
+			continue
+		} else if err != nil {
+			if _, err := remote.Create(node.ToNote()); err != nil {
+				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
+			} else {
+				fetched = append(fetched, node)
+			}
+
+			continue
+		}
+
+		if r.Body != node.Body {
+			if _, err := remote.Edit(node.ToNote()); err != nil {
+				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
+				continue
+			}
+
+			fetched = append(fetched, node)
+		}
+	}
+
+	return fetched, errors
 }

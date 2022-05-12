@@ -60,18 +60,6 @@ func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
 	return *s.FireStore.Collection(s.Config.FirePath())
 }
 
-// IsDocumentExists checks if element at given title exists or not.
-func (s *FirebaseService) IsDocNotExists(title string) bool {
-	if len(strings.Trim(title, " ")) < 1 {
-		return true
-	}
-
-	collection := s.NotyaCollection()
-	_, err := collection.Doc(title).Get(s.Ctx)
-
-	return status.Code(err) == codes.NotFound
-}
-
 // GetFireDoc gets concrete collection's concrete data (as map).
 func (s *FirebaseService) GetFireDoc(collection firestore.CollectionRef, doc string) (res map[string]interface{}, err error) {
 	docSnap, err := collection.Doc(doc).Get(s.Ctx)
@@ -195,6 +183,22 @@ func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 	return nil
 }
 
+// IsNodeExists checks if an element(given node) exists at notya collection or not.
+// Note: rather than local-service error checking is required.
+func (s *FirebaseService) IsNodeExists(node models.Node) (bool, error) {
+	if len(strings.Trim(node.Title, " ")) < 1 {
+		return true, nil
+	}
+
+	collection := s.NotyaCollection()
+	_, err := collection.Doc(node.Title).Get(s.Ctx)
+	if err != nil && status.Code(err) == codes.NotFound {
+		return false, nil
+	}
+
+	return true, err
+}
+
 // OpenSettigns, opens note remotly from firebase.
 // caches it on local, makes able to modify after modifing overwrites on db.
 func (s *FirebaseService) OpenSettings(settings models.Settings) error {
@@ -274,7 +278,9 @@ func (s *FirebaseService) Open(node models.Node) error {
 func (s *FirebaseService) Remove(node models.Node) error {
 	collection := s.NotyaCollection()
 
-	if s.IsDocNotExists(node.Title) {
+	if nodeExists, err := s.IsNodeExists(node); err != nil {
+		return err
+	} else if !nodeExists {
 		return assets.NotExists("", node.Title)
 	}
 
@@ -293,8 +299,9 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 		return assets.SameTitles
 	}
 
-	isEmpty := len(strings.Trim(editNode.New.Title, " ")) < 1
-	if isEmpty || !s.IsDocNotExists(editNode.New.Title) {
+	if nodeExists, err := s.IsNodeExists(editNode.New); err != nil {
+		return err
+	} else if nodeExists {
 		return assets.AlreadyExists(editNode.New.Title, "doc")
 	}
 
@@ -347,7 +354,7 @@ func (s *FirebaseService) GetAll(additional string, ignore []string) ([]models.N
 		var _ = mapstructure.Decode(doc.Data(), &node)
 
 		// Since each doc is file, we've not to care about folder pretties.
-		node.Pretty = " " + node.Title
+		node.Pretty = []string{models.NotePretty, doc.Ref.ID}
 
 		nodes = append(nodes, node)
 		titles = append(titles, doc.Ref.ID)
@@ -360,7 +367,9 @@ func (s *FirebaseService) GetAll(additional string, ignore []string) ([]models.N
 func (s *FirebaseService) Create(note models.Note) (*models.Note, error) {
 	collection := s.NotyaCollection()
 
-	if !s.IsDocNotExists(note.Title) {
+	if nodeExists, err := s.IsNodeExists(note.ToNode()); err != nil {
+		return nil, err
+	} else if nodeExists {
 		return nil, assets.AlreadyExists(note.Title, "doc")
 	}
 
@@ -390,7 +399,9 @@ func (s *FirebaseService) View(note models.Note) (*models.Note, error) {
 func (s *FirebaseService) Edit(note models.Note) (*models.Note, error) {
 	collection := s.NotyaCollection()
 
-	if s.IsDocNotExists(note.Title) {
+	if nodeExists, err := s.IsNodeExists(note.ToNode()); err != nil {
+		return nil, err
+	} else if !nodeExists {
 		return nil, assets.NotExists("", note.Title)
 	}
 
@@ -441,4 +452,103 @@ func (s *FirebaseService) MoveNotes(settings models.Settings) error {
 	}
 
 	return nil
+}
+
+// Fetch creates a clone of nodes(that doesn't exists on
+// [s](firebase-service)) from given [remote] service.
+func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
+	nodes, _, err := remote.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	fetched := []models.Node{}
+	errors := []error{}
+
+	for _, node := range nodes {
+		isDir := (len(node.Pretty) > 0 && node.Pretty[0] == models.FolderPretty) || string(node.Title[len(node.Title)-1]) == "/"
+		if isDir {
+			errors = append(errors, assets.CannotDoSth("fetch", node.Title, assets.NotAvailableForFirebase))
+			continue
+		}
+
+		if exists, err := s.IsNodeExists(node); err != nil {
+			errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+			continue
+		} else if exists {
+			local, err := s.View(node.ToNote())
+			if err != nil {
+				errors = append(errors, err)
+				continue
+			}
+
+			if local.Body != node.Body {
+				local.Body = node.Body
+				if _, err := s.Edit(*local); err != nil {
+					errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+					continue
+				}
+
+				fetched = append(fetched, node)
+			}
+
+			continue
+		}
+
+		if _, err := s.Create(node.ToNote()); err != nil {
+			errors = append(errors, err)
+		} else {
+			fetched = append(fetched, node)
+		}
+	}
+
+	return fetched, errors
+}
+
+// Push uploads nodes(that doens't exists on given remote) from [s](current) to given [remote].
+func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
+	nodes, _, err := s.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	errors := []error{}
+	pushed := []models.Node{}
+
+	for _, node := range nodes {
+		exists, err := remote.IsNodeExists(node)
+		if err != nil {
+			errors = append(errors, err)
+			continue
+		}
+
+		if !exists {
+			if _, err := remote.Create(node.ToNote()); err != nil {
+				errors = append(errors, err)
+			} else {
+				pushed = append(pushed, node)
+			}
+
+			continue
+		}
+
+		r, err := remote.View(node.ToNote())
+		if err != nil {
+			errors = append(errors, err)
+			continue
+		}
+
+		if r.Body == node.Body {
+			continue
+		}
+
+		if _, err := remote.Edit(node.ToNote()); err != nil {
+			errors = append(errors, err)
+		} else {
+			pushed = append(pushed, node)
+		}
+
+	}
+
+	return pushed, errors
 }

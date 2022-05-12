@@ -9,6 +9,11 @@ import "github.com/anonistas/notya/lib/models"
 var (
 	LOCAL ServiceType = "LOCAL"
 	FIRE  ServiceType = "FIREBASE"
+
+	Services []string = []string{
+		LOCAL.ToStr(),
+		FIRE.ToStr(),
+	}
 )
 
 // Custom string struct to define type of services
@@ -42,7 +47,7 @@ func (s *ServiceType) ToStr() string {
 //        folder for notes.
 //
 type ServiceRepo interface {
-	// Type returns its type.
+	// Type returns the current implementation's type.
 	// - LOCAL, if it's local service implementation.
 	// - FIRE, if it's firebase service implementation.
 	// and etc ...
@@ -62,6 +67,7 @@ type ServiceRepo interface {
 	OpenSettings(settings models.Settings) error
 
 	// General functions that used for both [Note]s and [Folder]s
+	IsNodeExists(node models.Node) (bool, error)
 	Open(node models.Node) error
 	Remove(node models.Node) error
 	Rename(editNode models.EditNode) error
@@ -79,4 +85,11 @@ type ServiceRepo interface {
 	// MoveNotes moves all exiting notes from CURRENT directory
 	// to new one, appropriate by settings which comes from arguments.
 	MoveNotes(settings models.Settings) error
+
+	// Fetch fetches nodes(that doesn't exists
+	// on current service) from remote service to local service.
+	Fetch(remote ServiceRepo) ([]models.Node, []error)
+
+	// Push uploads all notes from local service to provided remote.
+	Push(remote ServiceRepo) ([]models.Node, []error)
 }

@@ -64,6 +64,45 @@ func TestChoseNotePrompt(t *testing.T) {
 	}
 }
 
+func TestChooseRemotePrompt(t *testing.T) {
+	tests := []struct {
+		services []string
+		expected *survey.Select
+	}{
+		{
+			services: []string{"LOCAL", "FIREBASE"},
+			expected: &survey.Select{
+				Message: "Choose remote service:",
+				Options: []string{"LOCAL", "FIREBASE"},
+			},
+		},
+	}
+
+	for _, td := range tests {
+		got := assets.ChooseRemotePrompt(td.services)
+
+		// Closure function to check if options are different or not.
+		var isDiffArr = func() bool {
+			var a1, a2 = got.Options, td.expected.Options
+			if len(a1) != len(a2) {
+				return true
+			}
+
+			for i := 0; i < len(a1); i++ {
+				if a1[i] != a2[i] {
+					return true
+				}
+			}
+
+			return false
+		}()
+
+		if isDiffArr || got.Message != td.expected.Message {
+			t.Errorf("Sum of ChooseRemotePrompt was different: Want: %v | Got: %v", td.expected, got)
+		}
+	}
+}
+
 func TestNewNamePrompt(t *testing.T) {
 	tests := []struct {
 		testname     string

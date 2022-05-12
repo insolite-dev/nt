@@ -28,6 +28,24 @@ var (
 	fireService  services.ServiceRepo // firebase integrated service.
 )
 
+// serviceFromType returns type appropriate service instance.
+func serviceFromType(t string, enable bool) services.ServiceRepo {
+	switch t {
+	case services.LOCAL.ToStr():
+		return localService
+	case services.FIRE.ToStr():
+		if enable {
+			setupFirebaseService()
+		}
+		return fireService
+	}
+
+	return service
+}
+
+// Decides whether use firebase service as main service or not.
+var firebaseF bool
+
 // appCommand is the root command of application and genesis of all sub-commands.
 var appCommand = &cobra.Command{
 	Use:     "notya",
@@ -37,9 +55,6 @@ var appCommand = &cobra.Command{
 		assets.ShortSlog,
 	),
 }
-
-// Decides whether use firebase service or the default one.
-var firebaseF bool
 
 // initCommands initializes all sub-commands of application.
 func initCommands() {
@@ -58,6 +73,8 @@ func initCommands() {
 	initRenameCommand()
 	initListCommand()
 	initCopyCommand()
+	initFetchCommand()
+	initPushCommand()
 }
 
 // ExecuteApp is a main function that app starts executing and working.
@@ -69,15 +86,7 @@ func ExecuteApp() {
 
 	initCommands()
 
-	localService = services.NewLocalService(stdargs)
-	err := localService.Init()
-
-	loading.Stop()
-	if err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
-		return
-	}
-
+	setupLocalService()
 	service = localService
 
 	_ = appCommand.Execute()
@@ -91,6 +100,33 @@ func determineService() {
 		return
 	}
 
+	setupFirebaseService()
+	service = fireService
+
+	//
+	// TODO: implement other services.
+	//
+}
+
+// setupLocalService initializes the local service.
+// makes it able at [localService] instance.
+func setupLocalService() {
+	loading.Start()
+
+	localService = services.NewLocalService(stdargs)
+	err := localService.Init()
+
+	loading.Stop()
+
+	if err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
+		os.Exit(1)
+	}
+}
+
+// setupFirebaseService initializes the firebase service.
+// makes it able at [fireService] instance.
+func setupFirebaseService() {
 	loading.Start()
 
 	fireService = services.NewFirebaseService(stdargs, localService)
@@ -100,8 +136,6 @@ func determineService() {
 
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
-		return
+		os.Exit(1)
 	}
-
-	service = fireService
 }

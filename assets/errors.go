@@ -41,3 +41,10 @@ func AlreadyExists(path, node string) error {
 	msg := fmt.Sprintf("A %v already exists at: %v, please provide a unique title", node, path)
 	return errors.New(msg)
 }
+
+// CannotDoSth generates a extre informative error via migrating with actual error.
+func CannotDoSth(act, doc string, err error) error {
+	return errors.New(
+		fmt.Sprintf("Cannot %v %v | %v", act, doc, err.Error()),
+	)
+}
