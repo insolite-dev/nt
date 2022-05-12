@@ -27,14 +27,20 @@ func initRemoveCommand() {
 
 // runRemoveCommand runs appropriate service commands to remove a file or folder.
 func runRemoveCommand(cmd *cobra.Command, args []string) {
+	determineService()
+
 	// Take node title from arguments. If it's provided.
 	if len(args) > 0 && args[0] != "." {
 		removeAndFinish(models.Node{Title: args[0]})
 		return
 	}
 
+	loading.Start()
+
 	// Generate array of all node names.
-	_, nodeNames, err := service.GetAll("")
+	_, nodeNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
@@ -52,7 +58,12 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 
 // removeAndFinish removes given node and alerts success message if everything is OK.
 func removeAndFinish(node models.Node) {
-	if err := service.Remove(node); err != nil {
+	loading.Start()
+
+	err := service.Remove(node)
+
+	loading.Start()
+	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}

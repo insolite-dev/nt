@@ -6,8 +6,10 @@ package pkg
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/anonistas/notya/lib/models"
+	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/mattn/go-colorable"
 )
@@ -36,10 +38,14 @@ const (
 
 // Defined constant color codes, for [OutputLevel].
 const (
-	RED     string = "\033[0;31m"
-	GREEN   string = "\033[0;32m"
-	YELLOW  string = "\033[1;33m"
-	NOCOLOR string = "\033[0m"
+	GREY       string = "\033[1;30m"
+	RED        string = "\033[0;31m"
+	GREEN      string = "\033[0;32m"
+	YELLOW     string = "\033[1;33m"
+	DARKYELLOW string = "\033[2;33m"
+	PURPLE     string = "\033[1;35m"
+	CYAN       string = "\033[1;36m"
+	NOCOLOR    string = "\033[0m"
 )
 
 // Defined constant icon/title codes.
@@ -102,13 +108,23 @@ func Print(data string, c color.Attribute) {
 // ShowNote, logs given full note.
 func PrintNote(note models.Note) {
 	// Modify note fields to make it ready to log.
-	title := fmt.Sprintf("\nTitle: %v", note.Title)
-	path := fmt.Sprintf("Path: %v", note.Path)
+	title := fmt.Sprintf(
+		"\n%v %v",
+		fmt.Sprintf("%s%s%s", PURPLE, "Title:", NOCOLOR),
+		fmt.Sprintf("%s%s%s", GREY, note.Title, NOCOLOR),
+	)
+	path := fmt.Sprintf("%v %v",
+		fmt.Sprintf("%s%s%s", PURPLE, "Path:", NOCOLOR),
+		fmt.Sprintf("%s%s%s", GREY, note.Path, NOCOLOR),
+	)
+
 	body := fmt.Sprintf("\n%v", note.Body)
 
 	// Log the final note files.
-	rainbowText.Println(title)
-	lowText.Println(path)
+	text.Println(title)
+	if len(note.Path) > 0 {
+		text.Println(path)
+	}
 
 	// Printout no content if body is empty.
 	if len(note.Body) == 0 {
@@ -125,19 +141,41 @@ func PrintNodes(list []models.Node) {
 	}
 
 	for _, value := range list {
-		note := fmt.Sprintf(" • %v", value.Pretty)
-		text.Add(color.FgYellow).Println(note)
+		note := fmt.Sprintf(
+			" %v %s %v",
+			fmt.Sprintf("%s%s%s", GREY, "•", NOCOLOR),
+			fmt.Sprintf("%s%s%s", YELLOW, value.Pretty[0], NOCOLOR),
+			fmt.Sprintf("%s%s%s", DARKYELLOW, value.Pretty[1], NOCOLOR),
+		)
+		text.Println(note)
 	}
 }
 
 // PrintSettings, logs given settings model.
 func PrintSettings(settings models.Settings) {
-	values := map[string]interface{}{
-		"Editor":     settings.Editor,
-		"Local Path": settings.LocalPath,
-	}
+	values := settings.ToJSON()
 
 	for key, value := range values {
-		text.Add(color.FgHiBlue).Println(fmt.Sprintf(" • %v: %v ", key, value))
+		printable := fmt.Sprintf(" • %s: %s", fmt.Sprintf("%s%s%s", YELLOW, key, NOCOLOR), value)
+		text.Println(printable)
 	}
+}
+
+// PrintErrors, is general error logger for push and fetch command error results.
+func PrintErrors(act string, errs []error) {
+	for i, e := range errs {
+		err := fmt.Sprintf("%v | %v",
+			fmt.Sprintf("%s%s%s", RED, fmt.Sprintf("- SWW fetch:%v", i+1), NOCOLOR),
+			e.Error(),
+		)
+
+		text.Println(err)
+	}
+}
+
+// Spinner generates static style notya spinner.
+func Spinner() *spinner.Spinner {
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	s.Color("yellow")
+	return s
 }
