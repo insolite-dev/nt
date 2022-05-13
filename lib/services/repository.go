@@ -92,4 +92,8 @@ type ServiceRepo interface {
 
 	// Push uploads all notes from local service to provided remote.
 	Push(remote ServiceRepo) ([]models.Node, []error)
+
+	// Migrate clones current service data to [remote] service data.
+	// [remote] service data would be cleared and replaced with current service data.
+	Migrate(remote ServiceRepo) ([]models.Node, []error)
 }

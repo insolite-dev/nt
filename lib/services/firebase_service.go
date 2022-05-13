@@ -552,3 +552,8 @@ func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
 
 	return pushed, errors
 }
+
+// Migrate overwrites all notes of given [remote] service with [s](firebase-service).
+func (s *FirebaseService) Migrate(remote ServiceRepo) ([]models.Node, []error) {
+	return nil, nil
+}

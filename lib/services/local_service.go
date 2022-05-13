@@ -495,3 +495,8 @@ func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 
 	return fetched, errors
 }
+
+// Migrate overwrites all notes of given [remote] service with [l](current-service).
+func (l *LocalService) Migrate(remote ServiceRepo) ([]models.Node, []error) {
+	return nil, nil
+}
