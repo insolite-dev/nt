@@ -317,6 +317,28 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 	return createErr
 }
 
+// ClearNodes removes all nodes from collection.
+func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
+	nodes, _, err := s.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	var res []models.Node
+	var errs []error
+
+	for _, n := range nodes {
+		if err := s.Remove(n); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		res = append(res, n)
+	}
+
+	return res, errs
+}
+
 // GetAll returns all elements from notya collection.
 func (s *FirebaseService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
 	var nodes []models.Node

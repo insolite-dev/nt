@@ -239,6 +239,28 @@ func (l *LocalService) Rename(editNode models.EditNode) error {
 	return nil
 }
 
+// ClearNodes removes all nodes from local (including folders).
+func (l *LocalService) ClearNodes() ([]models.Node, []error) {
+	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	var res []models.Node
+	var errs []error
+
+	for _, n := range nodes {
+		if err := l.Remove(n); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		res = append(res, n)
+	}
+
+	return res, errs
+}
+
 // Create creates new note file.
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {

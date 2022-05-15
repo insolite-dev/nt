@@ -71,6 +71,7 @@ type ServiceRepo interface {
 	Open(node models.Node) error
 	Remove(node models.Node) error
 	Rename(editNode models.EditNode) error
+	ClearNodes() ([]models.Node, []error)
 
 	// Note(file) related functions.
 	GetAll(additional string, ignore []string) ([]models.Node, []string, error)
