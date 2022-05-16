@@ -251,7 +251,7 @@ func (l *LocalService) ClearNodes() ([]models.Node, []error) {
 
 	for _, n := range nodes {
 		if err := l.Remove(n); err != nil {
-			errs = append(errs, err)
+			errs = append(errs, assets.CannotDoSth("remove", n.Title, err))
 			continue
 		}
 
@@ -520,5 +520,9 @@ func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 
 // Migrate overwrites all notes of given [remote] service with [l](current-service).
 func (l *LocalService) Migrate(remote ServiceRepo) ([]models.Node, []error) {
-	return nil, nil
+	if _, err := remote.ClearNodes(); err != nil {
+		return nil, err
+	}
+
+	return l.Push(remote)
 }

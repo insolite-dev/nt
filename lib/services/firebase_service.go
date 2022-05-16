@@ -329,7 +329,7 @@ func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
 
 	for _, n := range nodes {
 		if err := s.Remove(n); err != nil {
-			errs = append(errs, err)
+			errs = append(errs, assets.CannotDoSth("remove", n.Title, err))
 			continue
 		}
 
@@ -577,5 +577,9 @@ func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
 
 // Migrate overwrites all notes of given [remote] service with [s](firebase-service).
 func (s *FirebaseService) Migrate(remote ServiceRepo) ([]models.Node, []error) {
-	return nil, nil
+	if _, err := remote.ClearNodes(); err != nil {
+		return nil, err
+	}
+
+	return s.Push(remote)
 }
