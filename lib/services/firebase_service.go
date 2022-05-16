@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"sort"
 	"strings"
 	"time"
 
@@ -323,6 +324,12 @@ func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
 	if err != nil && err.Error() != assets.EmptyWorkingDirectory.Error() {
 		return nil, []error{err}
 	}
+
+	// Sort nodes via title-len decreasing order.
+	sort.Slice(
+		nodes,
+		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+	)
 
 	var res []models.Node
 	var errs []error

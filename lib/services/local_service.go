@@ -246,6 +246,12 @@ func (l *LocalService) ClearNodes() ([]models.Node, []error) {
 		return nil, []error{err}
 	}
 
+	// Sort nodes via title-len decreasing order.
+	sort.Slice(
+		nodes,
+		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+	)
+
 	var res []models.Node
 	var errs []error
 
