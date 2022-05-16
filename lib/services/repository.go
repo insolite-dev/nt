@@ -71,6 +71,7 @@ type ServiceRepo interface {
 	Open(node models.Node) error
 	Remove(node models.Node) error
 	Rename(editNode models.EditNode) error
+	ClearNodes() ([]models.Node, []error)
 
 	// Note(file) related functions.
 	GetAll(additional string, ignore []string) ([]models.Node, []string, error)
@@ -92,4 +93,8 @@ type ServiceRepo interface {
 
 	// Push uploads all notes from local service to provided remote.
 	Push(remote ServiceRepo) ([]models.Node, []error)
+
+	// Migrate clones current service data to [remote] service data.
+	// [remote] service data would be cleared and replaced with current service data.
+	Migrate(remote ServiceRepo) ([]models.Node, []error)
 }

@@ -905,3 +905,7 @@ func TestFetch(t *testing.T) {
 func TestPush(t *testing.T) {
 	// TODO: Implement tests by mocking.
 }
+
+func TestMigrate(t *testing.T) {
+	// TODO: Implement tests by mocking.
+}

@@ -239,6 +239,34 @@ func (l *LocalService) Rename(editNode models.EditNode) error {
 	return nil
 }
 
+// ClearNodes removes all nodes from local (including folders).
+func (l *LocalService) ClearNodes() ([]models.Node, []error) {
+	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil && err.Error() != assets.EmptyWorkingDirectory.Error() {
+		return nil, []error{err}
+	}
+
+	// Sort nodes via title-len decreasing order.
+	sort.Slice(
+		nodes,
+		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+	)
+
+	var res []models.Node
+	var errs []error
+
+	for _, n := range nodes {
+		if err := l.Remove(n); err != nil {
+			errs = append(errs, assets.CannotDoSth("remove", n.Title, err))
+			continue
+		}
+
+		res = append(res, n)
+	}
+
+	return res, errs
+}
+
 // Create creates new note file.
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {
@@ -494,4 +522,13 @@ func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 	}
 
 	return fetched, errors
+}
+
+// Migrate overwrites all notes of given [remote] service with [l](current-service).
+func (l *LocalService) Migrate(remote ServiceRepo) ([]models.Node, []error) {
+	if _, err := remote.ClearNodes(); err != nil {
+		return nil, err
+	}
+
+	return l.Push(remote)
 }
