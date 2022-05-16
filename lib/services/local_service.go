@@ -242,7 +242,7 @@ func (l *LocalService) Rename(editNode models.EditNode) error {
 // ClearNodes removes all nodes from local (including folders).
 func (l *LocalService) ClearNodes() ([]models.Node, []error) {
 	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
-	if err != nil {
+	if err != nil && err.Error() != assets.EmptyWorkingDirectory.Error() {
 		return nil, []error{err}
 	}
 

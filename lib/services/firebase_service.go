@@ -320,7 +320,7 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 // ClearNodes removes all nodes from collection.
 func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
 	nodes, _, err := s.GetAll("", models.NotyaIgnoreFiles)
-	if err != nil {
+	if err != nil && err.Error() != assets.EmptyWorkingDirectory.Error() {
 		return nil, []error{err}
 	}
 
