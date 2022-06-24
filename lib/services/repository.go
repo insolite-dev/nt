@@ -79,6 +79,7 @@ type ServiceRepo interface {
 	View(note models.Note) (*models.Note, error)
 	Edit(note models.Note) (*models.Note, error)
 	Copy(note models.Note) error
+	Cut(note models.Note) (*models.Note, error)
 
 	// Folder(directory) related functions.
 	Mkdir(dir models.Folder) (*models.Folder, error)

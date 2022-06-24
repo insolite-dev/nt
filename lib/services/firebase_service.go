@@ -451,6 +451,25 @@ func (s *FirebaseService) Copy(note models.Note) error {
 	return clipboard.WriteAll(data.Body)
 }
 
+// Cut, copies note data to machine's clipboard and removes it instantly.
+func (s *FirebaseService) Cut(note models.Note) (*models.Note, error) {
+	n, err := s.View(note)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := clipboard.WriteAll(n.Body); err != nil {
+		return nil, err
+	}
+
+	collection := s.NotyaCollection()
+	if _, err := collection.Doc(note.Title).Delete(s.Ctx); err != nil {
+		return nil, err
+	}
+
+	return n, nil
+}
+
 // Mkdir does nothing 'cause of firebase document structure.
 // Have to returns [assets.FolderingInFirebase].
 func (s *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
