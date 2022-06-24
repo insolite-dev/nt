@@ -332,6 +332,24 @@ func (l *LocalService) Copy(note models.Note) error {
 	return clipboard.WriteAll(data.Body)
 }
 
+// Cut, copies note data to machine's clipboard and removes it instantly.
+func (l *LocalService) Cut(note models.Note) (*models.Note, error) {
+	if err := l.Copy(note); err != nil {
+		return nil, err
+	}
+
+	n, err := l.View(note)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := l.Remove(note.ToNode()); err != nil {
+		return nil, err
+	}
+
+	return n, nil
+}
+
 // Mkdir creates a new working directory.
 func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 	title := dir.Title
