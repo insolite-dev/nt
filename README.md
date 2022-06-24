@@ -58,6 +58,8 @@ The config file of notya is autogeneratable, it'd be genereted by `Init` functio
 - **[Rename node(file or folder)](https://github.com/anonistas/notya/wiki/Rename)** - `notya rename` or `notya rename [name]`
 - **[Edit note](https://github.com/anonistas/notya/wiki/Edit)** - `notya edit` or `notya edit [name]`
 - **[Remove node(file or folder)](https://github.com/anonistas/notya/wiki/Remove)** - `notya remove` or `notya rm [name]`
+- **[Copy note](https://github.com/anonistas/notya/wiki/Copy)** - `notya copy`
+- **[Cut note](https://github.com/anonistas/notya/wiki/Cut)** - `notya cut`
 - **[Fetch nodes(files and folders)](https://github.com/anonistas/notya/wiki/Fetch)** - `notya fetch` or `notya pull`
 - **[Push nodes(files and folders)](https://github.com/anonistas/notya/wiki/Push)** - `notya push`
 
