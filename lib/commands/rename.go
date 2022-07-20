@@ -88,6 +88,4 @@ func rename(selected string, newname string) {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
-
-	pkg.Alert(pkg.SuccessL, "Node renamed successfully: "+newname)
 }

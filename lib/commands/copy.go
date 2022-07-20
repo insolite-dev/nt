@@ -60,7 +60,5 @@ func copyAndFinish(note models.Note) {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
-
 	loading.Stop()
-	pkg.Alert(pkg.SuccessL, "Note copied to clipboard")
 }

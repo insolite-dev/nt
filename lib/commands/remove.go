@@ -81,11 +81,8 @@ func removeAndFinish(node models.Node) {
 
 	err := service.Remove(node)
 
-	loading.Start()
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
-		return
 	}
-
-	pkg.Alert(pkg.SuccessL, "Node removed: "+node.Title)
 }
