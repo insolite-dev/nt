@@ -5,6 +5,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/anonistas/notya/assets"
 	"github.com/anonistas/notya/lib/models"
@@ -20,14 +22,31 @@ var removeCommand = &cobra.Command{
 	Run:     runRemoveCommand,
 }
 
+var removeAll bool
+
 // initRemoveCommand adds removeCommand to main application command.
 func initRemoveCommand() {
+	removeCommand.Flags().BoolVarP(
+		&removeAll, "all", "a", false,
+		"Remove all nodes (including nodes under the directories)",
+	)
+
 	appCommand.AddCommand(removeCommand)
 }
 
 // runRemoveCommand runs appropriate service commands to remove a file or folder.
 func runRemoveCommand(cmd *cobra.Command, args []string) {
 	determineService()
+
+	if removeAll {
+		loading.Start()
+		clearedNodes, errs := service.ClearNodes()
+		loading.Stop()
+
+		pkg.PrintErrors("remove", errs)
+		pkg.Alert(pkg.SuccessL, fmt.Sprintf("Removed %v nodes", len(clearedNodes)))
+		return
+	}
 
 	// Take node title from arguments. If it's provided.
 	if len(args) > 0 && args[0] != "." {
@@ -62,11 +81,8 @@ func removeAndFinish(node models.Node) {
 
 	err := service.Remove(node)
 
-	loading.Start()
+	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
-		return
 	}
-
-	pkg.Alert(pkg.SuccessL, "Node removed: "+node.Title)
 }

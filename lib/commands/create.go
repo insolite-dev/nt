@@ -88,6 +88,4 @@ func createAndFinish(title string) {
 			return
 		}
 	}
-
-	pkg.Alert(pkg.SuccessL, "Created new file: "+note.Title)
 }

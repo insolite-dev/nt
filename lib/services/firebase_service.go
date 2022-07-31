@@ -6,6 +6,7 @@ package services
 
 import (
 	"context"
+	"sort"
 	"strings"
 	"time"
 
@@ -317,6 +318,34 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 	return createErr
 }
 
+// ClearNodes removes all nodes from collection.
+func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
+	nodes, _, err := s.GetAll("", models.NotyaIgnoreFiles)
+	if err != nil && err.Error() != assets.EmptyWorkingDirectory.Error() {
+		return nil, []error{err}
+	}
+
+	// Sort nodes via title-len decreasing order.
+	sort.Slice(
+		nodes,
+		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+	)
+
+	var res []models.Node
+	var errs []error
+
+	for _, n := range nodes {
+		if err := s.Remove(n); err != nil {
+			errs = append(errs, assets.CannotDoSth("remove", n.Title, err))
+			continue
+		}
+
+		res = append(res, n)
+	}
+
+	return res, errs
+}
+
 // GetAll returns all elements from notya collection.
 func (s *FirebaseService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
 	var nodes []models.Node
@@ -420,6 +449,25 @@ func (s *FirebaseService) Copy(note models.Note) error {
 	}
 
 	return clipboard.WriteAll(data.Body)
+}
+
+// Cut, copies note data to machine's clipboard and removes it instantly.
+func (s *FirebaseService) Cut(note models.Note) (*models.Note, error) {
+	n, err := s.View(note)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := clipboard.WriteAll(n.Body); err != nil {
+		return nil, err
+	}
+
+	collection := s.NotyaCollection()
+	if _, err := collection.Doc(note.Title).Delete(s.Ctx); err != nil {
+		return nil, err
+	}
+
+	return n, nil
 }
 
 // Mkdir does nothing 'cause of firebase document structure.
@@ -551,4 +599,13 @@ func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
 	}
 
 	return pushed, errors
+}
+
+// Migrate overwrites all notes of given [remote] service with [s](firebase-service).
+func (s *FirebaseService) Migrate(remote ServiceRepo) ([]models.Node, []error) {
+	if _, err := remote.ClearNodes(); err != nil {
+		return nil, err
+	}
+
+	return s.Push(remote)
 }

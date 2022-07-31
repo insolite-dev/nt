@@ -22,6 +22,7 @@ var (
 	InvalidFirebaseProjectID    = errors.New(`Providen firebase-project-id is invalid(or empty)`)
 	FirebaseServiceKeyNotExists = errors.New(`Firebase service key file doesn't exists at given path`)
 	InvalidFirebaseCollection   = errors.New(`Provided firebase-collection-id is invalid`)
+	InvalidPathForAct           = errors.New(`Generated or provided path is invalid for this action`)
 )
 
 // NotExists returns a formatted error message as data-not-exists error.

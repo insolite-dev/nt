@@ -40,13 +40,11 @@ func runMkdirCommand(cmd *cobra.Command, args []string) {
 	loading.Start()
 
 	// Create new directory by given title.
-	dir, err := service.Mkdir(models.Folder{Title: title})
+	_, err := service.Mkdir(models.Folder{Title: title})
 
 	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return
 	}
-
-	pkg.Alert(pkg.SuccessL, "Created new directory: "+dir.Title)
 }
