@@ -1,13 +1,15 @@
-// Copyright 2022-present Anon. All rights reserved.
+//
+// Copyright 2021-present Insolite. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
+//
 
 package services_test
 
 import (
 	"testing"
 
-	"github.com/anonistas/notya/lib/services"
+	"github.com/insolite-dev/notya/lib/services"
 )
 
 func TestServiceTypeToStr(t *testing.T) {

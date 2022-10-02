@@ -1,6 +1,8 @@
-// Copyright 2021-2022 present Anon. All rights reserved.
+//
+// Copyright 2021-present Insolite. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
+//
 
 package assets
 
@@ -8,7 +10,7 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/anonistas/notya/lib/models"
+	"github.com/insolite-dev/notya/lib/models"
 )
 
 // ChooseNodePrompt is a prompt interface for tui file or folder choosing bar.

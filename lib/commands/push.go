@@ -1,6 +1,8 @@
-// Copyright 2022-present Anon. All rights reserved.
+//
+// Copyright 2021-present Insolite. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
+//
 
 package commands
 
@@ -8,10 +10,10 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/anonistas/notya/assets"
-	"github.com/anonistas/notya/lib/services"
-	"github.com/anonistas/notya/pkg"
 	"github.com/fatih/color"
+	"github.com/insolite-dev/notya/assets"
+	"github.com/insolite-dev/notya/lib/services"
+	"github.com/insolite-dev/notya/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +32,7 @@ func runPushCommand(cmd *cobra.Command, args []string) {
 	loading.Start()
 
 	availableServices := []string{}
-	// Generate a list of availabe services
+	// Generate a list of available services
 	// by not including current service.
 	for _, s := range services.Services {
 		if service.Type() == s {
@@ -42,7 +44,7 @@ func runPushCommand(cmd *cobra.Command, args []string) {
 
 	loading.Stop()
 
-	// Ask for servie selection.
+	// Ask for service selection.
 	var selected string
 	survey.AskOne(
 		assets.ChooseRemotePrompt(availableServices),

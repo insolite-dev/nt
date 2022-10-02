@@ -1,6 +1,8 @@
-// Copyright 2022-present Anon. All rights reserved.
+//
+// Copyright 2021-present Insolite. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
+//
 
 package services_test
 
@@ -8,10 +10,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/anonistas/notya/assets"
-	"github.com/anonistas/notya/lib/models"
-	"github.com/anonistas/notya/lib/services"
-	"github.com/anonistas/notya/pkg"
+	"github.com/insolite-dev/notya/assets"
+	"github.com/insolite-dev/notya/lib/models"
+	"github.com/insolite-dev/notya/lib/services"
+	"github.com/insolite-dev/notya/pkg"
 )
 
 // Define a mock local service implementation.

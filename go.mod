@@ -1,4 +1,4 @@
-module github.com/anonistas/notya
+module github.com/insolite-dev/notya
 
 go 1.17
 

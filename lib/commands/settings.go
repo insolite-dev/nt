@@ -1,15 +1,17 @@
-// Copyright 2021-present Anon. All rights reserved.
+//
+// Copyright 2021-present Insolite. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
+//
 
 package commands
 
 import (
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/anonistas/notya/assets"
-	"github.com/anonistas/notya/lib/models"
-	"github.com/anonistas/notya/pkg"
 	"github.com/fatih/color"
+	"github.com/insolite-dev/notya/assets"
+	"github.com/insolite-dev/notya/lib/models"
+	"github.com/insolite-dev/notya/pkg"
 	"github.com/spf13/cobra"
 )
 

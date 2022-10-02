@@ -5,7 +5,7 @@
 package main
 
 import (
-	"github.com/anonistas/notya/cmd"
+	"github.com/insolite-dev/notya/cmd"
 )
 
 func main() {

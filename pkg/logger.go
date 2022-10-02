@@ -1,6 +1,8 @@
-// Copyright 2021-present Anon. All rights reserved.
+//
+// Copyright 2021-present Insolite. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
+//
 
 package pkg
 
@@ -8,9 +10,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/anonistas/notya/lib/models"
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
+	"github.com/insolite-dev/notya/lib/models"
 	"github.com/mattn/go-colorable"
 )
 
