@@ -1,6 +1,8 @@
-// Copyright 2021-2022 present Anon. All rights reserved.
+//
+// Copyright 2021-present Insolite. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
+//
 
 package assets
 
@@ -19,7 +21,7 @@ var (
 	InvalidSettingsData   = errors.New(`Invalid settings data, cannot complete operation`)
 
 	NotAvailableForFirebase     = errors.New(`This functionality isn't available for firebase service`)
-	InvalidFirebaseProjectID    = errors.New(`Providen firebase-project-id is invalid(or empty)`)
+	InvalidFirebaseProjectID    = errors.New(`Provided firebase-project-id is invalid(or empty)`)
 	FirebaseServiceKeyNotExists = errors.New(`Firebase service key file doesn't exists at given path`)
 	InvalidFirebaseCollection   = errors.New(`Provided firebase-collection-id is invalid`)
 	InvalidPathForAct           = errors.New(`Generated or provided path is invalid for this action`)

@@ -1,6 +1,8 @@
-// Copyright 2022-present Anon. All rights reserved.
+//
+// Copyright 2021-present Insolite. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
+//
 
 package models
 
@@ -18,7 +20,7 @@ type Node struct {
 	// Path is the full-path string name of "current" node.
 	Path string `json:"path"`
 
-	// Pretty is Title but powered with ascii emojys.
+	// Pretty is Title but powered with ascii emojis.
 	Pretty []string `json:"pretty"`
 
 	// A field representation of [Note]'s [Body].

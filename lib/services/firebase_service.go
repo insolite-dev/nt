@@ -1,6 +1,8 @@
-// Copyright 2022-present Anon. All rights reserved.
+//
+// Copyright 2021-present Insolite. All rights reserved.
 // Use of this source code is governed by Apache 2.0 license
 // that can be found in the LICENSE file.
+//
 
 package services
 
@@ -13,10 +15,10 @@ import (
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
-	"github.com/anonistas/notya/assets"
-	"github.com/anonistas/notya/lib/models"
-	"github.com/anonistas/notya/pkg"
 	"github.com/atotto/clipboard"
+	"github.com/insolite-dev/notya/assets"
+	"github.com/insolite-dev/notya/lib/models"
+	"github.com/insolite-dev/notya/pkg"
 	"github.com/mitchellh/mapstructure"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
