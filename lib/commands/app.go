@@ -79,6 +79,7 @@ func initCommands() {
 	initPushCommand()
 	initMigrateCommand()
 	initCutCommand()
+	initRemoteCommand()
 }
 
 // ExecuteApp is a main function that app starts executing and working.
