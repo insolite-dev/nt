@@ -453,7 +453,7 @@ func (l *LocalService) MoveNotes(settings models.Settings) error {
 		}
 
 		// Create note appropriate by updated settings.
-		node.Path = settings.NotesPath + node.Title
+		node.Path = pkg.NormalizePath(settings.NotesPath) + node.Title
 		if _, err := l.Create(node.ToNote()); err != nil {
 			continue
 		}

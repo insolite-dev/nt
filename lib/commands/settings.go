@@ -10,7 +10,6 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
 	"github.com/insolite-dev/notya/assets"
-	"github.com/insolite-dev/notya/lib/models"
 	"github.com/insolite-dev/notya/pkg"
 	"github.com/spf13/cobra"
 )
@@ -43,7 +42,7 @@ func initSettingsCommand() {
 	appCommand.AddCommand(settingsCommand)
 }
 
-// bunSettingsCommand runs appropriate service functionalities to manage settings.
+// runSettingsCommand runs appropriate service functionalities to manage settings.
 func runSettingsCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
@@ -91,7 +90,7 @@ func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Ask to move notes if path were updated.
-	if models.IsPathUpdated(*beforeSettings, *afterSettings, service.Type()) {
+	if pkg.IsPathUpdated(*beforeSettings, *afterSettings, service.Type()) {
 		var moveNotes bool
 		if survey.AskOne(assets.MoveNotesPrompt, &moveNotes); !moveNotes {
 			return

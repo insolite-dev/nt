@@ -379,3 +379,126 @@ func TestIsDir(t *testing.T) {
 		td.c.deleting(td.filename)
 	}
 }
+
+func TestNormalizePath(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    "//Users///theiskaa//notya//notes///",
+			expected: "/Users/theiskaa/notya/notes/",
+		},
+		{
+			input:    "//Users/ /theiskaa/notya//",
+			expected: "/Users/theiskaa/notya/",
+		},
+		{
+			input:    "/Users/theiskaa/notya/notes",
+			expected: "/Users/theiskaa/notya/notes/",
+		},
+	}
+
+	for _, td := range tests {
+		got := pkg.NormalizePath(td.input)
+
+		if got != td.expected {
+			t.Errorf("NormalizePath sum was different: Got: %v | Want: %v", got, td.expected)
+		}
+	}
+}
+func TestIsPathUpdated(t *testing.T) {
+	tests := []struct {
+		serviceType  string
+		old, current models.Settings
+		expected     bool
+	}{
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "test/path"},
+			expected:    false,
+		},
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "test/path/"},
+			expected:    false,
+		},
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "test/path"},
+			expected:    false,
+		},
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "new/test/path"},
+			expected:    true,
+		},
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{Editor: "code"},
+			current:     models.Settings{Editor: models.DefaultEditor},
+			expected:    false,
+		},
+		{
+			serviceType: "FIREBASE",
+			old:         models.Settings{FirebaseCollection: "test/path"},
+			current:     models.Settings{FirebaseCollection: "test/path"},
+			expected:    false,
+		},
+		{
+			serviceType: "FIREBASE",
+			old:         models.Settings{FirebaseCollection: "test/path"},
+			current:     models.Settings{FirebaseCollection: "new/test/path"},
+			expected:    true,
+		},
+		{
+			serviceType: "undefined",
+			old:         models.Settings{FirebaseCollection: "test/path"},
+			current:     models.Settings{FirebaseCollection: "new/test/path"},
+			expected:    false,
+		},
+	}
+
+	for i, td := range tests {
+		got := pkg.IsPathUpdated(td.old, td.current, td.serviceType)
+
+		if got != td.expected {
+			t.Errorf("IsPathUpdated[%v] sum was different: Want: %v | Got: %v", i, td.expected, got)
+		}
+	}
+}
+
+func TestIsUpdated(t *testing.T) {
+	tests := []struct {
+		testname     string
+		old, current models.Settings
+		expected     bool
+	}{
+		{
+			testname: "should check properly if fulls settings is updated",
+			old:      models.Settings{Editor: models.DefaultEditor},
+			current:  models.Settings{Editor: models.DefaultEditor},
+			expected: false,
+		},
+		{
+			testname: "should check properly if fulls settings is updated",
+			old:      models.Settings{Editor: "code"},
+			current:  models.Settings{Editor: models.DefaultEditor},
+			expected: true,
+		},
+	}
+
+	for _, td := range tests {
+		t.Run(td.testname, func(t *testing.T) {
+			got := pkg.IsSettingsUpdated(td.old, td.current)
+
+			if got != td.expected {
+				t.Errorf("IsUpdated sum was different: Want: %v | Got: %v", got, td.expected)
+			}
+		})
+	}
+}

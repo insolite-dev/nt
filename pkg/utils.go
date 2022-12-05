@@ -147,7 +147,7 @@ func ListDir(path, prevPath, space string, ignore []string, tree bool) ([]string
 				n := models.Node{Title: pathFI.Name(), Path: path}
 				sn, sp, err := ListDir(
 					n.StructAsFolder().Path+d.Name(), n.StructAsFolder().Title,
-					// Push to right by two empty charachters each sub node.
+					// Push to right by two empty characters each sub node.
 					space+"  ", ignore, tree,
 				)
 				if err != nil {
@@ -204,4 +204,58 @@ func IsDir(path string) bool {
 	}
 
 	return i.IsDir()
+}
+
+// NormalizePath normalizes given path and returns a normalized path.
+func NormalizePath(path string) string {
+	// re-built [path].
+	var build string = "/"
+
+	d := ""
+	for i, v := range path {
+		if v == '/' && len(d) != 0 {
+			build += d + string(v)
+			d = ""
+		}
+
+		if v != '/' && v != ' ' {
+			d += string(v)
+		}
+
+		if i == len(path)-1 && len(d) > 0 {
+			build += d + "/"
+		}
+	}
+
+	return build
+}
+
+// IsPathUpdated checks notes' differences of [old] and [current] settings.
+// Appropriate to base service-type. Provided from [t].
+//
+// Note: This function moved from [models/settings.go], because
+// go doesn't allow to do import cycle.
+func IsPathUpdated(old, current models.Settings, t string) bool {
+	switch t {
+	case "LOCAL":
+		return NormalizePath(old.NotesPath) != NormalizePath(current.NotesPath)
+	case "FIREBASE":
+		return old.FirebaseCollection != current.FirebaseCollection
+	}
+
+	return false
+}
+
+// IsSettingsUpdated compares [old] and [current] Settings models.
+// If any field of [old] is different that [current], result eventually gonna be [true].
+//
+// Note: This function moved from [models/settings.go], because
+// go doesn't allow to do import cycle.
+func IsSettingsUpdated(old, current models.Settings) bool {
+	return old.Name != current.Name ||
+		old.Editor != current.Editor ||
+		NormalizePath(old.NotesPath) != NormalizePath(current.NotesPath) ||
+		old.FirebaseProjectID != current.FirebaseProjectID ||
+		old.FirebaseAccountKey != current.FirebaseAccountKey ||
+		old.FirebaseCollection != current.FirebaseCollection
 }

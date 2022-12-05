@@ -234,7 +234,7 @@ func (s *FirebaseService) OpenSettings(settings models.Settings) error {
 	// Clear cache, and skip error.
 	_ = s.LS.Remove(note.ToNode())
 
-	if models.IsUpdated(*prevSettings, *updatedSettings) {
+	if pkg.IsSettingsUpdated(*prevSettings, *updatedSettings) {
 		return s.WriteSettings(*updatedSettings)
 	}
 

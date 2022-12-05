@@ -142,27 +142,3 @@ func (s *Settings) IsValid() bool {
 func (s *Settings) IsFirebaseEnabled() bool {
 	return len(s.FirebaseProjectID) > 0 || len(s.FirebaseAccountKey) > 0 || len(s.FirebaseCollection) > 0
 }
-
-// IsUpdated compares [old] and [current] Settings models.
-// If any field of [old] is different that [current], result eventually gonna be [true].
-func IsUpdated(old, current Settings) bool {
-	return old.Name != current.Name ||
-		old.Editor != current.Editor ||
-		old.NotesPath != current.NotesPath ||
-		old.FirebaseProjectID != current.FirebaseProjectID ||
-		old.FirebaseAccountKey != current.FirebaseAccountKey ||
-		old.FirebaseCollection != current.FirebaseCollection
-}
-
-// IsPathUpdated checks notes' differences of [old] and [current] settings.
-// Appropriate to base service-type. Provided from [t].
-func IsPathUpdated(old, current Settings, t string) bool {
-	switch t {
-	case "LOCAL":
-		return old.NotesPath != current.NotesPath
-	case "FIREBASE":
-		return old.FirebaseCollection != current.FirebaseCollection
-	}
-
-	return false
-}
