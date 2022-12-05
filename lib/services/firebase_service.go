@@ -83,9 +83,9 @@ func (s *FirebaseService) Type() string {
 	return FIRE.ToStr()
 }
 
-// Path returns current service'base working directory.
-func (s *FirebaseService) Path() string {
-	return s.Config.FirePath()
+// Path returns current service base working directory and name of working collection.
+func (s *FirebaseService) Path() (string, string) {
+	return s.Config.FirePath(), s.Config.FirebaseCollection
 }
 
 // Init creates notya working directory into current machine.

@@ -19,7 +19,7 @@ func TestInitSettings(t *testing.T) {
 	}{
 		{
 			testname: "should return initial settings properly",
-			expected: models.Settings{Editor: models.DefaultEditor, LocalPath: models.DefaultLocalPath},
+			expected: models.Settings{Editor: models.DefaultEditor, NotesPath: models.DefaultLocalPath},
 		},
 	}
 
@@ -27,7 +27,7 @@ func TestInitSettings(t *testing.T) {
 		t.Run(td.testname, func(t *testing.T) {
 			got := models.InitSettings("notya")
 
-			if got.Editor != td.expected.Editor || got.LocalPath != td.expected.LocalPath {
+			if got.Editor != td.expected.Editor || got.NotesPath != td.expected.NotesPath {
 				t.Errorf("InitSettings's sum was different: Want: %v | Got: %v", got, td.expected)
 			}
 		})
@@ -67,7 +67,7 @@ func TestToJSON(t *testing.T) {
 			model: models.Settings{
 				Name:               models.DefaultAppName,
 				Editor:             models.DefaultEditor,
-				LocalPath:          "~notya",
+				NotesPath:          "~notya",
 				FirebaseProjectID:  "notya",
 				FirebaseAccountKey: "~notya/key.json",
 				FirebaseCollection: "notya-notes",
@@ -75,7 +75,7 @@ func TestToJSON(t *testing.T) {
 			expected: map[string]interface{}{
 				"name":             models.DefaultAppName,
 				"editor":           models.DefaultEditor,
-				"local_path":       "~notya",
+				"notes_path":       "~notya",
 				"fire_project_id":  "notya",
 				"fire_account_key": "~notya/key.json",
 				"fire_collection":  "notya-notes",
@@ -155,7 +155,7 @@ func TestIsValid(t *testing.T) {
 	}{
 		{
 			testname: "should check settings validness correctly | [valid]",
-			settings: models.InitSettings("/usr/mock/localpath"),
+			settings: models.InitSettings("/usr/mock/NotesPath"),
 			expected: true,
 		},
 		{
@@ -182,7 +182,7 @@ func TestIsFirebaseEnabled(t *testing.T) {
 		expected bool
 	}{
 		{
-			settings: models.InitSettings("/usr/mock/localpath"),
+			settings: models.InitSettings("/usr/mock/NotesPath"),
 			expected: false,
 		},
 		{
@@ -239,14 +239,14 @@ func TestIsPathUpdated(t *testing.T) {
 	}{
 		{
 			serviceType: "LOCAL",
-			old:         models.Settings{LocalPath: "test/path"},
-			current:     models.Settings{LocalPath: "test/path"},
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "test/path"},
 			expected:    false,
 		},
 		{
 			serviceType: "LOCAL",
-			old:         models.Settings{LocalPath: "test/path"},
-			current:     models.Settings{LocalPath: "new/test/path"},
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "new/test/path"},
 			expected:    true,
 		},
 		{

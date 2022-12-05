@@ -35,7 +35,7 @@ func TestNotyaPWD(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		gotRes, gotErr := pkg.NotyaPWD(models.Settings{LocalPath: "notya"})
+		gotRes, gotErr := pkg.NotyaPWD(models.Settings{NotesPath: "notya"})
 		if gotErr != td.exp.err {
 			t.Errorf("Path err sum was different: Got: %v | Want: %v", gotErr, td.exp.err)
 		}
@@ -313,7 +313,7 @@ func TestOpenViaEditor(t *testing.T) {
 					pkg.WriteNote(filename, []byte{})
 				},
 			},
-			expected: errors.New("exit status 2"),
+			expected: errors.New("exit status 1"),
 		},
 	}
 

@@ -19,7 +19,7 @@ import (
 // │ ~/user-home-directory │ + │ /notya │ = │ local path │
 // ╰───────────────────────╯   ╰────────╯   ╰────────────╯
 func NotyaPWD(settings models.Settings) (*string, error) {
-	path := settings.LocalPath
+	path := settings.NotesPath
 
 	// Initialize default notya path.
 	if len(path) == 0 || path == models.DefaultLocalPath {

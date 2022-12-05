@@ -36,23 +36,22 @@ func NewLocalService(stdargs models.StdArgs) *LocalService {
 }
 
 // GeneratePath returns non-zero-valuable string path from given additional sub-path(title of node).
-func (l *LocalService) GeneratePath(n models.Node) (string, error) {
+func (l *LocalService) GeneratePath(base string, n models.Node) (string, error) {
 	if strings.Trim(n.Path, " ") != "" {
 		return n.Path, nil
 	}
 
-	local := l.Config.LocalPath
-	if string(local[len(local)-1]) != "/" {
-		local += "/"
+	if string(base[len(base)-1]) != "/" {
+		base += "/"
 	}
 
 	// If the title doesn't exists, we have to break up adding up empty string
 	// to home path and returning it.
 	if len(strings.Trim(n.Title, " ")) == 0 {
-		return local + n.Title, errors.New("returned home path")
+		return base + n.Title, errors.New("returned home path")
 	}
 
-	return local + n.Title, nil
+	return base + n.Title, nil
 }
 
 // Type returns type of LocalService - LOCAL
@@ -61,8 +60,8 @@ func (l *LocalService) Type() string {
 }
 
 // Path returns current service's base working directory.
-func (l *LocalService) Path() string {
-	return l.NotyaPath
+func (l *LocalService) Path() (string, string) {
+	return l.NotyaPath, l.Config.NotesPath
 }
 
 // StateConfig returns current configuration of state i.e [l.Config].
@@ -72,7 +71,6 @@ func (l *LocalService) StateConfig() models.Settings {
 
 // Init creates notya working directory into current machine.
 func (l *LocalService) Init() error {
-	// Generate the notya path.
 	notyaPath, err := pkg.NotyaPWD(l.Config)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
@@ -82,7 +80,7 @@ func (l *LocalService) Init() error {
 	l.NotyaPath = *notyaPath + "/"
 	settingsPath := l.NotyaPath + models.SettingsName
 
-	notyaDirSetted := pkg.FileExists(*notyaPath)
+	notyaDirSetted := pkg.FileExists(l.NotyaPath)
 	settingsSetted := pkg.FileExists(settingsPath)
 
 	// If settings exists, set it to state.
@@ -122,7 +120,7 @@ func (l *LocalService) Init() error {
 func (l *LocalService) Settings(p *string) (*models.Settings, error) {
 	var settingsPath string
 	if p != nil && len(*p) != 0 {
-		settingsPath, _ = l.GeneratePath(models.Node{Title: *p})
+		settingsPath, _ = l.GeneratePath(l.NotyaPath, models.Node{Title: *p})
 	} else {
 		settingsPath = l.NotyaPath + models.SettingsName
 	}
@@ -155,7 +153,7 @@ func (l *LocalService) WriteSettings(settings models.Settings) error {
 // or at generated path from [node.Title].
 // Note: rather than remote services, error checking is not required.
 func (l *LocalService) IsNodeExists(node models.Node) (bool, error) {
-	path, err := l.GeneratePath(node)
+	path, err := l.GeneratePath(l.Config.NotesPath, node)
 	if err != nil {
 		return false, err
 	}
@@ -166,13 +164,16 @@ func (l *LocalService) IsNodeExists(node models.Node) (bool, error) {
 
 // OpenSettings opens given settings via editor.
 func (l *LocalService) OpenSettings(settings models.Settings) error {
-	path := models.SettingsName
+	path := l.NotyaPath + models.SettingsName
 	if len(settings.ID) > 0 {
-		path = settings.ID
+		path = l.NotyaPath + settings.ID
 	}
 
-	// We could use open func of node, in local service.
-	return l.Open(models.Node{Title: path})
+	if nodeExists, _ := l.IsNodeExists(models.Node{Path: path}); !nodeExists {
+		return assets.NotExists(path, "A configuration file")
+	}
+
+	return pkg.OpenViaEditor(path, l.Stdargs, l.Config)
 }
 
 // Open opens given node(file or folder) via editor.
@@ -181,7 +182,7 @@ func (l *LocalService) Open(node models.Node) error {
 		return assets.NotExists(node.Title, "File or Directory")
 	}
 
-	path, err := l.GeneratePath(node)
+	path, err := l.GeneratePath(l.Config.NotesPath, node)
 	if err != nil {
 		return nil
 	}
@@ -195,7 +196,7 @@ func (l *LocalService) Remove(node models.Node) error {
 		return assets.NotExists(node.Title, "File or Directory")
 	}
 
-	nodePath, err := l.GeneratePath(node)
+	nodePath, err := l.GeneratePath(l.Config.NotesPath, node)
 	if err != nil {
 		return nil
 	}
@@ -231,8 +232,8 @@ func (l *LocalService) Remove(node models.Node) error {
 
 // Rename changes given note's name.
 func (l *LocalService) Rename(editNode models.EditNode) error {
-	editNode.Current.Path = l.Config.LocalPath + editNode.Current.Title
-	editNode.New.Path = l.Config.LocalPath + editNode.New.Title
+	editNode.Current.Path = l.Config.NotesPath + editNode.Current.Title
+	editNode.New.Path = l.Config.NotesPath + editNode.New.Title
 
 	if currentExists, _ := l.IsNodeExists(editNode.Current); !currentExists {
 		return assets.NotExists(editNode.Current.Title, "File or Directory")
@@ -284,7 +285,7 @@ func (l *LocalService) ClearNodes() ([]models.Node, []error) {
 // Create creates new note file.
 // and fills it's data by given note model.
 func (l *LocalService) Create(note models.Note) (*models.Note, error) {
-	notePath, err := l.GeneratePath(note.ToNode())
+	notePath, err := l.GeneratePath(l.Config.NotesPath, note.ToNode())
 	if err != nil {
 		return nil, assets.InvalidPathForAct
 	}
@@ -303,7 +304,7 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 // View opens note-file from given [note.Name], then takes it body,
 // and returns new fully-filled note.
 func (l *LocalService) View(note models.Note) (*models.Note, error) {
-	notePath, err := l.GeneratePath(note.ToNode())
+	notePath, err := l.GeneratePath(l.Config.NotesPath, note.ToNode())
 	if err != nil {
 		return nil, assets.InvalidPathForAct
 	}
@@ -325,7 +326,7 @@ func (l *LocalService) View(note models.Note) (*models.Note, error) {
 
 // Edit overwrites exiting file's content-body.
 func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
-	notePath, err := l.GeneratePath(note.ToNode())
+	notePath, err := l.GeneratePath(l.Config.NotesPath, note.ToNode())
 	if err != nil {
 		return nil, assets.InvalidPathForAct
 	}
@@ -377,7 +378,7 @@ func (l *LocalService) Cut(note models.Note) (*models.Note, error) {
 func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 	title := dir.Title
 
-	folderPath, err := l.GeneratePath(dir.ToNode())
+	folderPath, err := l.GeneratePath(l.Config.NotesPath, dir.ToNode())
 	if err != nil {
 		return nil, assets.InvalidPathForAct
 	}
@@ -403,7 +404,7 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 
 // GetAll gets all node [names], and returns it as array list.
 func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
-	path, _ := l.GeneratePath(models.Node{Title: additional})
+	path, _ := l.GeneratePath(l.Config.NotesPath, models.Node{Title: additional})
 
 	// Generate array of all file names that are located in [path].
 	files, pretty, err := pkg.ListDir(path, "", "", ignore, true)
@@ -418,7 +419,7 @@ func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node
 	// Generate node list via [files] array.
 	nodes := []models.Node{}
 	for i, title := range files {
-		path, err := l.GeneratePath(models.Node{Title: title})
+		path, err := l.GeneratePath(l.Config.NotesPath, models.Node{Title: title})
 		if err != nil {
 			continue
 		}
@@ -452,7 +453,7 @@ func (l *LocalService) MoveNotes(settings models.Settings) error {
 		}
 
 		// Create note appropriate by updated settings.
-		node.Path = settings.LocalPath + node.Title
+		node.Path = settings.NotesPath + node.Title
 		if _, err := l.Create(node.ToNote()); err != nil {
 			continue
 		}
@@ -536,7 +537,7 @@ func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 	errors := []error{}
 
 	for _, node := range nodes {
-		path, err := l.GeneratePath(node)
+		path, err := l.GeneratePath(l.Config.NotesPath, node)
 		if err != nil {
 			continue
 		}
