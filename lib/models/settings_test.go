@@ -19,7 +19,7 @@ func TestInitSettings(t *testing.T) {
 	}{
 		{
 			testname: "should return initial settings properly",
-			expected: models.Settings{Editor: models.DefaultEditor, LocalPath: models.DefaultLocalPath},
+			expected: models.Settings{Editor: models.DefaultEditor, NotesPath: models.DefaultLocalPath},
 		},
 	}
 
@@ -27,7 +27,7 @@ func TestInitSettings(t *testing.T) {
 		t.Run(td.testname, func(t *testing.T) {
 			got := models.InitSettings("notya")
 
-			if got.Editor != td.expected.Editor || got.LocalPath != td.expected.LocalPath {
+			if got.Editor != td.expected.Editor || got.NotesPath != td.expected.NotesPath {
 				t.Errorf("InitSettings's sum was different: Want: %v | Got: %v", got, td.expected)
 			}
 		})
@@ -67,7 +67,7 @@ func TestToJSON(t *testing.T) {
 			model: models.Settings{
 				Name:               models.DefaultAppName,
 				Editor:             models.DefaultEditor,
-				LocalPath:          "~notya",
+				NotesPath:          "~notya",
 				FirebaseProjectID:  "notya",
 				FirebaseAccountKey: "~notya/key.json",
 				FirebaseCollection: "notya-notes",
@@ -75,7 +75,7 @@ func TestToJSON(t *testing.T) {
 			expected: map[string]interface{}{
 				"name":             models.DefaultAppName,
 				"editor":           models.DefaultEditor,
-				"local_path":       "~notya",
+				"notes_path":       "~notya",
 				"fire_project_id":  "notya",
 				"fire_account_key": "~notya/key.json",
 				"fire_collection":  "notya-notes",
@@ -155,7 +155,7 @@ func TestIsValid(t *testing.T) {
 	}{
 		{
 			testname: "should check settings validness correctly | [valid]",
-			settings: models.InitSettings("/usr/mock/localpath"),
+			settings: models.InitSettings("/usr/mock/NotesPath"),
 			expected: true,
 		},
 		{
@@ -182,7 +182,7 @@ func TestIsFirebaseEnabled(t *testing.T) {
 		expected bool
 	}{
 		{
-			settings: models.InitSettings("/usr/mock/localpath"),
+			settings: models.InitSettings("/usr/mock/NotesPath"),
 			expected: false,
 		},
 		{
@@ -196,90 +196,6 @@ func TestIsFirebaseEnabled(t *testing.T) {
 
 		if got != td.expected {
 			t.Errorf("IsFirebaseEnabled sum was different: Want: %v | Got: %v", got, td.expected)
-		}
-	}
-}
-
-func TestIsUpdated(t *testing.T) {
-	tests := []struct {
-		testname     string
-		old, current models.Settings
-		expected     bool
-	}{
-		{
-			testname: "should check properly if fulls settings is updated",
-			old:      models.Settings{Editor: models.DefaultEditor},
-			current:  models.Settings{Editor: models.DefaultEditor},
-			expected: false,
-		},
-		{
-			testname: "should check properly if fulls settings is updated",
-			old:      models.Settings{Editor: "code"},
-			current:  models.Settings{Editor: models.DefaultEditor},
-			expected: true,
-		},
-	}
-
-	for _, td := range tests {
-		t.Run(td.testname, func(t *testing.T) {
-			got := models.IsUpdated(td.old, td.current)
-
-			if got != td.expected {
-				t.Errorf("IsUpdated sum was different: Want: %v | Got: %v", got, td.expected)
-			}
-		})
-	}
-}
-
-func TestIsPathUpdated(t *testing.T) {
-	tests := []struct {
-		serviceType  string
-		old, current models.Settings
-		expected     bool
-	}{
-		{
-			serviceType: "LOCAL",
-			old:         models.Settings{LocalPath: "test/path"},
-			current:     models.Settings{LocalPath: "test/path"},
-			expected:    false,
-		},
-		{
-			serviceType: "LOCAL",
-			old:         models.Settings{LocalPath: "test/path"},
-			current:     models.Settings{LocalPath: "new/test/path"},
-			expected:    true,
-		},
-		{
-			serviceType: "LOCAL",
-			old:         models.Settings{Editor: "code"},
-			current:     models.Settings{Editor: models.DefaultEditor},
-			expected:    false,
-		},
-		{
-			serviceType: "FIREBASE",
-			old:         models.Settings{FirebaseCollection: "test/path"},
-			current:     models.Settings{FirebaseCollection: "test/path"},
-			expected:    false,
-		},
-		{
-			serviceType: "FIREBASE",
-			old:         models.Settings{FirebaseCollection: "test/path"},
-			current:     models.Settings{FirebaseCollection: "new/test/path"},
-			expected:    true,
-		},
-		{
-			serviceType: "undefined",
-			old:         models.Settings{FirebaseCollection: "test/path"},
-			current:     models.Settings{FirebaseCollection: "new/test/path"},
-			expected:    false,
-		},
-	}
-
-	for i, td := range tests {
-		got := models.IsPathUpdated(td.old, td.current, td.serviceType)
-
-		if got != td.expected {
-			t.Errorf("IsUpdated[%v] sum was different: Want: %v | Got: %v", i, got, td.expected)
 		}
 	}
 }

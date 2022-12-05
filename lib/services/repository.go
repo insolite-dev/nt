@@ -55,17 +55,27 @@ type ServiceRepo interface {
 	// and etc ...
 	Type() string
 
-	// Path returns the path of current base service.
-	// In case of local storage implementation, path would be the folder path of the notes.
-	Path() string
+	// Path returns the path of current base service. And base service's notes path.
+	// ...   main | notes
+	Path() (string, string)
 
 	// Current config data of service implementation.
 	StateConfig() models.Settings
 
 	// Init setups all kinda minimal services for application.
 	Init() error
+
+	// Settings reads and parses current configuration file and returns
+	// it as settings model pointer. In case of a error, setting model will be
+	// [nil] and [error] will be provided.
 	Settings(p *string) (*models.Settings, error)
+
+	// WriteSettings overwrites current configuration data,
+	// with provided [settings] model.
 	WriteSettings(settings models.Settings) error
+
+	// OpenSettings opens provided settings with [current] editor
+	// that we take it from provided settings.
 	OpenSettings(settings models.Settings) error
 
 	// General functions that used for both [Note]s and [Folder]s

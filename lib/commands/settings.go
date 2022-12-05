@@ -10,12 +10,15 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
 	"github.com/insolite-dev/notya/assets"
-	"github.com/insolite-dev/notya/lib/models"
 	"github.com/insolite-dev/notya/pkg"
 	"github.com/spf13/cobra"
 )
 
-// settingsCommand is a command that used to manage settings of application.
+// settingsCommand is a general command that used to manage settings of application.
+// implements a sub command to edit the settings file.
+//
+// Default functionality of running settingsCommand is just printing current settings data.
+// to edit it should include running editSettingsCommand.
 var settingsCommand = &cobra.Command{
 	Use:     "settings",
 	Aliases: []string{"config"},
@@ -24,27 +27,17 @@ var settingsCommand = &cobra.Command{
 }
 
 // editSettingsCommand is a sub-command of settingsCommand.
-// That used as main way for editing notya settings.
+// that opens the setting (configuration) file with your current editor.
 var editSettingsCommand = &cobra.Command{
 	Use:     "edit",
 	Aliases: []string{"-e"},
-	Short:   "Edit settings of notya",
+	Short:   "Opens the configuration file of notya with your current editor",
 	Run:     runEditSettingsCommand,
-}
-
-// viewSettingsCommand is a sub-command of settingsCommand.
-// Which that used to open settings file via editor.
-var viewSettingsCommand = &cobra.Command{
-	Use:     "view",
-	Aliases: []string{"-v"},
-	Short:   "View settings file of notya",
-	Run:     runViewSettingsCommand,
 }
 
 // initSettingsCommand adds settingsCommand to main application command.
 func initSettingsCommand() {
 	settingsCommand.AddCommand(editSettingsCommand)
-	settingsCommand.AddCommand(viewSettingsCommand)
 
 	appCommand.AddCommand(settingsCommand)
 }
@@ -67,66 +60,9 @@ func runSettingsCommand(cmd *cobra.Command, args []string) {
 	pkg.Print("\n > [notya settings -h/help] for more", color.FgGreen)
 }
 
-// runEditSettingsCommand runs appropriate service functionalities
-// to edit the configuration file by best way.
-func runEditSettingsCommand(cmd *cobra.Command, args []string) {
-	determineService()
-
-	loading.Start()
-	settings, err := service.Settings(nil)
-	loading.Stop()
-
-	if err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
-		return
-	}
-
-	editedSettings := models.Settings{}
-	if err := survey.Ask(
-		assets.SettingsEditPromptQuestions(*settings), &editedSettings,
-	); err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
-		return
-	}
-
-	// Breakdown function, if have no changes.
-	if !models.IsUpdated(*settings, editedSettings) {
-		pkg.Alert(pkg.InfoL, "No changes")
-		return
-	}
-
-	loading.Start()
-	writeErr := service.WriteSettings(editedSettings)
-	loading.Stop()
-
-	if writeErr != nil {
-		pkg.Alert(pkg.ErrorL, writeErr.Error())
-		return
-	}
-
-	// Finish process, if notes path not updated.
-	if !models.IsPathUpdated(*settings, editedSettings, service.Type()) {
-		return
-	}
-
-	// Ask to move notes, in case of notes-path updating.
-	var moveNotes bool
-	survey.AskOne(assets.MoveNotesPrompt, &moveNotes)
-
-	if moveNotes {
-		loading.Start()
-		err := service.MoveNotes(editedSettings)
-		loading.Stop()
-
-		if err != nil {
-			pkg.Alert(pkg.ErrorL, err.Error())
-		}
-	}
-}
-
 // runViewSettingsCommand runs appropriate service functionalities
 // to open settings file(json) with CURRENT editor.
-func runViewSettingsCommand(cmd *cobra.Command, args []string) {
+func runEditSettingsCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
 	loading.Start()
@@ -154,7 +90,7 @@ func runViewSettingsCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Ask to move notes if path were updated.
-	if models.IsPathUpdated(*beforeSettings, *afterSettings, service.Type()) {
+	if pkg.IsPathUpdated(*beforeSettings, *afterSettings, service.Type()) {
 		var moveNotes bool
 		if survey.AskOne(assets.MoveNotesPrompt, &moveNotes); !moveNotes {
 			return

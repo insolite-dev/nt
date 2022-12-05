@@ -34,43 +34,57 @@ var NotyaIgnoreFiles []string = []string{
 // ╭────────────────────────────────────────────────────╮
 // │ Name: notya                                        │
 // │ Editor: vi                                         │
-// │ Local Path: /User/random-user/notya/.settings.json │
+// │ Notes Path: /User/random-user/notya/notes          │
 // │ Firebase Project ID: notya-98tf3                   │
 // │ Firebase Account Key: /User/.../notya/key.json     │
 // │ Firebase Collection: notya-notes                   │
 // ╰────────────────────────────────────────────────────╯
 type Settings struct {
-	// Development related field, shouldn't be used in production.
+	// Alert: development related field, shouldn't be used in production.
 	ID string `json:",omitempty"`
 
+	// The custom name of your notya application.
 	Name string `json:"name" default:"notya"`
 
-	// CLI base editor of application.
+	// Editor app of application.
+	// Could be:
+	//   - vi
+	//   - vim
+	//   - nvim
+	//   - code
+	//   - code-insiders
+	//  and etc. shortly each code editor that could be opened by its command.
+	//  like: `code .` or `nvim .`.
 	Editor string `json:"editor" default:"vi"`
 
-	// Local folder path for notes, independently from [~/notya/] folder.
-	// Does same job as [FirebaseCollection] for local env.
+	// Local "notes" folder path for notes, independently from [~/notya/] folder.
 	// Must be given full path, like: "./User/john-doe/.../my-notya-notes/"
-	LocalPath string `json:"local_path" mapstructure:"local_path" survey:"local_path"`
+	//
+	// Does same job as [FirebaseCollection] for local env.
+	NotesPath string `json:"notes_path" mapstructure:"notes_path" survey:"notes_path"`
 
 	// The project id of your firebase project.
+	//
+	// It is required for firebase remote connection.
 	FirebaseProjectID string `json:"fire_project_id,omitempty" mapstructure:"fire_project_id,omitempty" survey:"fire_project_id"`
 
-	// The path of key of firebase-service account file.
+	// The path of key of "firebase-service" account file.
 	// Must be given full path, like: "./User/john-doe/.../..."
+	//
+	// It is required for firebase remote connection.
 	FirebaseAccountKey string `json:"fire_account_key,omitempty" mapstructure:"fire_account_key,omitempty" survey:"fire_account_key"`
 
 	// The concrete collection of nodes.
-	// Does same job as [LocalPath] but has to take just name of collection.
+	// Does same job as [NotesPath] but has to take just name of collection.
 	FirebaseCollection string `json:"fire_collection,omitempty" mapstructure:"fire_collection,omitempty" survey:"fire_collection"`
 }
 
 // InitSettings returns default variant of settings structure model.
-func InitSettings(localPath string) Settings {
+func InitSettings(notesPath string) Settings {
 	return Settings{
 		Name:      DefaultAppName,
 		Editor:    DefaultEditor,
-		LocalPath: localPath,
+		NotesPath: notesPath,
 	}
 }
 
@@ -97,7 +111,7 @@ func (s *Settings) ToJSON() map[string]interface{} {
 	return m
 }
 
-// FromJSON converts string(map) value to Settings structure.
+// DecodeSettings converts string(map) value to Settings structure.
 func DecodeSettings(value string) Settings {
 	var m map[string]interface{}
 	_ = json.Unmarshal([]byte(value), &m)
@@ -121,30 +135,10 @@ func (s *Settings) FirePath() string {
 
 // IsValid checks validness of settings structure.
 func (s *Settings) IsValid() bool {
-	return len(s.Name) > 0 && len(s.Editor) > 0 && len(s.LocalPath) > 0
+	return len(s.Name) > 0 && len(s.Editor) > 0 && len(s.NotesPath) > 0
 }
 
+// isFirebaseEnabled checks the validness of firebase fields.
 func (s *Settings) IsFirebaseEnabled() bool {
 	return len(s.FirebaseProjectID) > 0 || len(s.FirebaseAccountKey) > 0 || len(s.FirebaseCollection) > 0
-}
-
-func IsUpdated(old, current Settings) bool {
-	return old.Name != current.Name ||
-		old.Editor != current.Editor ||
-		old.LocalPath != current.LocalPath ||
-		old.FirebaseProjectID != current.FirebaseProjectID ||
-		old.FirebaseAccountKey != current.FirebaseAccountKey ||
-		old.FirebaseCollection != current.FirebaseCollection
-}
-
-// IsPathUpdated checks path difference via based on service type.
-func IsPathUpdated(old, current Settings, t string) bool {
-	switch t {
-	case "LOCAL":
-		return old.LocalPath != current.LocalPath
-	case "FIREBASE":
-		return old.FirebaseCollection != current.FirebaseCollection
-	}
-
-	return false
 }

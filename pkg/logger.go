@@ -59,10 +59,10 @@ const (
 
 // Loggers powered by colors.
 var (
-	divider     = color.New(color.FgHiYellow)
-	text        = color.New(color.FgHiWhite)
-	lowText     = color.New(color.Faint)
-	rainbowText = color.New(color.FgHiMagenta)
+	// divider     = color.New(color.FgHiYellow)
+	text = color.New(color.FgHiWhite)
+	// lowText     = color.New(color.Faint)
+	// rainbowText = color.New(color.FgHiMagenta)
 )
 
 // Alert, logs message at given [Level].
