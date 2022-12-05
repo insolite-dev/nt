@@ -322,7 +322,7 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 
 // ClearNodes removes all nodes from collection.
 func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
-	nodes, _, err := s.GetAll("", models.NotyaIgnoreFiles)
+	nodes, _, err := s.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil && err.Error() != assets.EmptyWorkingDirectory.Error() {
 		return nil, []error{err}
 	}
@@ -349,7 +349,8 @@ func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
 }
 
 // GetAll returns all elements from notya collection.
-func (s *FirebaseService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
+// TODO: implement the [typ] value.
+func (s *FirebaseService) GetAll(additional, typ string, ignore []string) ([]models.Node, []string, error) {
 	var nodes []models.Node
 	var titles []string
 
@@ -481,7 +482,7 @@ func (s *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
 // MoveNote moves all notes from "CURRENT" firebase collection
 // to new collection(given by settings parameter).
 func (s *FirebaseService) MoveNotes(settings models.Settings) error {
-	nodes, _, err := s.GetAll("", models.NotyaIgnoreFiles)
+	nodes, _, err := s.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil {
 		return err
 	}
@@ -507,7 +508,7 @@ func (s *FirebaseService) MoveNotes(settings models.Settings) error {
 // Fetch creates a clone of nodes(that doesn't exists on
 // [s](firebase-service)) from given [remote] service.
 func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
-	nodes, _, err := remote.GetAll("", models.NotyaIgnoreFiles)
+	nodes, _, err := remote.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil {
 		return nil, []error{err}
 	}
@@ -557,7 +558,7 @@ func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 
 // Push uploads nodes(that doens't exists on given remote) from [s](current) to given [remote].
 func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
-	nodes, _, err := s.GetAll("", models.NotyaIgnoreFiles)
+	nodes, _, err := s.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil {
 		return nil, []error{err}
 	}

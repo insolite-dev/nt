@@ -85,8 +85,13 @@ type ServiceRepo interface {
 	Rename(editNode models.EditNode) error
 	ClearNodes() ([]models.Node, []error)
 
-	// Note(file) related functions.
-	GetAll(additional string, ignore []string) ([]models.Node, []string, error)
+	// GetAll gets the all notes from current service.
+	//
+	// [additional] provides a way of entering to sub-folders of main folder.
+	// [ignore] provides a way of ignoring files. Default ignorable files: [models.NotyaIgnoreFiles].
+	// [typ] provides a way to get only specific type of file-nodes.
+	GetAll(additional, typ string, ignore []string) ([]models.Node, []string, error)
+
 	Create(note models.Note) (*models.Note, error)
 	View(note models.Note) (*models.Note, error)
 	Edit(note models.Note) (*models.Note, error)

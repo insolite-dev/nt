@@ -203,7 +203,7 @@ func (l *LocalService) Remove(node models.Node) error {
 
 	// Check for directory, to remove sub nodes of it.
 	if pkg.IsDir(nodePath) {
-		subNodes, _, err := l.GetAll(node.StructAsFolder().Title, []string{})
+		subNodes, _, err := l.GetAll(node.StructAsFolder().Title, "", []string{})
 		if err != nil && err != assets.EmptyWorkingDirectory {
 			return err
 		}
@@ -256,7 +256,7 @@ func (l *LocalService) Rename(editNode models.EditNode) error {
 
 // ClearNodes removes all nodes from local (including folders).
 func (l *LocalService) ClearNodes() ([]models.Node, []error) {
-	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
+	nodes, _, err := l.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil && err.Error() != assets.EmptyWorkingDirectory.Error() {
 		return nil, []error{err}
 	}
@@ -403,11 +403,11 @@ func (l *LocalService) Mkdir(dir models.Folder) (*models.Folder, error) {
 }
 
 // GetAll gets all node [names], and returns it as array list.
-func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node, []string, error) {
+func (l *LocalService) GetAll(additional, typ string, ignore []string) ([]models.Node, []string, error) {
 	path, _ := l.GeneratePath(l.Config.NotesPath, models.Node{Title: additional})
 
 	// Generate array of all file names that are located in [path].
-	files, pretty, err := pkg.ListDir(path, "", "", ignore, true)
+	files, pretty, err := pkg.ListDir(path, "", typ, "", ignore, true)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -441,7 +441,7 @@ func (l *LocalService) GetAll(additional string, ignore []string) ([]models.Node
 
 // MoveNote moves all notes from "CURRENT" path to new path(given by settings parameter).
 func (l *LocalService) MoveNotes(settings models.Settings) error {
-	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
+	nodes, _, err := l.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil {
 		return err
 	}
@@ -464,7 +464,7 @@ func (l *LocalService) MoveNotes(settings models.Settings) error {
 
 // Fetch creates a clone of nodes(that doesn't exists on [l](local-service)) from given [remote] service.
 func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
-	nodes, _, err := remote.GetAll("", models.NotyaIgnoreFiles)
+	nodes, _, err := remote.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil {
 		return nil, []error{err}
 	}
@@ -522,7 +522,7 @@ func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 
 // Push uploads nodes(that doesn't exists on given remote) from [l](current) to given [remote].
 func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
-	nodes, _, err := l.GetAll("", models.NotyaIgnoreFiles)
+	nodes, _, err := l.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil {
 		return nil, []error{err}
 	}

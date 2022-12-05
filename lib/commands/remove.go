@@ -59,7 +59,7 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 	loading.Start()
 
 	// Generate array of all node names.
-	_, nodeNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+	_, nodeNames, err := service.GetAll("", "", models.NotyaIgnoreFiles)
 
 	loading.Stop()
 	if err != nil {
