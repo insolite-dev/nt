@@ -79,6 +79,45 @@ type Settings struct {
 	FirebaseCollection string `json:"fire_collection,omitempty" mapstructure:"fire_collection,omitempty" survey:"fire_collection"`
 }
 
+// CopyWith updates pointed settings with a new data.
+// if given argument is not nil, it will be overwritten
+// inside pointed settings model.
+func (s *Settings) CopyWith(
+	ID *string,
+	Name *string,
+	Editor *string,
+	NotesPath *string,
+	FirebaseProjectID *string,
+	FirebaseAccountKey *string,
+	FirebaseCollection *string,
+) Settings {
+	ss := *s
+
+	if ID != nil {
+		ss.ID = *ID
+	}
+	if Name != nil {
+		ss.Name = *Name
+	}
+	if Editor != nil {
+		ss.Editor = *Editor
+	}
+	if NotesPath != nil {
+		ss.NotesPath = *NotesPath
+	}
+	if FirebaseProjectID != nil {
+		ss.FirebaseProjectID = *FirebaseProjectID
+	}
+	if FirebaseAccountKey != nil {
+		ss.FirebaseAccountKey = *FirebaseAccountKey
+	}
+	if FirebaseCollection != nil {
+		ss.FirebaseCollection = *FirebaseCollection
+	}
+
+	return ss
+}
+
 // InitSettings returns default variant of settings structure model.
 func InitSettings(notesPath string) Settings {
 	return Settings{

@@ -7,7 +7,9 @@
 package commands
 
 import (
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
+	"github.com/insolite-dev/notya/assets"
 	"github.com/insolite-dev/notya/lib/services"
 	"github.com/insolite-dev/notya/pkg"
 	"github.com/spf13/cobra"
@@ -75,7 +77,31 @@ func runRemoteConnectCommand(cmd *cobra.Command, args []string) {
 func runRemoteDisconnectCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
-	// TODO: add functionality to disconnect from remote service.
+	loading.Start()
+	enabled, _ := listAllRemote()
+	loading.Stop()
+
+	if len(enabled) == 0 {
+		pkg.Alert(pkg.InfoL, "There is no enabled remote services to disconnect from")
+		return
+	}
+
+	// Ask for service selection.
+	var selected string
+	survey.AskOne(
+		assets.ChooseRemotePrompt(enabled),
+		&selected,
+	)
+
+	loading.Start()
+	switch selected {
+	case services.FIRE.ToStr():
+		empty := ("")
+		s := service.StateConfig()
+		service.WriteSettings(s.CopyWith(nil, nil, nil, nil, &empty, &empty, &empty))
+	}
+
+	loading.Stop()
 }
 
 // Returns a list of all remote services by splitting them by their enabled or disabled level.
