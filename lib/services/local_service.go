@@ -70,7 +70,7 @@ func (l *LocalService) StateConfig() models.Settings {
 }
 
 // Init creates notya working directory into current machine.
-func (l *LocalService) Init() error {
+func (l *LocalService) Init(settings *models.Settings) error {
 	notyaPath, err := pkg.NotyaPWD(l.Config)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())

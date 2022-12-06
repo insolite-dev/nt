@@ -7,6 +7,14 @@
 package commands
 
 import (
+	"fmt"
+
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/fatih/color"
+	"github.com/insolite-dev/notya/assets"
+	"github.com/insolite-dev/notya/lib/models"
+	"github.com/insolite-dev/notya/lib/services"
+	"github.com/insolite-dev/notya/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -45,20 +53,118 @@ func initRemoteCommand() {
 func runRemoteCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
-	// TODO: list all active remote services.
+	loading.Start()
+	enabled, disabled := listAllRemote()
+	loading.Stop()
+
+	if len(enabled) > 0 {
+		pkg.Print("\nConnected Services:", color.FgGreen)
+		pkg.PrintServices(pkg.NOCOLOR, enabled)
+	}
+
+	if len(disabled) > 0 {
+		pkg.Print("\nUnreachable Services:", color.FgYellow)
+		pkg.PrintServices(pkg.NOCOLOR, disabled)
+	}
 }
 
 // runRemoteConnectCommand connects to a new remote service connection.
 func runRemoteConnectCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
-	// TODO: add survey to add new remote service.
-	// details: https://github.com/insolite-dev/notya/issues/83
+	_, disabled := listAllRemote()
+	loading.Stop()
+
+	if len(disabled) == 0 {
+		pkg.Alert(pkg.InfoL, "All remote service options are currently connected. You cannot establish additional connections at this time.")
+		return
+	}
+
+	// Ask for service selection.
+	var selected string
+	survey.AskOne(
+		assets.ChooseRemotePrompt(disabled),
+		&selected,
+	)
+
+	switch selected {
+	case services.FIRE.ToStr():
+		promptResult := models.Settings{}
+
+		// Ask for firebase prompt filling.
+		survey.Ask(assets.FirebaseRemoteConnectPromptQuestion, &promptResult)
+
+		loading.Start()
+
+		s := service.StateConfig()
+		updatedS := s.CopyWith(nil, nil, nil, nil, &promptResult.FirebaseProjectID, &promptResult.FirebaseAccountKey, &promptResult.FirebaseCollection)
+
+		// Validate provided firebase connection:
+		isEnabled := services.IsFirebaseEnabled(updatedS, &localService)
+
+		loading.Stop()
+
+		if !isEnabled {
+			pkg.Alert(pkg.ErrorL, "Unable to connect to the specified Firebase project using the provided credentials. Please check your login details and try again.")
+			return
+		}
+
+		loading.Start()
+		service.WriteSettings(updatedS)
+		loading.Stop()
+	}
+
+	pkg.Alert(pkg.SuccessL, fmt.Sprintf("Successfully connected to the specified %s project.", selected))
 }
 
 // runRemoteDisconnectCommand removes connection from concrete remove service
 func runRemoteDisconnectCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
-	// TODO: add functionality to disconnect from remote service.
+	loading.Start()
+	enabled, _ := listAllRemote()
+	loading.Stop()
+
+	if len(enabled) == 0 {
+		pkg.Alert(pkg.InfoL, "There are no active remote connections to disconnect from")
+		return
+	}
+
+	// Ask for service selection.
+	var selected string
+	survey.AskOne(
+		assets.ChooseRemotePrompt(enabled),
+		&selected,
+	)
+
+	loading.Start()
+	switch selected {
+	case services.FIRE.ToStr():
+		empty := ("")
+		s := service.StateConfig()
+		service.WriteSettings(s.CopyWith(nil, nil, nil, nil, &empty, &empty, &empty))
+	}
+
+	loading.Stop()
+
+	pkg.Alert(pkg.SuccessL, fmt.Sprintf("Successfully disconnected from specified %s service", selected))
+}
+
+// Returns a list of all remote services by splitting them by their enabled or disabled level.
+// first returned array includes "enabled" remote services, and second returned array includes "disabled" remote services.
+func listAllRemote() ([]string, []string) {
+	allEnabled, allDisabled := []string{}, []string{}
+
+	for _, s := range services.RemoteServices {
+		switch s {
+		case services.FIRE.ToStr():
+			if services.IsFirebaseEnabled(service.StateConfig(), &localService) {
+				allEnabled = append(allEnabled, s)
+			} else {
+				allDisabled = append(allDisabled, s)
+			}
+		}
+	}
+
+	return allEnabled, allDisabled
 }

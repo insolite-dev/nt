@@ -167,7 +167,7 @@ func PrintSettings(settings models.Settings) {
 func PrintErrors(act string, errs []error) {
 	for i, e := range errs {
 		err := fmt.Sprintf("%v | %v",
-			fmt.Sprintf("%s%s%s", RED, fmt.Sprintf("- SWW fetch:%v", i+1), NOCOLOR),
+			fmt.Sprintf("%s%s%s", RED, fmt.Sprintf("- SWW %s:%v", act, i+1), NOCOLOR),
 			e.Error(),
 		)
 
@@ -180,4 +180,12 @@ func Spinner() *spinner.Spinner {
 	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 	s.Color("yellow")
 	return s
+}
+
+// PrintServices logs given service names by provided color level.
+func PrintServices(c string, services []string) {
+	for _, s := range services {
+		printable := fmt.Sprintf(" • %s", fmt.Sprintf("%s%s%s", c, s, NOCOLOR))
+		text.Println(printable)
+	}
 }
