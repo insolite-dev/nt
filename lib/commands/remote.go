@@ -7,6 +7,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
 	"github.com/insolite-dev/notya/assets"
@@ -107,10 +109,12 @@ func runRemoteConnectCommand(cmd *cobra.Command, args []string) {
 			return
 		}
 
+		loading.Start()
 		service.WriteSettings(updatedS)
-
-		pkg.Alert(pkg.SuccessL, "Successfully connected to the specified Firebase project.")
+		loading.Stop()
 	}
+
+	pkg.Alert(pkg.SuccessL, fmt.Sprintf("Successfully connected to the specified %s project.", selected))
 }
 
 // runRemoteDisconnectCommand removes connection from concrete remove service
@@ -142,6 +146,8 @@ func runRemoteDisconnectCommand(cmd *cobra.Command, args []string) {
 	}
 
 	loading.Stop()
+
+	pkg.Alert(pkg.SuccessL, fmt.Sprintf("Successfully disconnected from specified %s service", selected))
 }
 
 // Returns a list of all remote services by splitting them by their enabled or disabled level.
