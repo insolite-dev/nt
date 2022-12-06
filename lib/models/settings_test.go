@@ -175,27 +175,3 @@ func TestIsValid(t *testing.T) {
 		})
 	}
 }
-
-func TestIsFirebaseEnabled(t *testing.T) {
-	tests := []struct {
-		settings models.Settings
-		expected bool
-	}{
-		{
-			settings: models.InitSettings("/usr/mock/NotesPath"),
-			expected: false,
-		},
-		{
-			settings: models.Settings{FirebaseProjectID: "mock-project-id"},
-			expected: true,
-		},
-	}
-
-	for _, td := range tests {
-		got := td.settings.IsFirebaseEnabled()
-
-		if got != td.expected {
-			t.Errorf("IsFirebaseEnabled sum was different: Want: %v | Got: %v", got, td.expected)
-		}
-	}
-}

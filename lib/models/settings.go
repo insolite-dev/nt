@@ -137,8 +137,3 @@ func (s *Settings) FirePath() string {
 func (s *Settings) IsValid() bool {
 	return len(s.Name) > 0 && len(s.Editor) > 0 && len(s.NotesPath) > 0
 }
-
-// isFirebaseEnabled checks the validness of firebase fields.
-func (s *Settings) IsFirebaseEnabled() bool {
-	return len(s.FirebaseProjectID) > 0 || len(s.FirebaseAccountKey) > 0 || len(s.FirebaseCollection) > 0
-}

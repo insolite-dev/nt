@@ -6,16 +6,24 @@
 
 package services
 
-import "github.com/insolite-dev/notya/lib/models"
+import (
+	"os"
+
+	"github.com/insolite-dev/notya/lib/models"
+)
 
 var (
 	LOCAL ServiceType = "LOCAL"
 	FIRE  ServiceType = "FIREBASE"
 
+	// All services into one list: including local and remote.
 	Services []string = []string{
 		LOCAL.ToStr(),
 		FIRE.ToStr(),
 	}
+
+	// Only remote services into one list.
+	RemoteServices []string = []string{FIRE.ToStr()}
 )
 
 // Custom string struct to define type of services
@@ -31,6 +39,14 @@ func (s *ServiceType) ToStr() string {
 	}
 
 	return "undefined"
+}
+
+// IsFirebaseEnabled checks if firebase connection is enabled or not.
+func IsFirebaseEnabled(s models.Settings, local *ServiceRepo) bool {
+	stargs := models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
+	err := NewFirebaseService(stargs, *local).Init()
+
+	return err == nil
 }
 
 // ServiceRepo is a abstract class for all service implementations.

@@ -7,6 +7,9 @@
 package commands
 
 import (
+	"github.com/fatih/color"
+	"github.com/insolite-dev/notya/lib/services"
+	"github.com/insolite-dev/notya/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -45,7 +48,19 @@ func initRemoteCommand() {
 func runRemoteCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
-	// TODO: list all active remote services.
+	loading.Start()
+	enabled, disabled := listAllRemote()
+	loading.Stop()
+
+	if len(enabled) > 0 {
+		pkg.Print("\nConnected Services:", color.FgGreen)
+		pkg.PrintServices(pkg.NOCOLOR, enabled)
+	}
+
+	if len(disabled) > 0 {
+		pkg.Print("\nUnreachable Services:", color.FgYellow)
+		pkg.PrintServices(pkg.NOCOLOR, disabled)
+	}
 }
 
 // runRemoteConnectCommand connects to a new remote service connection.
@@ -61,4 +76,23 @@ func runRemoteDisconnectCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
 	// TODO: add functionality to disconnect from remote service.
+}
+
+// Returns a list of all remote services by splitting them by their enabled or disabled level.
+// first returned array includes "enabled" remote services, and second returned array includes "disabled" remote services.
+func listAllRemote() ([]string, []string) {
+	allEnabled, allDisabled := []string{}, []string{}
+
+	for _, s := range services.RemoteServices {
+		switch s {
+		case services.FIRE.ToStr():
+			if services.IsFirebaseEnabled(service.StateConfig(), &localService) {
+				allEnabled = append(allEnabled, s)
+			} else {
+				allDisabled = append(allDisabled, s)
+			}
+		}
+	}
+
+	return allEnabled, allDisabled
 }
