@@ -89,12 +89,17 @@ func (s *FirebaseService) Path() (string, string) {
 }
 
 // Init creates notya working directory into current machine.
-func (s *FirebaseService) Init() error {
-	localConfig, err := s.LS.Settings(nil)
-	if err != nil {
-		return err
+func (s *FirebaseService) Init(settings *models.Settings) error {
+	if settings != nil {
+		s.Config = *settings
+	} else {
+		localConfig, err := s.LS.Settings(nil)
+		if err != nil {
+			return err
+		}
+
+		s.Config = *localConfig // should be re-written later.
 	}
-	s.Config = *localConfig // should be re-written later.
 
 	if len(s.Config.FirebaseProjectID) == 0 {
 		return assets.InvalidFirebaseProjectID
@@ -115,7 +120,7 @@ func (s *FirebaseService) Init() error {
 
 	config, err := s.Settings(nil)
 	if status.Code(err) == codes.NotFound {
-		if err := s.WriteSettings(*localConfig); err != nil {
+		if err := s.WriteSettings(s.Config); err != nil {
 			return err
 		}
 	} else if err != nil {

@@ -65,3 +65,33 @@ var MoveNotesPrompt = &survey.Confirm{
 	Help:    "Do you wanna move old notes to new path?",
 	Default: false,
 }
+
+// FirebaseRemoteConnectPromptQuestion is a question list that fills up
+// required values for firebase remote connection.
+// Used in Remote command's connect subcommand.
+var FirebaseRemoteConnectPromptQuestion = []*survey.Question{
+	{
+		Name: "fire_project_id",
+		Prompt: &survey.Input{
+			Message: "Firebase Project ID",
+			Help:    "The project ID of your Firebase project.",
+		},
+		Validate: survey.MinLength(1),
+	},
+	{
+		Name: "fire_account_key",
+		Prompt: &survey.Input{
+			Message: "Firebase Account Key",
+			Help:    "The Firebase Admin SDK private key file path. Must be given a full path, like: /Users/john-doe/notya/account_key.json.",
+		},
+		Validate: survey.MinLength(5),
+	},
+	{
+		Name: "fire_collection",
+		Prompt: &survey.Input{
+			Message: "Firebase Collection",
+			Help:    "A name of collection for notes, from your firebase project's firestore.",
+		},
+		Validate: survey.MinLength(1),
+	},
+}

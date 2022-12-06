@@ -44,7 +44,7 @@ func (s *ServiceType) ToStr() string {
 // IsFirebaseEnabled checks if firebase connection is enabled or not.
 func IsFirebaseEnabled(s models.Settings, local *ServiceRepo) bool {
 	stargs := models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
-	err := NewFirebaseService(stargs, *local).Init()
+	err := NewFirebaseService(stargs, *local).Init(&s)
 
 	return err == nil
 }
@@ -79,7 +79,7 @@ type ServiceRepo interface {
 	StateConfig() models.Settings
 
 	// Init setups all kinda minimal services for application.
-	Init() error
+	Init(settings *models.Settings) error
 
 	// Settings reads and parses current configuration file and returns
 	// it as settings model pointer. In case of a error, setting model will be
