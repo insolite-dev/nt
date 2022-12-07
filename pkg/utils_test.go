@@ -265,7 +265,7 @@ func TestListDir(t *testing.T) {
 		td.creatingFunc(td.folderName)
 
 		t.Run(td.testName, func(t *testing.T) {
-			got, _, err := pkg.ListDir(td.folderName, "", "", "", []string{"expectable.txt"}, true)
+			got, _, err := pkg.ListDir(td.folderName, "", "", []string{"expectable.txt"}, 0)
 			if err != td.e.err {
 				t.Errorf("ListDir's error sum was different, Got: %v | Want: %v", err, td.e.err)
 			}

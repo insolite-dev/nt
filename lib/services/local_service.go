@@ -407,7 +407,7 @@ func (l *LocalService) GetAll(additional, typ string, ignore []string) ([]models
 	path, _ := l.GeneratePath(l.Config.NotesPath, models.Node{Title: additional})
 
 	// Generate array of all file names that are located in [path].
-	files, pretty, err := pkg.ListDir(path, "", typ, "", ignore, true)
+	files, pretty, err := pkg.ListDir(path, path, typ, ignore, 0)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -420,6 +420,7 @@ func (l *LocalService) GetAll(additional, typ string, ignore []string) ([]models
 	nodes := []models.Node{}
 	for i, title := range files {
 		path, err := l.GeneratePath(l.Config.NotesPath, models.Node{Title: title})
+
 		if err != nil {
 			continue
 		}

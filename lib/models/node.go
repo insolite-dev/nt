@@ -6,6 +6,8 @@
 
 package models
 
+import "os"
+
 var (
 	NotePretty   = ""
 	FolderPretty = ""
@@ -72,4 +74,13 @@ func (n *Node) StructAsNote() Node {
 	}
 
 	return Node{Title: title, Path: path, Pretty: n.Pretty}
+}
+
+// PrettyFromEntry generates a pretty icon appropriate to privded entry.
+func PrettyFromEntry(e os.DirEntry) string {
+	if e.IsDir() {
+		return FolderPretty
+	}
+
+	return NotePretty
 }
