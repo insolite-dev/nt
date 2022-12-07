@@ -447,16 +447,39 @@ func (l *LocalService) MoveNotes(settings models.Settings) error {
 		return err
 	}
 
+	couldntMoved := []models.Node{}
+
+	// First iteration for cloning notes from current settings to provided [settings].
 	for _, node := range nodes {
-		// Remove note appropriate by default settings.
-		if err := l.Remove(node); err != nil {
+		node.Path = pkg.NormalizePath(settings.NotesPath) + node.Title
+
+		if node.Path[len(node.Path)-1] == '/' {
+			if _, err := l.Mkdir(node.ToFolder()); err != nil {
+				couldntMoved = append(couldntMoved, node)
+			}
 			continue
 		}
 
-		// Create note appropriate by updated settings.
-		node.Path = pkg.NormalizePath(settings.NotesPath) + node.Title
 		if _, err := l.Create(node.ToNote()); err != nil {
-			continue
+			couldntMoved = append(couldntMoved, node)
+		}
+	}
+
+	// Second iteration for cleaning up current settings.
+	for _, node := range nodes {
+		// If node couldn't moved to new settings appropriate place,
+		// we shouldn't remote it from old settings appropriate place.
+		cm := func(n models.Node, couldntMoved []models.Node) bool {
+			for _, c := range couldntMoved {
+				if c.Title == n.Title && c.Path == n.Path {
+					return true
+				}
+			}
+			return false
+		}(node, couldntMoved)
+
+		if !cm {
+			l.Remove(node)
 		}
 	}
 
