@@ -226,66 +226,6 @@ func TestReadBody(t *testing.T) {
 	}
 }
 
-func TestListDir(t *testing.T) {
-	type expected struct {
-		res []string
-		err error
-	}
-
-	tests := []struct {
-		testName     string
-		folderName   string
-		creatingFunc func(foldername string)
-		deletingFunc func(foldername string)
-		e            expected
-	}{
-		{
-			testName:   "should list directory files properly",
-			folderName: "test_folder",
-			creatingFunc: func(foldername string) {
-				pkg.NewFolder(foldername)
-				pkg.WriteNote(foldername+"/test_file.txt", []byte{})
-				pkg.WriteNote(foldername+"/test_file_1.txt", []byte{})
-				pkg.WriteNote(foldername+"/expectable.txt", []byte{})
-			},
-			deletingFunc: func(foldername string) {
-				pkg.Delete(foldername + "/test_file.txt")
-				pkg.Delete(foldername + "/test_file_1.txt")
-				pkg.Delete(foldername + "/expectable.txt")
-				pkg.Delete(foldername)
-			},
-			e: expected{
-				res: []string{"test_file.txt", "test_file_1.txt"},
-				err: nil,
-			},
-		},
-	}
-
-	for _, td := range tests {
-		td.creatingFunc(td.folderName)
-
-		t.Run(td.testName, func(t *testing.T) {
-			got, _, err := pkg.ListDir(td.folderName, "", "", []string{"expectable.txt"}, 0)
-			if err != td.e.err {
-				t.Errorf("ListDir's error sum was different, Got: %v | Want: %v", err, td.e.err)
-			}
-
-			if len(got) != len(td.e.res) {
-				t.Errorf("ListDir's res length sum was different, Got: %v | Want: %v", len(got), len(td.e.res))
-			}
-
-			// Check each element of got
-			for i := 0; i < len(got); i++ {
-				if got[i] != td.e.res[i] {
-					t.Errorf("ListDir's res [%v] item sum was different, Got: %v | Want: %v", i, err, td.e.err)
-				}
-			}
-		})
-
-		td.deletingFunc(td.folderName)
-	}
-}
-
 func TestOpenViaEditor(t *testing.T) {
 	type utilArgs struct {
 		filename       string
