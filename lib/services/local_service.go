@@ -144,7 +144,7 @@ func (l *LocalService) WriteSettings(settings models.Settings) error {
 		return assets.InvalidSettingsData
 	}
 
-	if writeErr := pkg.WriteNote(settingsPath, settings.ToByte()); writeErr != nil {
+	if writeErr := pkg.WriteNote(settingsPath, settings.ToString()); writeErr != nil {
 		return writeErr
 	}
 
@@ -206,7 +206,7 @@ func (l *LocalService) Remove(node models.Node) error {
 
 	// Check for directory, to remove sub nodes of it.
 	if pkg.IsDir(nodePath) {
-		subNodes, _, err := l.GetAll(nodePath, "", []string{})
+		subNodes, _, err := l.GetAll(pkg.NormalizePath(node.Title), "", []string{})
 		if err != nil && err != assets.EmptyWorkingDirectory {
 			return err
 		}
@@ -300,7 +300,7 @@ func (l *LocalService) Create(note models.Note) (*models.Note, error) {
 		return nil, assets.AlreadyExists(note.Title, "file")
 	}
 
-	if creatingErr := pkg.WriteNote(notePath, []byte(note.Body)); creatingErr != nil {
+	if creatingErr := pkg.WriteNote(notePath, note.Body); creatingErr != nil {
 		return nil, creatingErr
 	}
 
@@ -341,7 +341,7 @@ func (l *LocalService) Edit(note models.Note) (*models.Note, error) {
 		return nil, assets.NotExists(note.Title, "File")
 	}
 
-	if writingErr := pkg.WriteNote(notePath, []byte(note.Body)); writingErr != nil {
+	if writingErr := pkg.WriteNote(notePath, note.Body); writingErr != nil {
 		return nil, writingErr
 	}
 
@@ -446,8 +446,7 @@ func (l *LocalService) GetAll(additional, typ string, ignore []string) ([]models
 	return nodes, files, nil
 }
 
-// MoveNote moves all notes from "CURRENT" path to new path(given by settings parameter).
-// FIXME: file movements cannot be executed.
+// MoveNotes moves all notes from "CURRENT" path to new path(given by settings parameter).
 func (l *LocalService) MoveNotes(settings models.Settings) error {
 	nodes, _, err := l.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil {
@@ -460,8 +459,7 @@ func (l *LocalService) MoveNotes(settings models.Settings) error {
 	for _, node := range nodes {
 		p := node.Path // a original path holder for any error case.
 
-		path := pkg.NormalizePath(settings.NotesPath) + node.Title
-		node.Path[l.Type()] = path
+		node.UpdatePath(l.Type(), pkg.NormalizePath(settings.NotesPath)+node.Title)
 
 		if node.IsFolder() {
 			if _, err := l.Mkdir(node.ToFolder()); err != nil {

@@ -48,8 +48,8 @@ func FileExists(path string) bool {
 // If file already exists at given path with same name, then it updates it's body.
 //
 // Could be used for create and edit.
-func WriteNote(path string, body []byte) error {
-	err := os.WriteFile(path, body, 0o600)
+func WriteNote(path, body string) error {
+	err := os.WriteFile(path, []byte(body), 0o600)
 	if err != nil {
 		return err
 	}

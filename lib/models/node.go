@@ -56,6 +56,21 @@ func (n *Node) GetPath(service string) string {
 	return n.Path[service]
 }
 
+// UpdatePath updates concrete [service]'s path with [path].
+func (n *Node) UpdatePath(service, path string) *Node {
+	p := map[string]string{service: path}
+
+	for k, v := range n.Path {
+		if k != service {
+			p[k] = v
+		}
+	}
+
+	n.Path = p
+
+	return n
+}
+
 func (n *Node) IsFolder() bool {
 	return n.Type == FOLDER
 }

@@ -26,7 +26,7 @@ func TestToJSONofNote(t *testing.T) {
 			},
 			expected: map[string]interface{}{
 				"title": "mock-title.txt",
-				"path":  "~/mock-title.txt",
+				"path":  map[string]string{services.LOCAL.ToStr(): "~/mock-title.txt"},
 				"body":  "empty",
 			},
 		},

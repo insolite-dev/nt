@@ -68,7 +68,7 @@ func TestFileExists(t *testing.T) {
 			"should check file exists, properly",
 			"test.txt",
 			closures{
-				creating: func(name string) { pkg.WriteNote(name, []byte{}) },
+				creating: func(name string) { pkg.WriteNote(name, "") },
 				deleting: func(name string) { pkg.Delete(name) },
 			},
 			true,
@@ -90,7 +90,7 @@ func TestFileExists(t *testing.T) {
 func TestWriteNote(t *testing.T) {
 	type args struct {
 		filename string
-		filebody []byte
+		filebody string
 	}
 
 	tests := []struct {
@@ -100,7 +100,7 @@ func TestWriteNote(t *testing.T) {
 	}{
 		{
 			"should create new file properly",
-			args{"test.txt", []byte{}},
+			args{"test.txt", ""},
 			nil,
 		},
 	}
@@ -203,7 +203,7 @@ func TestReadBody(t *testing.T) {
 			testName: "should read file properly",
 			fileName: "test_file.txt",
 			creatingFunc: func(filename string) {
-				pkg.WriteNote(filename, []byte{})
+				pkg.WriteNote(filename, "")
 			},
 			deletingFunc: func(filename string) {
 				pkg.Delete(filename)
@@ -250,7 +250,7 @@ func TestOpenViaEditor(t *testing.T) {
 					pkg.Delete(filename)
 				},
 				createFileFunc: func(filename string) {
-					pkg.WriteNote(filename, []byte{})
+					pkg.WriteNote(filename, "")
 				},
 			},
 			expected: errors.New("exit status 1"),
@@ -293,7 +293,7 @@ func TestIsDir(t *testing.T) {
 		{
 			"test.txt",
 			closures{
-				creating: func(name string) { pkg.WriteNote(name, []byte{}) },
+				creating: func(name string) { pkg.WriteNote(name, "") },
 				deleting: func(name string) { pkg.Delete(name) },
 			},
 			false,

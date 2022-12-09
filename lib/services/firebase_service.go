@@ -58,7 +58,7 @@ func (s *FirebaseService) StateConfig() models.Settings {
 	return s.Config
 }
 
-// notyaCollection generates the main firestore collection refrence.
+// notyaCollection generates the main firestore collection reference.
 func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
 	return *s.FireStore.Collection(s.Config.FirePath())
 }
@@ -219,7 +219,7 @@ func (s *FirebaseService) OpenSettings(settings models.Settings) error {
 
 	note := models.Note{
 		Title: title,
-		Body:  string(prevSettings.ToByte()),
+		Body:  prevSettings.ToString(),
 	}
 	if _, err := s.LS.Create(note); err != nil {
 		return err
@@ -246,8 +246,8 @@ func (s *FirebaseService) OpenSettings(settings models.Settings) error {
 	return nil
 }
 
-// Open, opens note remotly from firebase.
-// caches it on local, makes able to modify after modifing overwrites on db.
+// Open, opens note remotely from firebase.
+// caches it on local, makes able to modify after modifying overwrites on db.
 func (s *FirebaseService) Open(node models.Node) error {
 	data, err := s.View(node.ToNote())
 	if err != nil {
@@ -560,7 +560,7 @@ func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 	return fetched, errors
 }
 
-// Push uploads nodes(that doens't exists on given remote) from [s](current) to given [remote].
+// Push uploads nodes(that doesn't exists on given remote) from [s](current) to given [remote].
 func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
 	nodes, _, err := s.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil {
