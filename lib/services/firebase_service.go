@@ -522,8 +522,7 @@ func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 	errors := []error{}
 
 	for _, node := range nodes {
-		isDir := (len(node.Pretty) > 0 && node.Pretty[0] == models.FolderPretty) || string(node.Title[len(node.Title)-1]) == "/"
-		if isDir {
+		if node.IsFolder() {
 			errors = append(errors, assets.CannotDoSth("fetch", node.Title, assets.NotAvailableForFirebase))
 			continue
 		}
