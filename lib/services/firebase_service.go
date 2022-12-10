@@ -453,19 +453,22 @@ func (s *FirebaseService) GetAll(additional, typ string, ignore []string) ([]mod
 
 // Create, creates a new note element at [note.Title] and sets element-body as json.
 func (s *FirebaseService) Create(note models.Note) (*models.Note, error) {
-	collection := s.NotyaCollection()
+	noteNode := note.ToNode()
 
-	if nodeExists, err := s.IsNodeExists(note.ToNode()); err != nil {
+	path, _ := s.GeneratePath(nil, noteNode)
+	noteNode.UpdatePath(s.Type(), path)
+
+	noteDoc, _ := s.GenerateDoc(nil, noteNode)
+	if _, err := noteDoc.Create(s.Ctx, noteNode.ToJSON()); err != nil {
+		if status, ok := status.FromError(err); ok && status.Code() == codes.AlreadyExists {
+			return nil, assets.AlreadyExists(noteNode.Title, "file")
+		}
+
 		return nil, err
-	} else if nodeExists {
-		return nil, assets.AlreadyExists(note.Title, "doc")
 	}
 
-	if _, err := collection.Doc(note.Title).Set(s.Ctx, note.ToJSON()); err != nil {
-		return nil, err
-	}
-
-	return &note, nil
+	modifiedNote := noteNode.ToNote()
+	return &modifiedNote, nil
 }
 
 // View fetches note from [note.Title].
@@ -541,10 +544,15 @@ func (s *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
 
 	folderDoc, _ := s.GenerateDoc(nil, dirNode)
 	if _, err := folderDoc.Create(s.Ctx, dirNode.ToJSON()); err != nil {
+		if status, ok := status.FromError(err); ok && status.Code() == codes.AlreadyExists {
+			return nil, assets.AlreadyExists(dirNode.Title, "folder")
+		}
+
 		return nil, err
 	}
 
-	return &dir, nil
+	modifiedDir := dirNode.ToFolder()
+	return &modifiedDir, nil
 }
 
 // MoveNote moves all notes from "CURRENT" firebase collection
