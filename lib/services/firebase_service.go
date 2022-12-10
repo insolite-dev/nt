@@ -63,6 +63,57 @@ func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
 	return *s.FireStore.Collection(s.Config.FirePath())
 }
 
+// GeneratePath generates a string valid path from provided "custom" base of collection reference
+// and [models.Node] model.
+// first returned value would be the full-valid path of provided node in collection,
+// and second returned value would be the valid "base" collection of that path.
+func (s *FirebaseService) GeneratePath(base *firestore.CollectionRef, n models.Node) (string, *firestore.CollectionRef) {
+	collection := s.NotyaCollection()
+	if base != nil {
+		// if the base collection is provided, which is different than actual
+		// provided main-base connection of notya, we have to set it to the value.
+		collection = *base
+	}
+
+	// If the model's path is not empty, it will be the path
+	// that function will generate document reference for it.
+	// Otherwise, a combination of collection id and note title will be used as path.
+	path := n.GetPath(s.Type())
+	if len(path) == 0 {
+		path = collection.ID + "/" + n.Title
+	}
+
+	return path, &collection
+}
+
+// GenerateDoc is [firebase.DocumentRef] generator, that used to generate concrete document reference by a string path.
+//
+// So, the: `<base-collection>/<document>/<sub-collection>/<sub-document>`
+// string will be converted to:
+// `Collection("<base-collection>").Doc("<document>").Collection("<sub-collection>").Doc("<sub-document>")`
+//
+// In case of being node [Folder] type. The collection reference return will be the "sub" collection
+// of generated document. But for the [File] type, it'd return nil.
+func (s *FirebaseService) GenerateDoc(base *firestore.CollectionRef, n models.Node) (*firestore.DocumentRef, *firestore.CollectionRef) {
+	path, collection := s.GeneratePath(base, n)
+
+	segments := strings.Split(path, "/")
+	if segments[0] == collection.ID {
+		segments = segments[1:]
+	}
+
+	doc := *collection.Doc(segments[0])
+	for i := 1; i < len(segments); i++ {
+		doc = *doc.Collection("sub").Doc(segments[i])
+	}
+
+	if n.IsFile() {
+		return &doc, nil
+	}
+
+	return &doc, doc.Collection("sub")
+}
+
 // GetFireDoc gets concrete collection's concrete data (as map).
 func (s *FirebaseService) GetFireDoc(collection firestore.CollectionRef, doc string) (res map[string]interface{}, err error) {
 	docSnap, err := collection.Doc(doc).Get(s.Ctx)
@@ -207,8 +258,8 @@ func (s *FirebaseService) IsNodeExists(node models.Node) (bool, error) {
 	return true, err
 }
 
-// OpenSettigns, opens note remotly from firebase.
-// caches it on local, makes able to modify after modifing overwrites on db.
+// OpenSettigns, opens note remotely from firebase.
+// caches it on local, makes able to modify after modifying overwrites on db.
 func (s *FirebaseService) OpenSettings(settings models.Settings) error {
 	prevSettings, err := s.Settings(nil)
 	if err != nil {
@@ -478,10 +529,13 @@ func (s *FirebaseService) Cut(note models.Note) (*models.Note, error) {
 	return n, nil
 }
 
-// Mkdir does nothing 'cause of firebase document structure.
-// Have to returns [assets.FolderingInFirebase].
+// Mkdir creates a document in provided folder path(from dir.Path)
+// and plus that, creates a sub collection of current folder document.
+// that sub collection gonna represent the files/folders that current
+// directory includes.
 func (s *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
-	return nil, assets.NotAvailableForFirebase
+	// TODO: implement the mkdir for firebase
+	return nil, nil
 }
 
 // MoveNote moves all notes from "CURRENT" firebase collection
