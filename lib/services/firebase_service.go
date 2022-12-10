@@ -104,7 +104,9 @@ func (s *FirebaseService) GenerateDoc(base *firestore.CollectionRef, n models.No
 
 	doc := *collection.Doc(segments[0])
 	for i := 1; i < len(segments); i++ {
-		doc = *doc.Collection("sub").Doc(segments[i])
+		if len(segments[i]) != 0 {
+			doc = *doc.Collection("sub").Doc(segments[i])
+		}
 	}
 
 	if n.IsFile() {
