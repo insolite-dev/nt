@@ -534,8 +534,17 @@ func (s *FirebaseService) Cut(note models.Note) (*models.Note, error) {
 // that sub collection gonna represent the files/folders that current
 // directory includes.
 func (s *FirebaseService) Mkdir(dir models.Folder) (*models.Folder, error) {
-	// TODO: implement the mkdir for firebase
-	return nil, nil
+	dirNode := dir.ToNode()
+
+	path, _ := s.GeneratePath(nil, dirNode)
+	dirNode.UpdatePath(s.Type(), path)
+
+	folderDoc, _ := s.GenerateDoc(nil, dirNode)
+	if _, err := folderDoc.Create(s.Ctx, dirNode.ToJSON()); err != nil {
+		return nil, err
+	}
+
+	return &dir, nil
 }
 
 // MoveNote moves all notes from "CURRENT" firebase collection

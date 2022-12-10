@@ -6,7 +6,10 @@
 
 package models
 
-import "os"
+import (
+	"encoding/json"
+	"os"
+)
 
 var (
 	// Early defined pretties.
@@ -36,7 +39,7 @@ type Node struct {
 	Path map[string]string `json:"path"`
 
 	// A field representation of [Note]'s [Body].
-	Body string `json:"body"`
+	Body string `json:"body,omitempty"`
 
 	// Pretty is Title but powered with ascii emojis.
 	// Shouldn't used as a production field.
@@ -99,6 +102,16 @@ func (n *Node) ToFolder() Folder {
 	}
 
 	return Folder{Title: title, Path: n.Path}
+}
+
+// ToJSON converts node structure model to map value.
+func (s *Node) ToJSON() map[string]interface{} {
+	b, _ := json.Marshal(&s)
+
+	var m map[string]interface{}
+	_ = json.Unmarshal(b, &m)
+
+	return m
 }
 
 // PrettyFromEntry generates a pretty icon appropriate to provided entry.

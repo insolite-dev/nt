@@ -6,7 +6,9 @@
 
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // Note is the main note model of application.
 //
@@ -41,5 +43,5 @@ func (s *Note) ToJSON() map[string]interface{} {
 
 // ToNode converts [Note] model to [Node] model.
 func (n *Note) ToNode() Node {
-	return Node{Type: FILE, Title: n.Title, Path: n.Path}
+	return Node{Type: FILE, Title: n.Title, Path: n.Path, Body: n.Body}
 }
