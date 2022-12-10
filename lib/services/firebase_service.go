@@ -297,15 +297,16 @@ func (s *FirebaseService) OpenSettings(settings models.Settings) error {
 	return nil
 }
 
-// Open, opens note remotely from firebase.
-// caches it on local, makes able to modify after modifying overwrites on db.
+// Open, opens a remote note in local machine.
+// clones it on local, makes able to modify, after modifying, overwrites on it db.
 func (s *FirebaseService) Open(node models.Node) error {
 	data, err := s.View(node.ToNote())
 	if err != nil {
 		return err
 	}
 
-	note := models.Note{Title: data.Title + time.Now().String(), Body: data.Body}
+	splitted := strings.Split(data.Title, "/")
+	note := models.Note{Title: splitted[len(splitted)-1] + time.Now().String(), Body: data.Body}
 	if _, err := s.LS.Create(note); err != nil {
 		return err
 	}
@@ -451,7 +452,9 @@ func (s *FirebaseService) GetAll(additional, typ string, ignore []string) ([]mod
 	return nodes, titles, nil
 }
 
-// Create, creates a new note element at [note.Title] and sets element-body as json.
+// Create, creates a new file document at note's path.
+// If a node(file or folder) already exists at provided note's path,
+// it will return already formatted error message.
 func (s *FirebaseService) Create(note models.Note) (*models.Note, error) {
 	noteNode := note.ToNode()
 
@@ -471,36 +474,52 @@ func (s *FirebaseService) Create(note models.Note) (*models.Note, error) {
 	return &modifiedNote, nil
 }
 
-// View fetches note from [note.Title].
+// View, gets the note document from note's path.
+// If a node doesn't exists at provided note's path,
+// it will return a already formatted error message.
 func (s *FirebaseService) View(note models.Note) (*models.Note, error) {
-	collection := s.NotyaCollection()
+	noteNode := note.ToNode()
 
-	data, err := s.GetFireDoc(collection, note.Title)
+	path, _ := s.GeneratePath(nil, noteNode)
+	noteNode.UpdatePath(s.Type(), path)
+
+	noteDoc, _ := s.GenerateDoc(nil, noteNode)
+	docSnapshot, err := noteDoc.Get(s.Ctx)
+
 	if err != nil {
+		if status, ok := status.FromError(err); ok && status.Code() == codes.NotFound {
+			return nil, assets.NotExists(path, noteNode.Title)
+		}
+
 		return nil, err
 	}
 
 	var model models.Note
-	mapstructure.Decode(data, &model)
+	mapstructure.Decode(docSnapshot.Data(), &model)
 
 	return &model, nil
 }
 
-// TODO: add documentation & feature.
+// Edit, updates the already created note, with locally updated note data.
+// If a node doesn't exists at provided note's path,
+// it will return a already formatted error message.
 func (s *FirebaseService) Edit(note models.Note) (*models.Note, error) {
-	collection := s.NotyaCollection()
+	noteNode := note.ToNode()
 
-	if nodeExists, err := s.IsNodeExists(note.ToNode()); err != nil {
+	path, _ := s.GeneratePath(nil, noteNode)
+	noteNode.UpdatePath(s.Type(), path)
+
+	noteDoc, _ := s.GenerateDoc(nil, noteNode)
+	if _, err := noteDoc.Set(s.Ctx, noteNode.ToJSON()); err != nil {
+		if status, ok := status.FromError(err); ok && status.Code() == codes.NotFound {
+			return nil, assets.NotExists(path, noteNode.Title)
+		}
+
 		return nil, err
-	} else if !nodeExists {
-		return nil, assets.NotExists("", note.Title)
 	}
 
-	if _, err := collection.Doc(note.Title).Set(s.Ctx, note.ToJSON()); err != nil {
-		return nil, err
-	}
-
-	return &note, nil
+	modifiedNote := noteNode.ToNote()
+	return &modifiedNote, nil
 }
 
 // Copy fetches note from [note.Title], and copies its body to machine's clipboard.
