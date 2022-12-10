@@ -182,7 +182,7 @@ func (l *LocalService) OpenSettings(settings models.Settings) error {
 // Open opens given node(file or folder) via editor.
 func (l *LocalService) Open(node models.Node) error {
 	if nodeExists, _ := l.IsNodeExists(node); !nodeExists {
-		return assets.NotExists(node.Title, "File or Directory")
+		return assets.NotExists(node.Title, "File")
 	}
 
 	path, err := l.GeneratePath(l.Config.NotesPath, node)

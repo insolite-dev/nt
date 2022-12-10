@@ -114,21 +114,6 @@ func (s *FirebaseService) GenerateDoc(base *firestore.CollectionRef, n models.No
 	return &doc, doc.Collection("sub")
 }
 
-// GetFireDoc gets concrete collection's concrete data (as map).
-func (s *FirebaseService) GetFireDoc(collection firestore.CollectionRef, doc string) (res map[string]interface{}, err error) {
-	docSnap, err := collection.Doc(doc).Get(s.Ctx)
-
-	if err != nil {
-		if status.Code(err) == codes.NotFound {
-			return nil, assets.NotExists("", doc)
-		}
-
-		return nil, err
-	}
-
-	return docSnap.Data(), nil
-}
-
 // Type returns type of FirebaseService - FIRE.
 func (s *FirebaseService) Type() string {
 	return FIRE.ToStr()
@@ -334,18 +319,26 @@ func (s *FirebaseService) Open(node models.Node) error {
 	return nil
 }
 
-// Remove deletes given node.
+// Remove deletes given node from [node.Path].
+// If a node doesn't exists at provided note's path,
+// it will return a already formatted error message.
 func (s *FirebaseService) Remove(node models.Node) error {
-	collection := s.NotyaCollection()
+	n := node
 
-	if nodeExists, err := s.IsNodeExists(node); err != nil {
+	path, _ := s.GeneratePath(nil, n)
+	n.UpdatePath(s.Type(), path)
+
+	noteDoc, _ := s.GenerateDoc(nil, n)
+	if _, err := noteDoc.Delete(s.Ctx); err != nil {
+		// TODO: handle no exists manually.
+		if status, ok := status.FromError(err); ok && status.Code() == codes.NotFound {
+			return assets.NotExists(path, "File or Directory")
+		}
+
 		return err
-	} else if !nodeExists {
-		return assets.NotExists("", node.Title)
 	}
 
-	_, err := collection.Doc(node.Title).Delete(s.Ctx)
-	return err
+	return nil
 }
 
 // Rename changes reference ID of document.
@@ -488,7 +481,7 @@ func (s *FirebaseService) View(note models.Note) (*models.Note, error) {
 
 	if err != nil {
 		if status, ok := status.FromError(err); ok && status.Code() == codes.NotFound {
-			return nil, assets.NotExists(path, noteNode.Title)
+			return nil, assets.NotExists(path, "File")
 		}
 
 		return nil, err
@@ -512,7 +505,7 @@ func (s *FirebaseService) Edit(note models.Note) (*models.Note, error) {
 	noteDoc, _ := s.GenerateDoc(nil, noteNode)
 	if _, err := noteDoc.Set(s.Ctx, noteNode.ToJSON()); err != nil {
 		if status, ok := status.FromError(err); ok && status.Code() == codes.NotFound {
-			return nil, assets.NotExists(path, noteNode.Title)
+			return nil, assets.NotExists(path, "File")
 		}
 
 		return nil, err
