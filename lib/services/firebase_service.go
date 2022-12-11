@@ -230,19 +230,17 @@ func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 }
 
 // IsNodeExists checks if an element(given node) exists at notya collection or not.
-// Note: rather than local-service error checking is required.
 func (s *FirebaseService) IsNodeExists(node models.Node) (bool, error) {
-	if len(strings.Trim(node.Title, " ")) < 1 {
-		return true, nil
+	doc, _ := s.GenerateDoc(nil, node)
+	if _, err := doc.Get(s.Ctx); err != nil {
+		if status, ok := status.FromError(err); ok && status.Code() == codes.NotFound {
+			return false, nil
+		}
+
+		return true, err
 	}
 
-	collection := s.NotyaCollection()
-	_, err := collection.Doc(node.Title).Get(s.Ctx)
-	if err != nil && status.Code(err) == codes.NotFound {
-		return false, nil
-	}
-
-	return true, err
+	return true, nil
 }
 
 // OpenSettigns, opens note remotely from firebase.
@@ -330,13 +328,14 @@ func (s *FirebaseService) Remove(node models.Node) error {
 	path, _ := s.GeneratePath(nil, n)
 	n.UpdatePath(s.Type(), path)
 
+	if nodeExists, err := s.IsNodeExists(n); err != nil {
+		return err
+	} else if !nodeExists {
+		return assets.NotExists(n.Title, "File or Directory")
+	}
+
 	noteDoc, _ := s.GenerateDoc(nil, n)
 	if _, err := noteDoc.Delete(s.Ctx); err != nil {
-		// TODO: handle no exists manually.
-		if status, ok := status.FromError(err); ok && status.Code() == codes.NotFound {
-			return assets.NotExists(path, "File or Directory")
-		}
-
 		return err
 	}
 
@@ -367,6 +366,7 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 	_, createErr := s.Create(models.Note{
 		Title: editNode.New.Title,
 		Body:  data.Body,
+		Path:  editNode.New.Path,
 	})
 
 	return createErr
