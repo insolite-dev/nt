@@ -561,8 +561,8 @@ func (s *FirebaseService) Cut(note models.Note) (*models.Note, error) {
 		return nil, err
 	}
 
-	collection := s.NotyaCollection()
-	if _, err := collection.Doc(note.Title).Delete(s.Ctx); err != nil {
+	doc, _ := s.GenerateDoc(nil, note.ToNode())
+	if _, err := doc.Delete(s.Ctx); err != nil {
 		return nil, err
 	}
 
