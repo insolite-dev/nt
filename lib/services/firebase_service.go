@@ -400,51 +400,74 @@ func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
 	return res, errs
 }
 
-// GetAll returns all elements from notya collection.
-// TODO: implement the [typ] value.
+// GetAll fetches all documents and their sub documents (if they exist)
+// from a database and returns them as an array of models.Node.
+//
+// @param additional path, [typ] that is allowed to fetch, and ignore list.
+// @returns an array of all nodes, titles of nodes and error if something went wrong.
 func (s *FirebaseService) GetAll(additional, typ string, ignore []string) ([]models.Node, []string, error) {
-	var nodes []models.Node
+	collection := s.NotyaCollection()
+	return s.ListDir(&collection, typ, ignore, 0)
+}
+
+// ListDir retrieves the documents and sub-collections from a specified Firebase CollectionRef.
+//
+// @param {firestore.CollectionRef} path - The Firebase CollectionRef to retrieve documents and sub-collections from.
+// @param {string} typ - The type of documents to retrieve.
+// @param {[]string} ignore - An array of sub-collection names to ignore.
+// @param {int} level - The number of levels deep to retrieve sub-collections.
+//
+// @returns {[]models.Node, []string, error} A tuple containing an array of retrieved documents
+// and sub-collections (models.Node), an array of ignored sub-collection names, and an error if one occurred.
+func (s *FirebaseService) ListDir(path *firestore.CollectionRef, typ string, ignore []string, level int) ([]models.Node, []string, error) {
+	var res []models.Node
 	var titles []string
 
-	collection := s.NotyaCollection()
-	iter := collection.Documents(s.Ctx)
+	iter := path.Documents(s.Ctx)
 	defer iter.Stop()
 
 	for {
-		ignoreCurrent := false
-
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
 
 		if err != nil {
-			return nodes, titles, err
+			return res, titles, err
 		}
 
-		for _, ig := range ignore {
-			if doc.Ref.ID == ig {
-				ignoreCurrent = true // mark current loop as ignorable.
-			}
-		}
-
-		if ignoreCurrent {
-			ignoreCurrent = false // reset ignorable for next item.
+		// Ignore the current document, if it is ignorable.
+		if pkg.IsIgnorable(doc.Ref.ID, ignore) {
 			continue
 		}
 
 		// Decode data to node
 		var node models.Node
-		var _ = mapstructure.Decode(doc.Data(), &node)
+		node.FromJson(doc.Data())
 
-		// Since each doc is file, we've not to care about folder pretties.
-		node.Pretty = []string{models.NotePretty, doc.Ref.ID}
+		if pkg.IsType(typ, node.IsFolder()) {
+			node.Pretty = []string{strings.Repeat("  ", level) + node.GenPretty(), doc.Ref.ID}
 
-		nodes = append(nodes, node)
-		titles = append(titles, doc.Ref.ID)
+			res = append(res, node)
+			titles = append(titles, node.Title)
+		}
+
+		if node.IsFolder() {
+			subPath := path.Doc(doc.Ref.ID).Collection("sub")
+			sub, subTitles, err := s.ListDir(subPath, typ, ignore, level+1)
+			if err != nil {
+				// TODO: find a way of effective way of handling error
+				continue
+			}
+
+			if len(sub) > 0 {
+				res = append(res, sub...)
+				titles = append(titles, subTitles...)
+			}
+		}
 	}
 
-	return nodes, titles, nil
+	return res, titles, nil
 }
 
 // Create, creates a new file document at note's path.

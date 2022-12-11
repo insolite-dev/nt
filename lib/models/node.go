@@ -114,6 +114,26 @@ func (s *Node) ToJSON() map[string]interface{} {
 	return m
 }
 
+// FromJson converts provided map data to [Node] structure.
+func (s *Node) FromJson(data map[string]interface{}) error {
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(jsonBytes, &s)
+}
+
+// GenPretty generates default pretty ASCII icon based
+// on pointed node's type.
+func (s *Node) GenPretty() string {
+	if s.IsFolder() {
+		return FolderPretty
+	}
+
+	return NotePretty
+}
+
 // PrettyFromEntry generates a pretty icon appropriate to provided entry.
 func PrettyFromEntry(e os.DirEntry) string {
 	if e.IsDir() {
