@@ -373,6 +373,7 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 }
 
 // ClearNodes removes all nodes from collection.
+// TODO: improve the speed of clearing
 func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
 	nodes, _, err := s.GetAll("", "", models.NotyaIgnoreFiles)
 	if err != nil && err.Error() != assets.EmptyWorkingDirectory.Error() {
@@ -679,15 +680,11 @@ func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
 	pushed := []models.Node{}
 
 	for _, node := range nodes {
-		exists, err := remote.IsNodeExists(node)
-		if err != nil {
-			errors = append(errors, err)
-			continue
-		}
+		exists, _ := remote.IsNodeExists(node)
 
-		if !exists {
-			if _, err := remote.Create(node.ToNote()); err != nil {
-				errors = append(errors, err)
+		if node.IsFolder() && !exists {
+			if _, err := remote.Mkdir(node.ToFolder()); err != nil {
+				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
 			} else {
 				pushed = append(pushed, node)
 			}
@@ -695,22 +692,24 @@ func (s *FirebaseService) Push(remote ServiceRepo) ([]models.Node, []error) {
 			continue
 		}
 
-		r, err := remote.View(node.ToNote())
-		if err != nil {
-			errors = append(errors, err)
+		r, _ := remote.View(node.ToNote())
+		if !exists {
+			if _, err := remote.Create(node.ToNote()); err != nil {
+				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
+			} else {
+				pushed = append(pushed, node)
+			}
+
 			continue
 		}
 
-		if r.Body == node.Body {
-			continue
+		if r.Body != node.Body {
+			if _, err := remote.Edit(node.ToNote()); err != nil {
+				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
+			} else {
+				pushed = append(pushed, node)
+			}
 		}
-
-		if _, err := remote.Edit(node.ToNote()); err != nil {
-			errors = append(errors, err)
-		} else {
-			pushed = append(pushed, node)
-		}
-
 	}
 
 	return pushed, errors
