@@ -506,14 +506,15 @@ func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 	// Sort nodes via title-len decreasing order.
 	sort.Slice(
 		nodes,
-		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+		func(i, j int) bool { return len(nodes[i].Title) < len(nodes[j].Title) },
 	)
 
 	fetched := []models.Node{}
 	errors := []error{}
 
 	for _, node := range nodes {
-		if exists, _ := l.IsNodeExists(node); exists && !node.IsFolder() {
+		exists, _ := l.IsNodeExists(node)
+		if exists && !node.IsFolder() {
 			local, err := l.View(node.ToNote())
 			if err != nil {
 				errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
@@ -533,12 +534,17 @@ func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 			continue
 		}
 
-		if node.IsFolder() {
+		if node.IsFolder() && !exists {
 			if _, err := l.Mkdir(node.ToFolder()); err != nil {
 				errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
 			} else {
 				fetched = append(fetched, node)
 			}
+
+			continue
+		}
+
+		if exists {
 			continue
 		}
 
