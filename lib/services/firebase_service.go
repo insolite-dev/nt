@@ -631,18 +631,11 @@ func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 	errors := []error{}
 
 	for _, node := range nodes {
-		if node.IsFolder() {
-			errors = append(errors, assets.CannotDoSth("fetch", node.Title, assets.NotAvailableForFirebase))
-			continue
-		}
-
-		if exists, err := s.IsNodeExists(node); err != nil {
-			errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
-			continue
-		} else if exists {
+		exists, _ := s.IsNodeExists(node)
+		if exists && !node.IsFolder() {
 			local, err := s.View(node.ToNote())
 			if err != nil {
-				errors = append(errors, err)
+				errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
 				continue
 			}
 
@@ -659,8 +652,22 @@ func (s *FirebaseService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 			continue
 		}
 
+		if node.IsFolder() && !exists {
+			if _, err := s.Mkdir(node.ToFolder()); err != nil {
+				errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
+			} else {
+				fetched = append(fetched, node)
+			}
+
+			continue
+		}
+
+		if exists {
+			continue
+		}
+
 		if _, err := s.Create(node.ToNote()); err != nil {
-			errors = append(errors, err)
+			errors = append(errors, assets.CannotDoSth("fetch", node.Title, err))
 		} else {
 			fetched = append(fetched, node)
 		}
