@@ -503,7 +503,7 @@ func (l *LocalService) Fetch(remote ServiceRepo) ([]models.Node, []error) {
 		return nil, []error{err}
 	}
 
-	// Sort nodes via title-len decreasing order.
+	// Sort nodes via title-len ascending order.
 	sort.Slice(
 		nodes,
 		func(i, j int) bool { return len(nodes[i].Title) < len(nodes[j].Title) },
@@ -565,13 +565,12 @@ func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 		return nil, []error{err}
 	}
 
-	// Sort nodes via title-len decreasing order.
 	sort.Slice(
 		nodes,
-		func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+		func(i, j int) bool { return len(nodes[i].Title) < len(nodes[j].Title) },
 	)
 
-	fetched := []models.Node{}
+	pushed := []models.Node{}
 	errors := []error{}
 
 	for _, node := range nodes {
@@ -580,25 +579,24 @@ func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 			continue
 		}
 
-		if pkg.IsDir(path) {
+		exists, _ := remote.IsNodeExists(node)
+
+		if pkg.IsDir(path) && !exists {
 			if _, err := remote.Mkdir(node.ToFolder()); err != nil {
 				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
 			} else {
-				fetched = append(fetched, node)
+				pushed = append(pushed, node)
 			}
 
 			continue
 		}
 
-		r, err := remote.View(node.ToNote())
-		if err != nil && err.Error() != assets.NotExists("", node.Title).Error() {
-			errors = append(errors, assets.CannotDoSth("push", node.Title, err))
-			continue
-		} else if err != nil {
+		r, _ := remote.View(node.ToNote())
+		if !exists {
 			if _, err := remote.Create(node.ToNote()); err != nil {
 				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
 			} else {
-				fetched = append(fetched, node)
+				pushed = append(pushed, node)
 			}
 
 			continue
@@ -607,14 +605,13 @@ func (l *LocalService) Push(remote ServiceRepo) ([]models.Node, []error) {
 		if r.Body != node.Body {
 			if _, err := remote.Edit(node.ToNote()); err != nil {
 				errors = append(errors, assets.CannotDoSth("push", node.Title, err))
-				continue
+			} else {
+				pushed = append(pushed, node)
 			}
-
-			fetched = append(fetched, node)
 		}
 	}
 
-	return fetched, errors
+	return pushed, errors
 }
 
 // Migrate overwrites all notes of given [remote] service with [l](current-service).
