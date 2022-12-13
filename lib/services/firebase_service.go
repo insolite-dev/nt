@@ -116,6 +116,28 @@ func (s *FirebaseService) GenerateDoc(base *firestore.CollectionRef, n models.No
 	return &doc, doc.Collection("sub")
 }
 
+// GetDoc is a function that used to get document reference as [models.Node].
+func (s *FirebaseService) GetDoc(n models.Node) (*models.Node, error) {
+	path, _ := s.GeneratePath(nil, n)
+	n.UpdatePath(s.Type(), path)
+
+	nDoc, _ := s.GenerateDoc(nil, n)
+	docSnapshot, err := nDoc.Get(s.Ctx)
+
+	if err != nil {
+		if status, ok := status.FromError(err); ok && status.Code() == codes.NotFound {
+			return nil, assets.NotExists(path, "File")
+		}
+
+		return nil, err
+	}
+
+	var model models.Node
+	mapstructure.Decode(docSnapshot.Data(), &model)
+
+	return &model, nil
+}
+
 // Type returns type of FirebaseService - FIRE.
 func (s *FirebaseService) Type() string {
 	return FIRE.ToStr()
@@ -344,7 +366,7 @@ func (s *FirebaseService) Remove(node models.Node) error {
 
 // Rename changes reference ID of document.
 func (s *FirebaseService) Rename(editNode models.EditNode) error {
-	data, err := s.View(editNode.Current.ToNote())
+	current, err := s.GetDoc(editNode.Current)
 	if err != nil {
 		return err
 	}
@@ -353,23 +375,47 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 		return assets.SameTitles
 	}
 
-	if nodeExists, err := s.IsNodeExists(editNode.New); err != nil {
+	updated := editNode.New
+	updated.Type = current.Type
+	updated.Body = current.Body
+
+	newPath, _ := s.GeneratePath(nil, updated)
+	updated.Path = current.Path
+	updated.UpdatePath(s.Type(), newPath)
+
+	if nodeExists, err := s.IsNodeExists(updated); err != nil {
 		return err
 	} else if nodeExists {
-		return assets.AlreadyExists(editNode.New.Title, "doc")
+		return assets.AlreadyExists(updated.Title, "doc")
 	}
 
-	if err := s.Remove(editNode.Current); err != nil {
+	if err := s.renameNode(models.EditNode{Current: *current, New: updated}); err != nil {
 		return err
 	}
 
-	_, createErr := s.Create(models.Note{
-		Title: editNode.New.Title,
-		Body:  data.Body,
-		Path:  editNode.New.Path,
-	})
+	if current.IsFolder() {
+		// TODO: call s.ListDir to the "sub" collection of [current] document.
+		// by generating it via s.GenerateDoc().
+	}
 
-	return createErr
+	return nil
+}
+
+// renameNode is a sub implementation of [Rename].
+// Which used to move file or folder(without sub nodes)
+// from current path to new path.
+func (s *FirebaseService) renameNode(editNode models.EditNode) error {
+	if editNode.New.IsFolder() {
+		if _, err := s.Mkdir(editNode.New.ToFolder()); err != nil {
+			return err
+		}
+	} else {
+		if _, err := s.Create(editNode.New.ToNote()); err != nil {
+			return err
+		}
+	}
+
+	return s.Remove(editNode.Current)
 }
 
 // ClearNodes removes all nodes from collection.
@@ -402,7 +448,7 @@ func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
 }
 
 // GetAll fetches all documents and their sub documents (if they exist)
-// from a database and returns them as an array of models.Node.
+// from a database and returns them as an array of [models.Node]
 //
 // @param additional path, [typ] that is allowed to fetch, and ignore list.
 // @returns an array of all nodes, titles of nodes and error if something went wrong.
