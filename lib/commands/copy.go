@@ -7,6 +7,8 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/insolite-dev/notya/assets"
 	"github.com/insolite-dev/notya/lib/models"
@@ -56,6 +58,11 @@ func runCopyCommand(cmd *cobra.Command, args []string) {
 }
 
 func copyAndFinish(note models.Note) {
+	if len(note.Title) == 0 {
+		os.Exit(-1)
+		return
+	}
+
 	loading.Start()
 	if err := service.Copy(note); err != nil {
 		loading.Stop()

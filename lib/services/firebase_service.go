@@ -475,6 +475,13 @@ func (s *FirebaseService) ClearNodes() ([]models.Node, []error) {
 // @returns an array of all nodes, titles of nodes and error if something went wrong.
 func (s *FirebaseService) GetAll(additional, typ string, ignore []string) ([]models.Node, []string, error) {
 	collection := s.NotyaCollection()
+	if len(additional) > 0 {
+		_, c := s.GenerateDoc(&collection, models.Node{Title: additional})
+		if c != nil {
+			collection = *c
+		}
+	}
+
 	return s.ListDir(&collection, typ, ignore, 0)
 }
 

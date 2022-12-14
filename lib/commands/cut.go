@@ -7,6 +7,8 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/insolite-dev/notya/assets"
 	"github.com/insolite-dev/notya/lib/models"
@@ -53,6 +55,11 @@ func runCutCommand(cmd *cobra.Command, args []string) {
 }
 
 func cutAndFinish(note models.Note) {
+	if len(note.Title) == 0 {
+		os.Exit(-1)
+		return
+	}
+
 	loading.Start()
 	if _, err := service.Cut(note); err != nil {
 		loading.Stop()

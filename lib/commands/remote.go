@@ -8,6 +8,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
@@ -86,6 +87,10 @@ func runRemoteConnectCommand(cmd *cobra.Command, args []string) {
 		assets.ChooseRemotePrompt(disabled),
 		&selected,
 	)
+	if len(selected) == 0 {
+		os.Exit(-1)
+		return
+	}
 
 	switch selected {
 	case services.FIRE.ToStr():
@@ -136,6 +141,10 @@ func runRemoteDisconnectCommand(cmd *cobra.Command, args []string) {
 		assets.ChooseRemotePrompt(enabled),
 		&selected,
 	)
+	if len(selected) == 0 {
+		os.Exit(-1)
+		return
+	}
 
 	loading.Start()
 	switch selected {
