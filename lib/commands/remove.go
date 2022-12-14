@@ -8,6 +8,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/insolite-dev/notya/assets"
@@ -79,6 +80,11 @@ func runRemoveCommand(cmd *cobra.Command, args []string) {
 
 // removeAndFinish removes given node and alerts success message if everything is OK.
 func removeAndFinish(node models.Node) {
+	if len(node.Title) == 0 {
+		os.Exit(-1)
+		return
+	}
+
 	loading.Start()
 
 	err := service.Remove(node)

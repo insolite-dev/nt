@@ -7,6 +7,8 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/insolite-dev/notya/assets"
 	"github.com/insolite-dev/notya/lib/models"
@@ -33,12 +35,7 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 
 	// Take note title from arguments. If it's provided.
 	if len(args) > 0 {
-		note := models.Note{Title: args[0]}
-
-		if err := service.Open(note.ToNode()); err != nil {
-			pkg.Alert(pkg.ErrorL, err.Error())
-		}
-
+		editAndFinish(models.Node{Title: args[0]})
 		return
 	}
 
@@ -59,8 +56,16 @@ func runEditCommand(cmd *cobra.Command, args []string) {
 	)
 
 	// Open selected note-file.
-	if err := service.Open(models.Node{Title: selected}); err != nil {
-		pkg.Alert(pkg.ErrorL, err.Error())
+	editAndFinish(models.Node{Title: selected})
+}
+
+func editAndFinish(note models.Node) {
+	if len(note.Title) == 0 {
+		os.Exit(-1)
 		return
+	}
+
+	if err := service.Open(note); err != nil {
+		pkg.Alert(pkg.ErrorL, err.Error())
 	}
 }

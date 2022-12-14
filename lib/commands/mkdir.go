@@ -7,6 +7,8 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/insolite-dev/notya/assets"
 	"github.com/insolite-dev/notya/lib/models"
@@ -40,6 +42,11 @@ func runMkdirCommand(cmd *cobra.Command, args []string) {
 	}
 
 	loading.Start()
+
+	if len(title) == 0 {
+		os.Exit(-1)
+		return
+	}
 
 	// Create new directory by given title.
 	_, err := service.Mkdir(models.Folder{Title: title})
