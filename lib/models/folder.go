@@ -8,7 +8,8 @@ package models
 
 // Folder is a w-directory representation data structure.
 //
-//  EXAMPLE:
+//	EXAMPLE:
+//
 // ╭───────────────╮
 // │ ~/notya-path/ │
 // │───────────────╯
@@ -16,28 +17,26 @@ package models
 // │─ todo/   ◀──── Sub directory of main notes folder.
 // │  │── today.md
 // │  │── tomorrow.md
-// │  ╰── anon-notya/  ◀── Sub directory of "todo" folder.
+// │  ╰── insolite-notya/  ◀── Sub directory of "todo" folder.
 // │      │── issues.txt
 // │      ╰── features.txt
 // │─ ted-talks.tx
-// ╰─ psycology_resources.txt
-//
+// ╰─ psyco.txt
 type Folder struct {
 	// Title is the name(not path) of "current" folder.
 	Title string `json:"title"`
 
 	// Path is the full-path string name of "current" folder.
-	Path string `json:"path"`
+	Path map[string]string `json:"path"`
+}
 
-	// Files is the slice of "current" folder's sub-nodes.
-	// Includes full-path strings of the files/folders names.
-	Files []string `json:"files"`
+// GetPath returns exact path of provided service.
+// If path for provided service doesn't exists result will be empty string.
+func (f *Folder) GetPath(service string) string {
+	return f.Path[service]
 }
 
 // ToNode converts [Folder] model to [Node] model.
 func (n *Folder) ToNode() Node {
-	return Node{
-		Title: n.Title, Path: n.Path,
-		Pretty: []string{FolderPretty, n.Title},
-	}
+	return Node{Type: FOLDER, Title: n.Title, Path: n.Path}
 }

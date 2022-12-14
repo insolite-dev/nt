@@ -35,7 +35,7 @@ func TestNotyaPWD(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		gotRes, gotErr := pkg.NotyaPWD(models.Settings{LocalPath: "notya"})
+		gotRes, gotErr := pkg.NotyaPWD(models.Settings{NotesPath: "notya"})
 		if gotErr != td.exp.err {
 			t.Errorf("Path err sum was different: Got: %v | Want: %v", gotErr, td.exp.err)
 		}
@@ -68,7 +68,7 @@ func TestFileExists(t *testing.T) {
 			"should check file exists, properly",
 			"test.txt",
 			closures{
-				creating: func(name string) { pkg.WriteNote(name, []byte{}) },
+				creating: func(name string) { pkg.WriteNote(name, "") },
 				deleting: func(name string) { pkg.Delete(name) },
 			},
 			true,
@@ -90,7 +90,7 @@ func TestFileExists(t *testing.T) {
 func TestWriteNote(t *testing.T) {
 	type args struct {
 		filename string
-		filebody []byte
+		filebody string
 	}
 
 	tests := []struct {
@@ -100,7 +100,7 @@ func TestWriteNote(t *testing.T) {
 	}{
 		{
 			"should create new file properly",
-			args{"test.txt", []byte{}},
+			args{"test.txt", ""},
 			nil,
 		},
 	}
@@ -203,7 +203,7 @@ func TestReadBody(t *testing.T) {
 			testName: "should read file properly",
 			fileName: "test_file.txt",
 			creatingFunc: func(filename string) {
-				pkg.WriteNote(filename, []byte{})
+				pkg.WriteNote(filename, "")
 			},
 			deletingFunc: func(filename string) {
 				pkg.Delete(filename)
@@ -223,66 +223,6 @@ func TestReadBody(t *testing.T) {
 		})
 
 		td.deletingFunc(td.fileName)
-	}
-}
-
-func TestListDir(t *testing.T) {
-	type expected struct {
-		res []string
-		err error
-	}
-
-	tests := []struct {
-		testName     string
-		folderName   string
-		creatingFunc func(foldername string)
-		deletingFunc func(foldername string)
-		e            expected
-	}{
-		{
-			testName:   "should list directory files properly",
-			folderName: "test_folder",
-			creatingFunc: func(foldername string) {
-				pkg.NewFolder(foldername)
-				pkg.WriteNote(foldername+"/test_file.txt", []byte{})
-				pkg.WriteNote(foldername+"/test_file_1.txt", []byte{})
-				pkg.WriteNote(foldername+"/expectable.txt", []byte{})
-			},
-			deletingFunc: func(foldername string) {
-				pkg.Delete(foldername + "/test_file.txt")
-				pkg.Delete(foldername + "/test_file_1.txt")
-				pkg.Delete(foldername + "/expectable.txt")
-				pkg.Delete(foldername)
-			},
-			e: expected{
-				res: []string{"test_file.txt", "test_file_1.txt"},
-				err: nil,
-			},
-		},
-	}
-
-	for _, td := range tests {
-		td.creatingFunc(td.folderName)
-
-		t.Run(td.testName, func(t *testing.T) {
-			got, _, err := pkg.ListDir(td.folderName, "", "", []string{"expectable.txt"}, true)
-			if err != td.e.err {
-				t.Errorf("ListDir's error sum was different, Got: %v | Want: %v", err, td.e.err)
-			}
-
-			if len(got) != len(td.e.res) {
-				t.Errorf("ListDir's res length sum was different, Got: %v | Want: %v", len(got), len(td.e.res))
-			}
-
-			// Check each element of got
-			for i := 0; i < len(got); i++ {
-				if got[i] != td.e.res[i] {
-					t.Errorf("ListDir's res [%v] item sum was different, Got: %v | Want: %v", i, err, td.e.err)
-				}
-			}
-		})
-
-		td.deletingFunc(td.folderName)
 	}
 }
 
@@ -310,10 +250,10 @@ func TestOpenViaEditor(t *testing.T) {
 					pkg.Delete(filename)
 				},
 				createFileFunc: func(filename string) {
-					pkg.WriteNote(filename, []byte{})
+					pkg.WriteNote(filename, "")
 				},
 			},
-			expected: errors.New("exit status 2"),
+			expected: errors.New("exit status 1"),
 		},
 	}
 
@@ -353,7 +293,7 @@ func TestIsDir(t *testing.T) {
 		{
 			"test.txt",
 			closures{
-				creating: func(name string) { pkg.WriteNote(name, []byte{}) },
+				creating: func(name string) { pkg.WriteNote(name, "") },
 				deleting: func(name string) { pkg.Delete(name) },
 			},
 			false,
@@ -377,5 +317,128 @@ func TestIsDir(t *testing.T) {
 		}
 
 		td.c.deleting(td.filename)
+	}
+}
+
+func TestNormalizePath(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    "//Users///theiskaa//notya//notes///",
+			expected: "/Users/theiskaa/notya/notes/",
+		},
+		{
+			input:    "//Users/ /theiskaa/notya//",
+			expected: "/Users/theiskaa/notya/",
+		},
+		{
+			input:    "/Users/theiskaa/notya/notes",
+			expected: "/Users/theiskaa/notya/notes/",
+		},
+	}
+
+	for _, td := range tests {
+		got := pkg.NormalizePath(td.input)
+
+		if got != td.expected {
+			t.Errorf("NormalizePath sum was different: Got: %v | Want: %v", got, td.expected)
+		}
+	}
+}
+func TestIsPathUpdated(t *testing.T) {
+	tests := []struct {
+		serviceType  string
+		old, current models.Settings
+		expected     bool
+	}{
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "test/path"},
+			expected:    false,
+		},
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "test/path/"},
+			expected:    false,
+		},
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "test/path"},
+			expected:    false,
+		},
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{NotesPath: "test/path"},
+			current:     models.Settings{NotesPath: "new/test/path"},
+			expected:    true,
+		},
+		{
+			serviceType: "LOCAL",
+			old:         models.Settings{Editor: "code"},
+			current:     models.Settings{Editor: models.DefaultEditor},
+			expected:    false,
+		},
+		{
+			serviceType: "FIREBASE",
+			old:         models.Settings{FirebaseCollection: "test/path"},
+			current:     models.Settings{FirebaseCollection: "test/path"},
+			expected:    false,
+		},
+		{
+			serviceType: "FIREBASE",
+			old:         models.Settings{FirebaseCollection: "test/path"},
+			current:     models.Settings{FirebaseCollection: "new/test/path"},
+			expected:    true,
+		},
+		{
+			serviceType: "undefined",
+			old:         models.Settings{FirebaseCollection: "test/path"},
+			current:     models.Settings{FirebaseCollection: "new/test/path"},
+			expected:    false,
+		},
+	}
+
+	for i, td := range tests {
+		got := pkg.IsPathUpdated(td.old, td.current, td.serviceType)
+
+		if got != td.expected {
+			t.Errorf("IsPathUpdated[%v] sum was different: Want: %v | Got: %v", i, td.expected, got)
+		}
+	}
+}
+
+func TestIsUpdated(t *testing.T) {
+	tests := []struct {
+		testname     string
+		old, current models.Settings
+		expected     bool
+	}{
+		{
+			testname: "should check properly if fulls settings is updated",
+			old:      models.Settings{Editor: models.DefaultEditor},
+			current:  models.Settings{Editor: models.DefaultEditor},
+			expected: false,
+		},
+		{
+			testname: "should check properly if fulls settings is updated",
+			old:      models.Settings{Editor: "code"},
+			current:  models.Settings{Editor: models.DefaultEditor},
+			expected: true,
+		},
+	}
+
+	for _, td := range tests {
+		t.Run(td.testname, func(t *testing.T) {
+			got := pkg.IsSettingsUpdated(td.old, td.current)
+
+			if got != td.expected {
+				t.Errorf("IsUpdated sum was different: Want: %v | Got: %v", got, td.expected)
+			}
+		})
 	}
 }

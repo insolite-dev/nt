@@ -7,6 +7,8 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/insolite-dev/notya/assets"
 	"github.com/insolite-dev/notya/lib/models"
@@ -70,6 +72,11 @@ func runCreateCommand(cmd *cobra.Command, args []string) {
 
 // createAndFinish asks to edit note and finishes creating loop.
 func createAndFinish(title string) {
+	if len(title) == 0 {
+		os.Exit(-1)
+		return
+	}
+
 	loading.Start()
 	note, err := service.Create(models.Note{Title: title})
 	loading.Stop()

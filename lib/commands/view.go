@@ -48,7 +48,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Generate array of all note names.
-	nodes, noteNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+	nodes, noteNames, err := service.GetAll("", "file", models.NotyaIgnoreFiles)
 	loading.Stop()
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())

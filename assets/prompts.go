@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/insolite-dev/notya/lib/models"
 )
 
 // ChooseNodePrompt is a prompt interface for tui file or folder choosing bar.
@@ -60,66 +59,39 @@ func NewNamePrompt(d string) *survey.Input {
 	return &survey.Input{Message: "New name: ", Default: d}
 }
 
-// SettingsEditPromptQuestions is a question list for settings' edit sub-command.
-func SettingsEditPromptQuestions(defaultSettings models.Settings) []*survey.Question {
-	return []*survey.Question{
-		{
-			Name: "name",
-			Prompt: &survey.Input{
-				Default: defaultSettings.Name,
-				Message: "App Name",
-				Help:    "Customize your application env's name",
-			},
-			Validate: survey.MinLength(1),
-		},
-		{
-			Name: "editor",
-			Prompt: &survey.Input{
-				Default: defaultSettings.Editor,
-				Message: "Editor",
-				Help:    "Editor for notya. --> vim/nvim/code/code-insiders ...",
-			},
-			Validate: survey.MinLength(1),
-		},
-		{
-			Name: "local_path",
-			Prompt: &survey.Input{
-				Default: defaultSettings.LocalPath,
-				Message: "Local Path",
-				Help:    "Local path of notya base working directory",
-			},
-			Validate: survey.MinLength(1),
-		},
-		{
-			Name: "fire_project_id",
-			Prompt: &survey.Input{
-				Default: defaultSettings.FirebaseProjectID,
-				Message: "Firebase Project ID",
-				Help:    "Project ID of your (integrated-with-notya) firebase project",
-			},
-		},
-		{
-			Name: "fire_account_key",
-			Prompt: &survey.Input{
-				Default: defaultSettings.FirebaseAccountKey,
-				Message: "Firebase Key File",
-				Help:    "Path of firebase service key file",
-			},
-		},
-		{
-			Name: "fire_collection",
-			Prompt: &survey.Input{
-				Default: defaultSettings.FirebaseCollection,
-				Message: "Firebase Collection",
-				Help:    "Main notya collection name in firestore",
-			},
-		},
-	}
-}
-
 // MoveNotesPrompt is a confirm prompt for setting's move-note functionality.
 var MoveNotesPrompt = &survey.Confirm{
 	Message: "Move notes",
 	Help:    "Do you wanna move old notes to new path?",
 	Default: false,
+}
+
+// FirebaseRemoteConnectPromptQuestion is a question list that fills up
+// required values for firebase remote connection.
+// Used in Remote command's connect subcommand.
+var FirebaseRemoteConnectPromptQuestion = []*survey.Question{
+	{
+		Name: "fire_project_id",
+		Prompt: &survey.Input{
+			Message: "Firebase Project ID",
+			Help:    "The project ID of your Firebase project.",
+		},
+		Validate: survey.MinLength(1),
+	},
+	{
+		Name: "fire_account_key",
+		Prompt: &survey.Input{
+			Message: "Firebase Account Key",
+			Help:    "The Firebase Admin SDK private key file path. Must be given a full path, like: /Users/john-doe/notya/account_key.json.",
+		},
+		Validate: survey.MinLength(5),
+	},
+	{
+		Name: "fire_collection",
+		Prompt: &survey.Input{
+			Message: "Firebase Collection",
+			Help:    "A name of collection for notes, from your firebase project's firestore.",
+		},
+		Validate: survey.MinLength(1),
+	},
 }

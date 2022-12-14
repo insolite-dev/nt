@@ -14,6 +14,7 @@ import (
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/insolite-dev/notya/lib/models"
+	"github.com/insolite-dev/notya/lib/services"
 	"github.com/insolite-dev/notya/pkg"
 )
 
@@ -121,7 +122,7 @@ func TestPrintNote(t *testing.T) {
 		},
 		{
 			testName: "should show note properly",
-			note:     models.Note{Body: "Non empty note", Path: "non-empty-path"},
+			note:     models.Note{Body: "Non empty note", Path: map[string]string{services.LOCAL.ToStr(): "non-empty-path"}},
 		},
 	}
 

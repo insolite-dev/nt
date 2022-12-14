@@ -7,6 +7,8 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/insolite-dev/notya/assets"
 	"github.com/insolite-dev/notya/lib/models"
@@ -46,7 +48,7 @@ func runRenameCommand(cmd *cobra.Command, args []string) {
 	loading.Start()
 
 	// Generate array of all node names.
-	_, nodeNames, err := service.GetAll("", models.NotyaIgnoreFiles)
+	_, nodeNames, err := service.GetAll("", "", models.NotyaIgnoreFiles)
 
 	loading.Stop()
 
@@ -71,11 +73,21 @@ func askAndRename(selected string) {
 	var newname string
 	survey.AskOne(assets.NewNamePrompt(selected), &newname)
 
+	if len(newname) == 0 {
+		os.Exit(-1)
+		return
+	}
+
 	rename(selected, newname)
 }
 
 // rename takes selected and newname, then makes changes and alerts it.
 func rename(selected string, newname string) {
+	if len(selected) == 0 || len(newname) == 0 {
+		os.Exit(-1)
+		return
+	}
+
 	// Generate editable node by current node and updated node.
 	editNode := models.EditNode{
 		Current: models.Node{Title: selected},
