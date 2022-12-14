@@ -133,7 +133,7 @@ func (s *FirebaseService) GetDoc(n models.Node) (*models.Node, error) {
 	}
 
 	var model models.Node
-	mapstructure.Decode(docSnapshot.Data(), &model)
+	model.FromJson(docSnapshot.Data())
 
 	return &model, nil
 }
@@ -386,26 +386,47 @@ func (s *FirebaseService) Rename(editNode models.EditNode) error {
 	if nodeExists, err := s.IsNodeExists(updated); err != nil {
 		return err
 	} else if nodeExists {
-		return assets.AlreadyExists(updated.Title, "doc")
+		return assets.AlreadyExists(updated.Title, "file or folder")
 	}
 
-	if err := s.renameNode(models.EditNode{Current: *current, New: updated}); err != nil {
+	if err := s.mv(models.EditNode{Current: *current, New: updated}); err != nil {
 		return err
 	}
 
-	if current.IsFolder() {
-		// TODO: call s.ListDir to the "sub" collection of [current] document.
-		// by generating it via s.GenerateDoc().
+	// Dive into sub collection of current folder.
+	if current.IsFolder() || updated.IsFolder() {
+		_, sub := s.GenerateDoc(nil, *current)
+
+		nodes, _, err := s.ListDir(sub, "", []string{}, 0)
+		if err != nil {
+			// TODO: shouldn't cut the whole action for one error.
+			return err
+		}
+
+		sort.Slice(
+			nodes,
+			func(i, j int) bool { return len(nodes[i].Title) > len(nodes[j].Title) },
+		)
+
+		for _, n := range nodes {
+			newN := n
+			newN = *newN.RebuildParent(*current, updated, s.Type(), s.Config)
+
+			if err := s.Rename(models.EditNode{Current: n, New: newN}); err != nil {
+				// TODO: shouldn't cut the whole action for one error.
+				return err
+			}
+		}
 	}
 
 	return nil
 }
 
-// renameNode is a sub implementation of [Rename].
+// mv is a sub implementation of [Rename].
 // Which used to move file or folder(without sub nodes)
 // from current path to new path.
-func (s *FirebaseService) renameNode(editNode models.EditNode) error {
-	if editNode.New.IsFolder() {
+func (s *FirebaseService) mv(editNode models.EditNode) error {
+	if editNode.Current.IsFolder() || editNode.New.IsFolder() {
 		if _, err := s.Mkdir(editNode.New.ToFolder()); err != nil {
 			return err
 		}

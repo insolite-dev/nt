@@ -9,6 +9,7 @@ package models
 import (
 	"encoding/json"
 	"os"
+	"strings"
 )
 
 var (
@@ -72,6 +73,32 @@ func (n *Node) UpdatePath(service, path string) *Node {
 	n.Path = p
 
 	return n
+}
+
+// RebuildParent updates the parent(s) of node in [Title] and [Path].
+func (n *Node) RebuildParent(parentCurrent, parentNew Node, service string, s Settings) *Node {
+	if parentCurrent.Title[len(parentCurrent.Title)-1] != '/' {
+		parentCurrent.Title += "/"
+	}
+
+	if parentNew.Title[len(parentNew.Title)-1] != '/' {
+		parentNew.Title += "/"
+	}
+
+	split := SplitPath(strings.Replace(n.Title, parentCurrent.Title, parentNew.Title, 1))
+	n.Title = CollectPath(split)
+
+	path := "notya"
+	if len(s.FirebaseCollection) != 0 {
+		path = s.FirebaseCollection
+	} else if len(s.Name) != 0 {
+		path = s.Name
+	}
+	if path[len(path)-1] != '/' && n.Title[0] != '/' {
+		path += "/"
+	}
+
+	return n.UpdatePath(service, path+n.Title)
 }
 
 func (n *Node) IsFolder() bool {
@@ -141,4 +168,31 @@ func PrettyFromEntry(e os.DirEntry) string {
 	}
 
 	return NotePretty
+}
+
+// Split splits the path to fields by char:'/'
+func SplitPath(str string) []string {
+	split := strings.Split(str, "/")
+	for i, s := range split { // remove each empty sub-string.
+		if len(s) == 0 {
+			split = append(split[:i], split[i+1:]...)
+		}
+	}
+
+	return split
+}
+
+// CollectPath is reversed implementation of SplitPath, which collects
+// the fields that is splitted via SplitPath function.
+func CollectPath(splitted []string) string {
+	res := ""
+
+	for i, s := range splitted {
+		res += s
+		if res[len(res)-1] != '/' && i != len(splitted)-1 {
+			res += "/"
+		}
+	}
+
+	return res
 }
