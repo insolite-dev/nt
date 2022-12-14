@@ -30,7 +30,8 @@ var NotyaIgnoreFiles []string = []string{
 
 // Settings is a main structure model of application settings.
 //
-//  Example:
+//	Example:
+//
 // ╭────────────────────────────────────────────────────╮
 // │ Name: notya                                        │
 // │ Editor: vi                                         │
@@ -127,17 +128,14 @@ func InitSettings(notesPath string) Settings {
 	}
 }
 
-// ToByte converts settings model to JSON map,
-// but returns that value as byte array.
-func (s *Settings) ToByte() []byte {
-	b, _ := json.Marshal(&s)
+// ToString converts settings model to a formatted JSON string,
+func (s *Settings) ToString() string {
+	jsonBytes, err := json.MarshalIndent(s, "", "  ")
+	if err != nil {
+		return ""
+	}
 
-	var j map[string]interface{}
-	_ = json.Unmarshal(b, &j)
-
-	res, _ := json.Marshal(&j)
-
-	return res
+	return string(jsonBytes)
 }
 
 // ToJSON converts string structure model to map value.

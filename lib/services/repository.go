@@ -50,20 +50,20 @@ func IsFirebaseEnabled(s models.Settings, local *ServiceRepo) bool {
 }
 
 // ServiceRepo is a abstract class for all service implementations.
-//     ╭──────╮     ╭────────────────────╮
-// ... │ User │ ──▶ │ Interface Commands │
-//     ╰──────╯     ╰────────────────────╯
-//                            │
-//                ╭───────────────────────╮
-//                ▼                       ▼
-//        ╭───────────────╮       ╭────────────────╮
-//        │ Local Service │       │ Remote Service │
-//        ╰───────────────╯       ╰────────────────╯
-//        Connected to local       Connected to user defined
-//        storage, and uses        key-store remote database, and uses
-//        ~notya/ as main root     notya/ as base root key map.
-//        folder for notes.
 //
+//	╭──────╮     ╭────────────────────╮
+//	│ User │ ──▶ │ Interface Commands │
+//	╰──────╯     ╰────────────────────╯
+//	                       │
+//	           ╭───────────────────────╮
+//	           ▼                       ▼
+//	   ╭───────────────╮       ╭────────────────╮
+//	   │ Local Service │       │ Remote Service │
+//	   ╰───────────────╯       ╰────────────────╯
+//	   Connected to local       Connected to user defined
+//	   storage, and uses        key-store remote database, and uses
+//	   ~notya/ as main root     notya/ as base root key map.
+//	   folder for notes.
 type ServiceRepo interface {
 	// Type returns the current implementation's type.
 	// - LOCAL, if it's local service implementation.

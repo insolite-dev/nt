@@ -34,7 +34,7 @@ func TestInitSettings(t *testing.T) {
 	}
 }
 
-func TestToByte(t *testing.T) {
+func TestToString(t *testing.T) {
 	tests := []struct {
 		testname       string
 		model          models.Settings
@@ -43,16 +43,16 @@ func TestToByte(t *testing.T) {
 		{
 			testname:       "should return initial settings properly",
 			model:          models.Settings{Editor: "mvim"},
-			expectedLength: 43,
+			expectedLength: 56,
 		},
 	}
 
 	for _, td := range tests {
 		t.Run(td.testname, func(t *testing.T) {
-			got := td.model.ToByte()
+			got := td.model.ToString()
 
 			if len(got) != td.expectedLength {
-				t.Errorf("ToByte's length sum was different: Want: %v | Got: %v", td.expectedLength, len(got))
+				t.Errorf("ToString's length sum was different: Want: %v | Got: %v", td.expectedLength, len(got))
 			}
 		})
 	}
