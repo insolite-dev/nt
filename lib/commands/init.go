@@ -30,7 +30,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
 	loading.Start()
-	err := service.Init()
+	err := service.Init(nil)
 	loading.Stop()
 
 	if err != nil {

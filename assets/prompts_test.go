@@ -11,7 +11,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/insolite-dev/notya/assets"
-	"github.com/insolite-dev/notya/lib/models"
 )
 
 func TestChoseNotePrompt(t *testing.T) {
@@ -127,97 +126,6 @@ func TestNewNamePrompt(t *testing.T) {
 
 			if got.Message != td.expected.Message || got.Help != td.expected.Help || got.Default != td.expected.Default {
 				t.Errorf("Sum of NewNamePrompt was different: Want: %v | Got: %v", td.expected, got)
-			}
-		})
-	}
-}
-
-func TestSettingsEditPromptQuestions(t *testing.T) {
-	tests := []struct {
-		testname        string
-		defaultSettings models.Settings
-		expected        []*survey.Question
-	}{
-		{
-			testname:        "should generate settings-edit prompt questions properly",
-			defaultSettings: models.InitSettings("default_path"),
-			expected: []*survey.Question{
-				{
-					Name: "name",
-					Prompt: &survey.Input{
-						Default: models.InitSettings("default_path").Name,
-						Message: "App Name",
-						Help:    "Customize your application env's name",
-					},
-					Validate: survey.MinLength(1),
-				},
-				{
-					Name: "editor",
-					Prompt: &survey.Input{
-						Default: models.InitSettings("default_path").Editor,
-						Message: "Editor",
-						Help:    "Editor for notya. --> vim/nvim/code/code-insiders ...",
-					},
-					Validate: survey.MinLength(1),
-				},
-				{
-					Name: "local_path",
-					Prompt: &survey.Input{
-						Default: models.InitSettings("default_path").LocalPath,
-						Message: "Local Path",
-						Help:    "Local path of notya base working directory",
-					},
-				},
-				{
-					Name: "fire_project_id",
-					Prompt: &survey.Input{
-						Default: models.InitSettings("default_path").FirebaseProjectID,
-						Message: "Firebase Project ID",
-						Help:    "Project ID of your (integrated-with-notya) firebase project",
-					},
-				},
-				{
-					Name: "fire_account_key",
-					Prompt: &survey.Input{
-						Default: models.InitSettings("default_path").FirebaseAccountKey,
-						Message: "Firebase Key File",
-						Help:    "Path of firebase service key file",
-					},
-				},
-				{
-					Name: "fire_collection",
-					Prompt: &survey.Input{
-						Default: models.InitSettings("default_path").FirebaseCollection,
-						Message: "Firebase Collection",
-						Help:    "Main notya collection name in firestore",
-					},
-				},
-			},
-		},
-	}
-
-	for _, td := range tests {
-		t.Run(td.testname, func(t *testing.T) {
-			got := assets.SettingsEditPromptQuestions(td.defaultSettings)
-
-			//
-			var isDiff = func() bool {
-				if len(got) != len(td.expected) {
-					return true
-				}
-
-				for i := 0; i < len(got); i++ {
-					var a1, a2 = got[i], td.expected[i]
-					if a1.Name != a2.Name {
-						return true
-					}
-				}
-
-				return false
-			}()
-
-			if isDiff {
-				t.Errorf("Sum of SettingsEditPromptQuestions was different: Want: %v | Got: %v", got, td.expected)
 			}
 		})
 	}

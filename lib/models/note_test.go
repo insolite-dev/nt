@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/insolite-dev/notya/lib/models"
+	"github.com/insolite-dev/notya/lib/services"
 )
 
 func TestToJSONofNote(t *testing.T) {
@@ -20,12 +21,12 @@ func TestToJSONofNote(t *testing.T) {
 		{
 			model: models.Note{
 				Title: "mock-title.txt",
-				Path:  "~/mock-title.txt",
+				Path:  map[string]string{services.LOCAL.ToStr(): "~/mock-title.txt"},
 				Body:  "empty",
 			},
 			expected: map[string]interface{}{
 				"title": "mock-title.txt",
-				"path":  "~/mock-title.txt",
+				"path":  map[string]string{services.LOCAL.ToStr(): "~/mock-title.txt"},
 				"body":  "empty",
 			},
 		},
@@ -51,14 +52,15 @@ func TestNoteToNode(t *testing.T) {
 			expected: models.Node{},
 		},
 		{
-			note:     models.Note{Title: "title", Path: "~/title"},
-			expected: models.Node{Title: "title", Path: "~/title"},
+			note:     models.Note{Title: "title", Path: map[string]string{services.LOCAL.ToStr(): "~/title"}},
+			expected: models.Node{Title: "title", Path: map[string]string{services.LOCAL.ToStr(): "~/title"}},
 		},
 	}
 
 	for _, td := range tests {
 		got := td.note.ToNode()
-		if got.Title != td.expected.Title || got.Path != td.expected.Path {
+		path := got.GetPath(services.LOCAL.ToStr())
+		if got.Title != td.expected.Title || path != td.expected.GetPath(services.LOCAL.ToStr()) {
 			t.Errorf("Sum was different of [Note-to-Node] function: Want: %v | Got: %v", td.expected, got)
 		}
 	}

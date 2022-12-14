@@ -8,6 +8,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
@@ -51,6 +52,11 @@ func runFetchCommand(cmd *cobra.Command, args []string) {
 		assets.ChooseRemotePrompt(availableServices),
 		&selected,
 	)
+	if len(selected) == 0 {
+		os.Exit(-1)
+		return
+	}
+
 	selectedService := serviceFromType(selected, true)
 
 	loading.Start()

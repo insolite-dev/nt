@@ -6,16 +6,24 @@
 
 package services
 
-import "github.com/insolite-dev/notya/lib/models"
+import (
+	"os"
+
+	"github.com/insolite-dev/notya/lib/models"
+)
 
 var (
 	LOCAL ServiceType = "LOCAL"
 	FIRE  ServiceType = "FIREBASE"
 
+	// All services into one list: including local and remote.
 	Services []string = []string{
 		LOCAL.ToStr(),
 		FIRE.ToStr(),
 	}
+
+	// Only remote services into one list.
+	RemoteServices []string = []string{FIRE.ToStr()}
 )
 
 // Custom string struct to define type of services
@@ -33,21 +41,29 @@ func (s *ServiceType) ToStr() string {
 	return "undefined"
 }
 
+// IsFirebaseEnabled checks if firebase connection is enabled or not.
+func IsFirebaseEnabled(s models.Settings, local *ServiceRepo) bool {
+	stargs := models.StdArgs{Stdin: os.Stdin, Stdout: os.Stdout, Stderr: os.Stderr}
+	err := NewFirebaseService(stargs, *local).Init(&s)
+
+	return err == nil
+}
+
 // ServiceRepo is a abstract class for all service implementations.
-//     ╭──────╮     ╭────────────────────╮
-// ... │ User │ ──▶ │ Interface Commands │
-//     ╰──────╯     ╰────────────────────╯
-//                            │
-//                ╭───────────────────────╮
-//                ▼                       ▼
-//        ╭───────────────╮       ╭────────────────╮
-//        │ Local Service │       │ Remote Service │
-//        ╰───────────────╯       ╰────────────────╯
-//        Connected to local       Connected to user defined
-//        storage, and uses        key-store remote database, and uses
-//        ~notya/ as main root     notya/ as base root key map.
-//        folder for notes.
 //
+//	╭──────╮     ╭────────────────────╮
+//	│ User │ ──▶ │ Interface Commands │
+//	╰──────╯     ╰────────────────────╯
+//	                       │
+//	           ╭───────────────────────╮
+//	           ▼                       ▼
+//	   ╭───────────────╮       ╭────────────────╮
+//	   │ Local Service │       │ Remote Service │
+//	   ╰───────────────╯       ╰────────────────╯
+//	   Connected to local       Connected to user defined
+//	   storage, and uses        key-store remote database, and uses
+//	   ~notya/ as main root     notya/ as base root key map.
+//	   folder for notes.
 type ServiceRepo interface {
 	// Type returns the current implementation's type.
 	// - LOCAL, if it's local service implementation.
@@ -55,17 +71,27 @@ type ServiceRepo interface {
 	// and etc ...
 	Type() string
 
-	// Path returns the path of current base service.
-	// In case of local storage implementation, path would be the folder path of the notes.
-	Path() string
+	// Path returns the path of current base service. And base service's notes path.
+	// ...   main | notes
+	Path() (string, string)
 
 	// Current config data of service implementation.
 	StateConfig() models.Settings
 
 	// Init setups all kinda minimal services for application.
-	Init() error
+	Init(settings *models.Settings) error
+
+	// Settings reads and parses current configuration file and returns
+	// it as settings model pointer. In case of a error, setting model will be
+	// [nil] and [error] will be provided.
 	Settings(p *string) (*models.Settings, error)
+
+	// WriteSettings overwrites current configuration data,
+	// with provided [settings] model.
 	WriteSettings(settings models.Settings) error
+
+	// OpenSettings opens provided settings with [current] editor
+	// that we take it from provided settings.
 	OpenSettings(settings models.Settings) error
 
 	// General functions that used for both [Note]s and [Folder]s
@@ -75,8 +101,13 @@ type ServiceRepo interface {
 	Rename(editNode models.EditNode) error
 	ClearNodes() ([]models.Node, []error)
 
-	// Note(file) related functions.
-	GetAll(additional string, ignore []string) ([]models.Node, []string, error)
+	// GetAll gets the all notes from current service.
+	//
+	// [additional] provides a way of entering to sub-folders of main folder.
+	// [ignore] provides a way of ignoring files. Default ignorable files: [models.NotyaIgnoreFiles].
+	// [typ] provides a way to get only specific type of file-nodes.
+	GetAll(additional, typ string, ignore []string) ([]models.Node, []string, error)
+
 	Create(note models.Note) (*models.Note, error)
 	View(note models.Note) (*models.Note, error)
 	Edit(note models.Note) (*models.Note, error)

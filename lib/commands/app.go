@@ -79,6 +79,7 @@ func initCommands() {
 	initPushCommand()
 	initMigrateCommand()
 	initCutCommand()
+	initRemoteCommand()
 }
 
 // ExecuteApp is a main function that app starts executing and working.
@@ -118,7 +119,7 @@ func setupLocalService() {
 	loading.Start()
 
 	localService = services.NewLocalService(stdargs)
-	err := localService.Init()
+	err := localService.Init(nil)
 
 	loading.Stop()
 
@@ -134,7 +135,7 @@ func setupFirebaseService() {
 	loading.Start()
 
 	fireService = services.NewFirebaseService(stdargs, localService)
-	err := fireService.Init()
+	err := fireService.Init(nil)
 
 	loading.Stop()
 
