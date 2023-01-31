@@ -108,16 +108,17 @@ func Print(data string, c color.Attribute) {
 }
 
 // ShowNote, logs given full note.
-func PrintNote(note models.Note) {
+func PrintNote(note models.Note, service string) {
 	// Modify note fields to make it ready to log.
 	title := fmt.Sprintf(
 		"\n%v %v",
 		fmt.Sprintf("%s%s%s", PURPLE, "Title:", NOCOLOR),
 		fmt.Sprintf("%s%s%s", GREY, note.Title, NOCOLOR),
 	)
+
 	path := fmt.Sprintf("%v %v",
 		fmt.Sprintf("%s%s%s", PURPLE, "Path:", NOCOLOR),
-		fmt.Sprintf("%s%s%s", GREY, note.Path, NOCOLOR),
+		fmt.Sprintf("%s%s%s", GREY, note.Path[service], NOCOLOR),
 	)
 
 	body := fmt.Sprintf("\n%v", note.Body)

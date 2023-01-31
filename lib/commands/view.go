@@ -41,7 +41,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 		if err != nil {
 			pkg.Alert(pkg.ErrorL, err.Error())
 		} else {
-			pkg.PrintNote(*note)
+			pkg.PrintNote(*note, service.Type())
 		}
 
 		return
@@ -64,7 +64,7 @@ func runViewCommand(cmd *cobra.Command, args []string) {
 
 	for _, n := range nodes {
 		if n.Title == selected {
-			pkg.PrintNote(n.ToNote())
+			pkg.PrintNote(n.ToNote(), service.Type())
 		}
 	}
 }
