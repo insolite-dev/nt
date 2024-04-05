@@ -8,11 +8,11 @@ package commands
 
 import (
 	"github.com/fatih/color"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/pkg"
 	"github.com/spf13/cobra"
 )
 
-// initCommand is a setup command of notya.
+// initCommand is a setup command of nt.
 var initCommand = &cobra.Command{
 	Use:     "init",
 	Aliases: []string{"setup"},
@@ -25,7 +25,7 @@ func initSetupCommand() {
 	appCommand.AddCommand(initCommand)
 }
 
-// runInitCommand runs appropriate functionalities to setup notya and make it ready-to-use.
+// runInitCommand runs appropriate functionalities to setup nt and make it ready-to-use.
 func runInitCommand(cmd *cobra.Command, args []string) {
 	determineService()
 
@@ -39,5 +39,5 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	}
 
 	pkg.Alert(pkg.SuccessL, `Application initialized successfully`)
-	pkg.Print(" > [notya -h/help] for help", color.FgBlue)
+	pkg.Print(" > [nt -h/help] for help", color.FgBlue)
 }

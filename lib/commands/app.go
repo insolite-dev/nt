@@ -9,10 +9,10 @@ package commands
 import (
 	"os"
 
-	"github.com/insolite-dev/notya/assets"
-	"github.com/insolite-dev/notya/lib/models"
-	"github.com/insolite-dev/notya/lib/services"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/assets"
+	"github.com/insolite-dev/nt/lib/models"
+	"github.com/insolite-dev/nt/lib/services"
+	"github.com/insolite-dev/nt/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -50,7 +50,7 @@ var firebaseF bool
 
 // appCommand is the root command of application and genesis of all sub-commands.
 var appCommand = &cobra.Command{
-	Use:     "notya",
+	Use:     "nt",
 	Version: pkg.Version,
 	Long: assets.GenerateBanner(
 		assets.MinimalisticBanner,

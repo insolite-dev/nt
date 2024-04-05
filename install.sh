@@ -4,13 +4,13 @@ set -e
 usage() {
   this=$1
   cat <<EOF
-$this: download go binaries for insolite-dev/notya
+$this: download go binaries for insolite-dev/nt
 
 Usage: $this [-b] bindir [-d] [tag]
   -b sets bindir or installation directory, Defaults to ./bin
   -d turns on debug logging
    [tag] is a tag from
-   https://github.com/insolite-dev/notya/releases
+   https://github.com/insolite-dev/nt/releases
    If tag is missing, then the latest will be used.
 
 EOF
@@ -57,12 +57,12 @@ execute() {
 }
 get_binaries() {
   case "$PLATFORM" in
-    darwin/386) BINARIES="notya" ;;
-    darwin/amd64) BINARIES="notya" ;;
-    linux/386) BINARIES="notya" ;;
-    linux/amd64) BINARIES="notya" ;;
-    windows/386) BINARIES="notya" ;;
-    windows/amd64) BINARIES="notya" ;;
+    darwin/386) BINARIES="nt" ;;
+    darwin/amd64) BINARIES="nt" ;;
+    linux/386) BINARIES="nt" ;;
+    linux/amd64) BINARIES="nt" ;;
+    windows/386) BINARIES="nt" ;;
+    windows/amd64) BINARIES="nt" ;;
     *)
       log_crit "platform $PLATFORM is not supported.  Make sure this script is up-to-date and file request at https://github.com/${PREFIX}/issues/new"
       exit 1
@@ -341,10 +341,10 @@ End of functions from https://github.com/client9/shlib
 ------------------------------------------------------------------------
 EOF
 
-PROJECT_NAME="notya"
+PROJECT_NAME="nt"
 OWNER=insolite-dev
-REPO="notya"
-BINARY=notya
+REPO="nt"
+BINARY=nt
 FORMAT=tar.gz
 OS=$(uname_os)
 ARCH=$(uname_arch)

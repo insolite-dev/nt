@@ -16,7 +16,7 @@ import (
 //
 // ╭─────────────────────────────────────────────╮
 // │ Title: new_note.txt                         │
-// │ Path: /User/random-user/notya/new_note.txt  │
+// │ Path: /User/random-user/nt/new_note.txt  │
 // │ Body: ... Note content here ...             │
 // ╰─────────────────────────────────────────────╯
 type Note struct {

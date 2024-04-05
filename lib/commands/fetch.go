@@ -12,9 +12,9 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
-	"github.com/insolite-dev/notya/assets"
-	"github.com/insolite-dev/notya/lib/services"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/assets"
+	"github.com/insolite-dev/nt/lib/services"
+	"github.com/insolite-dev/nt/pkg"
 	"github.com/spf13/cobra"
 )
 

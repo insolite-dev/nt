@@ -12,17 +12,17 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/insolite-dev/notya/lib/models"
+	"github.com/insolite-dev/nt/lib/models"
 )
 
-// NotyaPWD, generates path of notya's notes directory.
+// NotyaPWD, generates path of nt's notes directory.
 // ╭───────────────────────╮   ╭────────╮   ╭────────────╮
-// │ ~/user-home-directory │ + │ /notya │ = │ local path │
+// │ ~/user-home-directory │ + │ /nt │ = │ local path │
 // ╰───────────────────────╯   ╰────────╯   ╰────────────╯
 func NotyaPWD(settings models.Settings) (*string, error) {
 	path := settings.NotesPath
 
-	// Initialize default notya path.
+	// Initialize default nt path.
 	if len(path) == 0 || path == models.DefaultLocalPath {
 		uhd, err := os.UserHomeDir()
 		if err != nil {

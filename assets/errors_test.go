@@ -10,7 +10,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/insolite-dev/notya/assets"
+	"github.com/insolite-dev/nt/assets"
 )
 
 func TestNotExists(t *testing.T) {

@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for notya
+about: Suggest an idea for nt
 title: ''
 labels: ''
 assignees: ''

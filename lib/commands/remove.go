@@ -11,9 +11,9 @@ import (
 	"os"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/insolite-dev/notya/assets"
-	"github.com/insolite-dev/notya/lib/models"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/assets"
+	"github.com/insolite-dev/nt/lib/models"
+	"github.com/insolite-dev/nt/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +21,7 @@ import (
 var removeCommand = &cobra.Command{
 	Use:     "remove",
 	Aliases: []string{"rm", "delete"},
-	Short:   "Remove/Delete a notya element",
+	Short:   "Remove/Delete a nt element",
 	Run:     runRemoveCommand,
 }
 

@@ -9,7 +9,7 @@ package services
 import (
 	"os"
 
-	"github.com/insolite-dev/notya/lib/models"
+	"github.com/insolite-dev/nt/lib/models"
 )
 
 var (
@@ -62,7 +62,7 @@ func IsFirebaseEnabled(s models.Settings, local *ServiceRepo) bool {
 //	   ╰───────────────╯       ╰────────────────╯
 //	   Connected to local       Connected to user defined
 //	   storage, and uses        key-store remote database, and uses
-//	   ~notya/ as main root     notya/ as base root key map.
+//	   ~nt/ as main root     nt/ as base root key map.
 //	   folder for notes.
 type ServiceRepo interface {
 	// Type returns the current implementation's type.

@@ -7,8 +7,8 @@
 package commands
 
 import (
-	"github.com/insolite-dev/notya/lib/models"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/lib/models"
+	"github.com/insolite-dev/nt/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +16,7 @@ import (
 var listCommand = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"ls"},
-	Short:   "List all notya nodes(files & folders)",
+	Short:   "List all nt nodes(files & folders)",
 	Run:     runListCommand,
 }
 

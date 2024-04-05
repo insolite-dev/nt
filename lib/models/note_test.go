@@ -9,8 +9,8 @@ package models_test
 import (
 	"testing"
 
-	"github.com/insolite-dev/notya/lib/models"
-	"github.com/insolite-dev/notya/lib/services"
+	"github.com/insolite-dev/nt/lib/models"
+	"github.com/insolite-dev/nt/lib/services"
 )
 
 func TestToJSONofNote(t *testing.T) {

@@ -11,13 +11,13 @@ package models
 //	EXAMPLE:
 //
 // ╭───────────────╮
-// │ ~/notya-path/ │
+// │ ~/nt-path/ │
 // │───────────────╯
 // │─ new_note.txt
 // │─ todo/   ◀──── Sub directory of main notes folder.
 // │  │── today.md
 // │  │── tomorrow.md
-// │  ╰── insolite-notya/  ◀── Sub directory of "todo" folder.
+// │  ╰── insolite-nt/  ◀── Sub directory of "todo" folder.
 // │      │── issues.txt
 // │      ╰── features.txt
 // │─ ted-talks.tx

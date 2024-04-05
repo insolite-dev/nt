@@ -13,9 +13,8 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
-	"github.com/insolite-dev/notya/lib/models"
-	"github.com/insolite-dev/notya/lib/services"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/lib/models"
+	"github.com/insolite-dev/nt/pkg"
 )
 
 func TestAlert(t *testing.T) {
@@ -107,28 +106,6 @@ func TestPrint(t *testing.T) {
 	for _, td := range tests {
 		t.Run(td.testName, func(t *testing.T) {
 			pkg.Print(td.data, td.attribute)
-		})
-	}
-}
-
-func TestPrintNote(t *testing.T) {
-	tests := []struct {
-		testName string
-		note     models.Note
-	}{
-		{
-			testName: "should show note properly",
-			note:     models.Note{}, // Empty note
-		},
-		{
-			testName: "should show note properly",
-			note:     models.Note{Body: "Non empty note", Path: map[string]string{services.LOCAL.ToStr(): "non-empty-path"}},
-		},
-	}
-
-	for _, td := range tests {
-		t.Run(td.testName, func(t *testing.T) {
-			pkg.PrintNote(td.note)
 		})
 	}
 }

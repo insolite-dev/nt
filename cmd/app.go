@@ -7,7 +7,7 @@
 package cmd
 
 import (
-	"github.com/insolite-dev/notya/lib/commands"
+	"github.com/insolite-dev/nt/lib/commands"
 )
 
 // RunApp executes appCommand.

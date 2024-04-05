@@ -9,8 +9,8 @@ package commands
 import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
-	"github.com/insolite-dev/notya/assets"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/assets"
+	"github.com/insolite-dev/nt/pkg"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ import (
 var settingsCommand = &cobra.Command{
 	Use:     "settings",
 	Aliases: []string{"config"},
-	Short:   "Manage settings of notya",
+	Short:   "Manage settings of nt",
 	Run:     runSettingsCommand,
 }
 
@@ -31,7 +31,7 @@ var settingsCommand = &cobra.Command{
 var editSettingsCommand = &cobra.Command{
 	Use:     "edit",
 	Aliases: []string{"-e"},
-	Short:   "Opens the configuration file of notya with your current editor",
+	Short:   "Opens the configuration file of nt with your current editor",
 	Run:     runEditSettingsCommand,
 }
 
@@ -57,7 +57,7 @@ func runSettingsCommand(cmd *cobra.Command, args []string) {
 
 	// Print settings' current values.
 	pkg.PrintSettings(*settings)
-	pkg.Print("\n > [notya settings -h/help] for more", color.FgGreen)
+	pkg.Print("\n > [nt settings -h/help] for more", color.FgGreen)
 }
 
 // runViewSettingsCommand runs appropriate service functionalities

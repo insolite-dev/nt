@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/pkg"
 )
 
 func TestSurveyIconsConfig(t *testing.T) {

@@ -88,7 +88,7 @@ func (n *Node) RebuildParent(parentCurrent, parentNew Node, service string, s Se
 	split := SplitPath(strings.Replace(n.Title, parentCurrent.Title, parentNew.Title, 1))
 	n.Title = CollectPath(split)
 
-	path := "notya"
+	path := "nt"
 	if len(s.FirebaseCollection) != 0 {
 		path = s.FirebaseCollection
 	} else if len(s.Name) != 0 {

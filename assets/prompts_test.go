@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/insolite-dev/notya/assets"
+	"github.com/insolite-dev/nt/assets"
 )
 
 func TestChoseNotePrompt(t *testing.T) {

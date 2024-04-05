@@ -9,7 +9,7 @@ package assets_test
 import (
 	"testing"
 
-	"github.com/insolite-dev/notya/assets"
+	"github.com/insolite-dev/nt/assets"
 )
 
 func TestGenerateBanner(t *testing.T) {

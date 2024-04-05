@@ -16,9 +16,9 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 	"github.com/atotto/clipboard"
-	"github.com/insolite-dev/notya/assets"
-	"github.com/insolite-dev/notya/lib/models"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/assets"
+	"github.com/insolite-dev/nt/lib/models"
+	"github.com/insolite-dev/nt/pkg"
 	"github.com/mitchellh/mapstructure"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
@@ -58,7 +58,7 @@ func (s *FirebaseService) StateConfig() models.Settings {
 	return s.Config
 }
 
-// notyaCollection generates the main firestore collection reference.
+// ntCollection generates the main firestore collection reference.
 func (s *FirebaseService) NotyaCollection() firestore.CollectionRef {
 	return *s.FireStore.Collection(s.Config.FirePath())
 }
@@ -71,7 +71,7 @@ func (s *FirebaseService) GeneratePath(base *firestore.CollectionRef, n models.N
 	collection := s.NotyaCollection()
 	if base != nil {
 		// if the base collection is provided, which is different than actual
-		// provided main-base connection of notya, we have to set it to the value.
+		// provided main-base connection of nt, we have to set it to the value.
 		collection = *base
 	}
 
@@ -148,7 +148,7 @@ func (s *FirebaseService) Path() (string, string) {
 	return s.Config.FirePath(), s.Config.FirebaseCollection
 }
 
-// Init creates notya working directory into current machine.
+// Init creates nt working directory into current machine.
 func (s *FirebaseService) Init(settings *models.Settings) error {
 	if settings != nil {
 		s.Config = *settings
@@ -251,7 +251,7 @@ func (s *FirebaseService) WriteSettings(settings models.Settings) error {
 	return nil
 }
 
-// IsNodeExists checks if an element(given node) exists at notya collection or not.
+// IsNodeExists checks if an element(given node) exists at nt collection or not.
 func (s *FirebaseService) IsNodeExists(node models.Node) (bool, error) {
 	doc, _ := s.GenerateDoc(nil, node)
 	if _, err := doc.Get(s.Ctx); err != nil {

@@ -82,7 +82,7 @@ var FirebaseRemoteConnectPromptQuestion = []*survey.Question{
 		Name: "fire_account_key",
 		Prompt: &survey.Input{
 			Message: "Firebase Account Key",
-			Help:    "The Firebase Admin SDK private key file path. Must be given a full path, like: /Users/john-doe/notya/account_key.json.",
+			Help:    "The Firebase Admin SDK private key file path. Must be given a full path, like: /Users/john-doe/nt/account_key.json.",
 		},
 		Validate: survey.MinLength(5),
 	},

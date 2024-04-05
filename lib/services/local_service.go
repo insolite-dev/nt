@@ -13,14 +13,14 @@ import (
 	"strings"
 
 	"github.com/atotto/clipboard"
-	"github.com/insolite-dev/notya/assets"
-	"github.com/insolite-dev/notya/lib/models"
-	"github.com/insolite-dev/notya/pkg"
+	"github.com/insolite-dev/nt/assets"
+	"github.com/insolite-dev/nt/lib/models"
+	"github.com/insolite-dev/nt/pkg"
 )
 
 // LocalService is a class implementation of service repo.
 // Which is connected to local storage of users machine.
-// Uses ~notya/ as main root folder for notes and configuration files.
+// Uses ~nt/ as main root folder for notes and configuration files.
 type LocalService struct {
 	Stdargs   models.StdArgs
 	NotyaPath string
@@ -71,18 +71,18 @@ func (l *LocalService) StateConfig() models.Settings {
 	return l.Config
 }
 
-// Init creates notya working directory into current machine.
+// Init creates nt working directory into current machine.
 func (l *LocalService) Init(settings *models.Settings) error {
-	notyaPath, err := pkg.NotyaPWD(l.Config)
+	ntPath, err := pkg.NotyaPWD(l.Config)
 	if err != nil {
 		pkg.Alert(pkg.ErrorL, err.Error())
 		return err
 	}
 
-	l.NotyaPath = *notyaPath + "/"
+	l.NotyaPath = *ntPath + "/"
 	settingsPath := l.NotyaPath + models.SettingsName
 
-	notyaDirSetted := pkg.FileExists(l.NotyaPath)
+	ntDirSetted := pkg.FileExists(l.NotyaPath)
 	settingsSetted := pkg.FileExists(settingsPath)
 
 	// If settings exists, set it to state.
@@ -96,13 +96,13 @@ func (l *LocalService) Init(settings *models.Settings) error {
 	}
 
 	// Check if working directories already exists or not.
-	if notyaDirSetted && settingsSetted {
+	if ntDirSetted && settingsSetted {
 		return nil
 	}
 
-	// Create new notya working directory, if it not exists.
-	if !notyaDirSetted {
-		if creatingErr := pkg.NewFolder(*notyaPath); creatingErr != nil {
+	// Create new nt working directory, if it not exists.
+	if !ntDirSetted {
+		if creatingErr := pkg.NewFolder(*ntPath); creatingErr != nil {
 			return creatingErr
 		}
 	}

@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve the notya
+about: Create a report to help us improve the nt
 title: ''
 labels: ''
 assignees: ''
@@ -11,7 +11,7 @@ assignees: ''
  - Machine: [e.g: MacBook Air - Intel Core i5]
  - OS: [e.g. MacOS Monterey]
  - Version [e.g. v0.1.2]
- - The way you installed notya.
+ - The way you installed nt.
 
 ### Describe the bug
 A clear and concise description of what the bug is.
