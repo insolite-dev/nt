@@ -8,6 +8,7 @@ package pkg
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -59,21 +60,26 @@ const (
 
 // Loggers powered by colors.
 var (
-	// divider     = color.New(color.FgHiYellow)
 	text = color.New(color.FgHiWhite)
-	// lowText     = color.New(color.Faint)
-	// rainbowText = color.New(color.FgHiMagenta)
 )
 
-// Alert, logs message at given [Level].
+// Alert, logs message at given [Level] and exists with appropriate unix exit code.
 //
 // l - (Level) decides style(Level) of log message.
 // msg - (message) is the content of log message.
 func Alert(l Level, msg string) {
-	// Configure message.
 	message := fmt.Sprintf("\n %s %s \n", OutputLevel(l), msg)
 
 	fmt.Fprintln(ColorableStd.Stdout, message)
+
+	switch l {
+	case ErrorL:
+		os.Exit(2)
+	case InfoL:
+		os.Exit(1)
+	default:
+		os.Exit(0)
+	}
 }
 
 // OutputLevel sets [Color] and [Icon] by given [Level],
@@ -107,24 +113,33 @@ func Print(data string, c color.Attribute) {
 	color.New(c).Println(data)
 }
 
-// ShowNote, logs given full note.
-func PrintNote(note models.Note) {
+// PrintPath, prints given node's path at {service}.
+func PrintPath(node models.Node) {
+	for service, path := range node.Path {
+		text.Println(service) //
+		fmt.Println(fmt.Sprintf(" • %s", path))
+	}
+}
+
+// PrintNote, prints given note's full data, including path[service].
+func PrintNote(note models.Note, service string) {
 	// Modify note fields to make it ready to log.
 	title := fmt.Sprintf(
 		"\n%v %v",
 		fmt.Sprintf("%s%s%s", PURPLE, "Title:", NOCOLOR),
 		fmt.Sprintf("%s%s%s", GREY, note.Title, NOCOLOR),
 	)
+
 	path := fmt.Sprintf("%v %v",
 		fmt.Sprintf("%s%s%s", PURPLE, "Path:", NOCOLOR),
-		fmt.Sprintf("%s%s%s", GREY, note.Path, NOCOLOR),
+		note.Path[service],
 	)
 
 	body := fmt.Sprintf("\n%v", note.Body)
 
 	// Log the final note files.
 	text.Println(title)
-	if len(note.Path) > 0 {
+	if len(note.Path[service]) > 0 { // fixme: we shouldn't do this.
 		text.Println(path)
 	}
 

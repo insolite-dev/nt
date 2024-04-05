@@ -27,11 +27,19 @@ var createCommand = &cobra.Command{
 // providedFolderName is the value of folder flag.
 var providedFolderName string
 
+// providedContent is the value of created file, passwed from command.
+var providedContent string
+
 // initCreateCommand adds it to the main application command.
 func initCreateCommand() {
 	createCommand.Flags().StringVarP(
 		&providedFolderName, "folder", "d", "",
 		"Make a directory via create command",
+	)
+
+	createCommand.Flags().StringVarP(
+		&providedContent, "content", "c", "",
+		"The content of your note file",
 	)
 
 	appCommand.AddCommand(createCommand)
@@ -78,7 +86,7 @@ func createAndFinish(title string) {
 	}
 
 	loading.Start()
-	note, err := service.Create(models.Note{Title: title})
+	note, err := service.Create(models.Note{Title: title, Body: providedContent})
 	loading.Stop()
 
 	if err != nil {
@@ -88,7 +96,9 @@ func createAndFinish(title string) {
 
 	// Ask for, open or not created note with editor.
 	var openNote bool
-	survey.AskOne(assets.OpenViaEditorPromt, &openNote)
+	if providedContent == "" {
+		survey.AskOne(assets.OpenViaEditorPromt, &openNote)
+	}
 
 	if openNote {
 		// Open created note-file to edit it.
